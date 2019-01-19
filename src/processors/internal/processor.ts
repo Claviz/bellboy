@@ -1,7 +1,7 @@
 import { ReadStream } from 'fs';
 
-import { Destination, emit, event, IConfig, IProcessor } from '../interfaces/destination';
-import { insertToMsSql, insertToPostgres, sendRequest } from '../utils';
+import { Destination, emit, event, IConfig, IProcessor } from '../../types';
+import { insertToMsSql, insertToPostgres, sendRequest } from '../../utils';
 import { Readable } from 'stream';
 
 export abstract class Processor implements IProcessor {

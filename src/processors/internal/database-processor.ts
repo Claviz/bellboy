@@ -1,4 +1,4 @@
-import { IDatabaseConfig } from '../interfaces/destination';
+import { IDatabaseConfig } from '../../types';
 import { Processor } from './processor';
 
 export abstract class DatabaseProcessor extends Processor {

@@ -1,6 +1,6 @@
-import { Processor } from './processor';
+import { Processor } from './internal/processor';
 import { Stream } from 'stream';
-import { IDynamicConfig } from '../interfaces/destination';
+import { IDynamicConfig } from '../types';
 
 export class DynamicProcessor extends Processor {
     /** @internal */

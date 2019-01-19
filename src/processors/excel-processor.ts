@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-import { IExcelConfig } from '../interfaces/destination';
-import { DirectoryProcessor } from './directory-processor';
+import { IExcelConfig } from '../types';
+import { DirectoryProcessor } from './internal/directory-processor';
 
 const excel = require('ek-excel-stream')
 

@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-import { IJsonConfig, IHttpJsonConfig } from '../interfaces/destination';
-import { DirectoryProcessor } from './directory-processor';
+import { IJsonConfig, IHttpJsonConfig } from '../types';
+import { DirectoryProcessor } from './internal/directory-processor';
 import request = require('request');
-import { Processor } from './processor';
+import { Processor } from './internal/processor';
 
 const JSONStream = require('JSONStream');
 

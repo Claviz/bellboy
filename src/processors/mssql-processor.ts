@@ -1,6 +1,6 @@
-import { IDatabaseConfig } from '../interfaces/destination';
+import { IDatabaseConfig } from '../types';
 import { getDb } from '../utils';
-import { DatabaseProcessor } from './database-processor';
+import { DatabaseProcessor } from './internal/database-processor';
 
 export class MssqlProcessor extends DatabaseProcessor {
     /** @internal */

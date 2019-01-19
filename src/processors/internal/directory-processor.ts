@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { promisify } from 'util';
 
-import { IFileConfig } from '../interfaces/destination';
+import { IFileConfig } from '../../types';
 import { Processor } from './processor';
 
 const readdir = promisify(fs.readdir);

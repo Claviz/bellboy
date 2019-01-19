@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-import { IJsonConfig } from '../interfaces/destination';
-import { DirectoryProcessor } from './directory-processor';
+import { IJsonConfig } from '../types';
+import { DirectoryProcessor } from './internal/directory-processor';
 
 const JSONStream = require('JSONStream');
 
