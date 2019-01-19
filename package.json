@@ -11,7 +11,10 @@
     "type": "git",
     "url": "git+https://github.com/Claviz/bellboy.git"
   },
-  "keywords": [],
+  "keywords": [
+    "etl",
+    "streaming"
+  ],
   "author": "",
   "license": "MIT",
   "bugs": {

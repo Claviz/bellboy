@@ -1,7 +1,7 @@
 import sql from 'mssql';
 import rp from 'request-promise';
 
-import { DbTypes, IDbConnection, IHttpConnection } from './interfaces/destination';
+import { DbTypes, IDbConnection, IHttpConnection } from './types';
 
 const pgp = require('pg-promise')();
 
