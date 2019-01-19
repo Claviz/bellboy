@@ -1,0 +1,39 @@
+{
+  "name": "bellboy",
+  "version": "1.0.0",
+  "description": "Highly performant JavaScript data stream ETL engine.",
+  "main": "lib/index",
+  "types": "lib/index",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Claviz/bellboy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Claviz/bellboy/issues"
+  },
+  "homepage": "https://github.com/Claviz/bellboy#readme",
+  "devDependencies": {
+    "@types/mssql": "^4.0.11",
+    "@types/node": "^10.12.18",
+    "@types/request-promise": "^4.1.42",
+    "tslint": "^5.12.1",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "JSONStream": "^1.3.5",
+    "ek-excel-stream": "^1.1.3",
+    "event-stream": "^4.0.1",
+    "mssql": "^4.3.0",
+    "pg": "^7.8.0",
+    "pg-promise": "^8.5.5",
+    "pg-query-stream": "^2.0.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2"
+  }
+}
