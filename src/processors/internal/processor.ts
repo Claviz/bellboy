@@ -134,7 +134,7 @@ export abstract class Processor implements IProcessor {
                 result = await this.getNextRecord(
                     readStream,
                 );
-            } catch (err) { console.log(12344); }
+            } catch (err) { }
             if (result) {
                 if (result.header) {
                     header = result.header;

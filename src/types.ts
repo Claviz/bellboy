@@ -1,10 +1,11 @@
 import { CoreOptions, UrlOptions } from 'request';
 
 export interface IDbConnection {
-    user: string;
-    password: string;
-    server: string;
-    database: string;
+    user?: string;
+    password?: string;
+    server?: string;
+    host?: string;
+    database?: string;
 }
 
 interface IDestination {
@@ -46,7 +47,7 @@ interface IHttpDestination extends IDestination {
 
 export interface IConfig {
     destinations: Destination[];
-    verbose: boolean;
+    verbose?: boolean;
 }
 
 export interface IFileConfig extends IConfig {

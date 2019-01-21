@@ -48,8 +48,8 @@ export async function insertToPostgres(data: any[], config: IDbConnection, table
 export async function insertToMsSql(data: any[], config: IDbConnection, tableName: string) {
     const db = await getDb(config, 'mssql') as sql.ConnectionPool;
     const query = await db.request().query(`SELECT TOP(0) * FROM ${tableName}`);
-    let table = query.recordset.toTable();
-    const columns = table.columns.map(x => x.name);
+    let table = (query.recordset as any).toTable(tableName);
+    const columns = table.columns.map((x: any) => x.name);
     const transaction = new sql.Transaction(db);
     await transaction.begin();
     for (let x of data) {
@@ -63,19 +63,39 @@ export async function insertToMsSql(data: any[], config: IDbConnection, tableNam
     await transaction.commit();
 }
 
-const cachedDbConnections = new Map();
+const cachedDbConnections = new Map<string, { db: any, close: any }>();
 export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
     const dbKey = JSON.stringify(databaseConfig);
     if (cachedDbConnections.has(dbKey)) {
-        return cachedDbConnections.get(dbKey);
+        const dbConnection = cachedDbConnections.get(dbKey);
+        if (dbConnection) {
+            return dbConnection.db;
+        }
     }
-    let db;
     if (dbType === 'mssql') {
-        const pool = new sql.ConnectionPool(databaseConfig);
-        db = await pool.connect();
+        const pool = new sql.ConnectionPool({ ...databaseConfig } as sql.config);
+        const db = await pool.connect();
+        cachedDbConnections.set(dbKey, {
+            db,
+            close: pool.close.bind(pool),
+        });
+        return db;
     } else {
-        db = pgp(databaseConfig);
+        const db = pgp(databaseConfig);
+        cachedDbConnections.set(dbKey, {
+            db,
+            close: pgp.end,
+        });
+        return db;
     }
-    cachedDbConnections.set(dbKey, db);
-    return db;
 };
+
+export async function closeDbConnection(databaseConfig: IDbConnection) {
+    const dbKey = JSON.stringify(databaseConfig);
+    if (cachedDbConnections.has(dbKey)) {
+        const dbConnection = cachedDbConnections.get(dbKey);
+        if (dbConnection) {
+            await dbConnection.close();
+        }
+    }
+}
