@@ -71,3 +71,7 @@ const rename = promisify(fs.rename);
 ## Documentation
 
 TODO
+
+## Testing
+
+Tests can be run by using `docker-compose up` command.
