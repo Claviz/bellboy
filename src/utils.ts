@@ -1,11 +1,12 @@
 import sql from 'mssql';
 import rp from 'request-promise';
 
-import { DbTypes, IDbConnection, IHttpConnection } from './types';
+import { DbTypes, IDbConnection, IPostgresDestination, IMssqlDestination, IHttpDestination } from './types';
 
 const pgp = require('pg-promise')();
 
-export async function sendRequest(data: any[], config: IHttpConnection) {
+export async function sendRequest(data: any[], destination: IHttpDestination) {
+    const config = destination.setup;
     const request = {
         method: config.method,
         uri: config.uri,
@@ -28,8 +29,9 @@ export async function sendRequest(data: any[], config: IHttpConnection) {
     }
 }
 
-export async function insertToPostgres(data: any[], config: IDbConnection, tableName: string) {
+export async function insertToPostgres(data: any[], destination: IPostgresDestination) {
     const columns: string[] = [];
+    const upsertConstraints = destination.setup.upsertConstraints;
     for (let i = 0; i < data.length; i++) {
         for (const key of Object.keys(data[i])) {
             if (!columns.includes(key)) {
@@ -37,18 +39,25 @@ export async function insertToPostgres(data: any[], config: IDbConnection, table
             }
         }
     }
-    const db = await getDb(config, 'postgres');
+    const cs = new pgp.helpers.ColumnSet(columns, { table: destination.setup.table });
+    const db = await getDb(destination.setup.connection, 'postgres');
     await db.tx(async (t: any) => {
+        let query = pgp.helpers.insert(data, cs);
+        if (upsertConstraints && upsertConstraints.length) {
+            const columnsString = upsertConstraints.map(x => `"${x}"`).join(',');
+            query += ` on conflict(${columnsString}) do update set ` +
+                cs.assignColumns({ from: 'EXCLUDED', skip: upsertConstraints });
+        }
         return t.batch([
-            t.none(pgp.helpers.insert(data, new pgp.helpers.ColumnSet(columns, { table: tableName }))),
+            t.none(query),
         ]);
     });
 }
 
-export async function insertToMsSql(data: any[], config: IDbConnection, tableName: string) {
-    const db = await getDb(config, 'mssql') as sql.ConnectionPool;
-    const query = await db.request().query(`SELECT TOP(0) * FROM ${tableName}`);
-    let table = (query.recordset as any).toTable(tableName);
+export async function insertToMsSql(data: any[], destination: IMssqlDestination) {
+    const db = await getDb(destination.setup.connection, 'mssql') as sql.ConnectionPool;
+    const query = await db.request().query(`SELECT TOP(0) * FROM ${destination.setup.table}`);
+    let table = (query.recordset as any).toTable(destination.setup.table);
     const columns = table.columns.map((x: any) => x.name);
     const transaction = new sql.Transaction(db);
     await transaction.begin();

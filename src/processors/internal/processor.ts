@@ -21,22 +21,11 @@ export abstract class Processor implements IProcessor {
             await this.emit('loadingData', destination);
             try {
                 if (destination.type === 'postgres') {
-                    await insertToPostgres(
-                        data,
-                        destination.setup.connection,
-                        destination.setup.table,
-                    );
+                    await insertToPostgres(data, destination);
                 } else if (destination.type === 'mssql') {
-                    await insertToMsSql(
-                        data,
-                        destination.setup.connection,
-                        destination.setup.table,
-                    );
+                    await insertToMsSql(data, destination);
                 } else if (destination.type === 'http') {
-                    await sendRequest(
-                        data,
-                        destination.setup,
-                    );
+                    await sendRequest(data, destination);
                 } else {
                     const show = 10;
                     console.log(`Total size: ${data.length} rows. First ${show}`);

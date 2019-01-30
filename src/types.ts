@@ -20,11 +20,12 @@ export interface IHttpConnection {
     transformBody: (data: any[]) => Promise<any>;
 }
 
-interface IPostgresDestination extends IDestination {
+export interface IPostgresDestination extends IDestination {
     type: 'postgres';
     setup: {
         table: string;
         connection: IDbConnection;
+        upsertConstraints: string[];
     }
 }
 
@@ -32,7 +33,7 @@ interface IStdoutDestination extends IDestination {
     type: 'stdout';
 }
 
-interface IMssqlDestination extends IDestination {
+export interface IMssqlDestination extends IDestination {
     type: 'mssql';
     setup: {
         table: string;
@@ -40,7 +41,7 @@ interface IMssqlDestination extends IDestination {
     }
 }
 
-interface IHttpDestination extends IDestination {
+export interface IHttpDestination extends IDestination {
     type: 'http';
     setup: IHttpConnection;
 }
