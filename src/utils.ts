@@ -105,6 +105,7 @@ export async function closeDbConnection(databaseConfig: IDbConnection) {
         const dbConnection = cachedDbConnections.get(dbKey);
         if (dbConnection) {
             await dbConnection.close();
+            cachedDbConnections.delete(dbKey);
         }
     }
 }

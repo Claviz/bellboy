@@ -4,3 +4,4 @@ export { MssqlProcessor } from './processors/mssql-processor';
 export { HttpJsonProcessor } from './processors/http-json-processor';
 export { DynamicProcessor } from './processors/dynamic-processor';
 export { JsonProcessor } from './processors/json-processor';
+export { MqttProcessor } from './processors/mqtt-processor';

@@ -9,6 +9,8 @@ export abstract class Processor implements IProcessor {
     protected config: IConfig;
     /** @internal */
     protected events: { [fn: string]: emit[] };
+    /** @internal */
+    closed = false;
 
     constructor(config: IConfig) {
         this.config = config;
@@ -117,7 +119,7 @@ export abstract class Processor implements IProcessor {
         }
         let header;
 
-        while (readStream.readable || (readStream as any).stream) {
+        while (!this.closed && (readStream.readable || (readStream as any).stream)) {
             let result;
             try {
                 result = await this.getNextRecord(
@@ -165,7 +167,10 @@ export abstract class Processor implements IProcessor {
         if (fn) {
             for (let i = 0; i < fn.length; i++) {
                 try {
-                    await fn[i].apply(this, args);
+                    const result = await fn[i].apply(this, args);
+                    if (result) {
+                        this.closed = true;
+                    }
                     // await fn[i].apply(this, args);
                 } catch (err) {
                     console.log(err);

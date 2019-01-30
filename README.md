@@ -6,6 +6,7 @@ Supported sources:
 * Database: Postgres, MSSQL
 * HTTP: JSON
 * File system: XLS, XLSX, JSON, CSV
+* MQTT
 
 Supported destinations:
 * Database: Postgres, MSSQL

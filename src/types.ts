@@ -84,6 +84,13 @@ export interface IDynamicConfig extends IConfig {
     generator: () => AsyncIterableIterator<any>;
 }
 
+export interface IMqttConfig extends IConfig {
+    connection: {
+        url: string;
+        topics: string[];
+    }
+}
+
 export interface IProcessor {
     on(eventName: string, cb: event): void;
     process(): Promise<void>;
@@ -93,8 +100,8 @@ export interface IProcessor {
 
 export type DbTypes = 'postgres' | 'mssql';
 
-export type event = (...args: any) => Promise<void>;
+export type event = (...args: any) => Promise<void | any>;
 
-export type emit = (event: string, ...args: any) => Promise<void>;
+export type emit = (event: string, ...args: any) => Promise<void | any>;
 
 export type Destination = IPostgresDestination | IStdoutDestination | IMssqlDestination | IHttpDestination;
