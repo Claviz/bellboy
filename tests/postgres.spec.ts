@@ -1,5 +1,6 @@
 import * as bellboy from '../src';
 import * as utils from '../src/utils';
+import { Destination } from '../src/types';
 
 let db: any = null;
 const connection = {
@@ -89,6 +90,40 @@ it('upserts generated data in postgres with multiple constraints', async () => {
         id: 1,
         id2: 1,
         text: 'something_updated',
+    }]);
+
+});
+
+it('inserts json data to postgres', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        data jsonb
+    )`);
+    const processor = new bellboy.DynamicProcessor({
+        generator: async function* () {
+            yield {
+                data: {
+                    text: 'something'
+                }
+            }
+        },
+        destinations: [
+            {
+                type: "postgres",
+                setup: {
+                    connection,
+                    table: 'test',
+                },
+            } as Destination
+        ],
+
+    });
+    await processor.process();
+    const res = await db.query(`select * from test`);
+    expect(res).toEqual([{
+        data: {
+            text: 'something',
+        }
     }]);
 
 });

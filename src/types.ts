@@ -10,14 +10,13 @@ export interface IDbConnection {
 
 interface IDestination {
     batchSize?: number;
-    recordGenerator?: ({ }) => AsyncIterableIterator<{}>;
+    recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
+    batchTransformer?: (rows: any[]) => Promise<any[]>;
 }
 
 export interface IHttpConnection {
     method: 'GET' | 'POST' | 'DELETE' | 'PUT';
     uri: string;
-    oneRequestPerBatch: boolean;
-    transformBody: (data: any[]) => Promise<any>;
 }
 
 export interface IPostgresDestination extends IDestination {

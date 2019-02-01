@@ -20,6 +20,11 @@ export abstract class Processor implements IProcessor {
     /** @internal */
     protected async sendToDestination(destination: Destination, data: any[]) {
         if (data.length) {
+            if (destination.batchTransformer) {
+                await this.emit('transformingData', destination);
+                data = await destination.batchTransformer(data);
+                await this.emit('transformedData', destination);
+            }
             await this.emit('loadingData', destination);
             try {
                 if (destination.type === 'postgres') {

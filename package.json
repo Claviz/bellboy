@@ -27,6 +27,8 @@
     "@types/mssql": "^4.0.11",
     "@types/node": "^10.12.18",
     "@types/request-promise": "^4.1.42",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
     "jest": "^23.6.0",
     "mosca": "^2.8.3",
     "ts-jest": "^23.10.5",

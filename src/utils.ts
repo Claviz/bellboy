@@ -12,20 +12,11 @@ export async function sendRequest(data: any[], destination: IHttpDestination) {
         uri: config.uri,
         json: true,
     };
-    if (config.oneRequestPerBatch) {
-        const body = await config.transformBody(data);
+    for (let i = 0; i < data.length; i++) {
         await rp({
             ...request,
-            body,
+            body: data[i],
         });
-    } else {
-        for (let i = 0; i < data.length; i++) {
-            const body = await config.transformBody(data[i]);
-            await rp({
-                ...request,
-                body,
-            });
-        }
     }
 }
 
