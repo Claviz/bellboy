@@ -3,15 +3,18 @@
 Highly performant JavaScript data stream ETL engine.
 
 Supported sources:
-* Database: Postgres, MSSQL
-* HTTP: JSON
-* File system: XLS, XLSX, JSON, CSV
+* PostgreSQL
+* MSSQL
+* HTTP
 * MQTT
+* XLS/XLSX/JSON/CSV files
 
 Supported destinations:
-* Database: Postgres, MSSQL
-* HTTP endpoints
-* Terminal (stdout)
+* PostgreSQL
+* MSSQL
+* HTTP
+* stdout
+* Custom
 
 ## Installation
 ```

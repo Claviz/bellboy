@@ -33,10 +33,10 @@ export abstract class Processor implements IProcessor {
                     await insertToMsSql(data, destination);
                 } else if (destination.type === 'http') {
                     await sendRequest(data, destination);
+                } else if (destination.type === 'custom') {
+                    await destination.load(data);
                 } else {
-                    const show = 10;
-                    console.log(`Total size: ${data.length} rows. First ${show}`);
-                    console.table(data.slice(0, show));
+                    console.table(data);
                 }
             } catch (err) {
                 console.log(err);
@@ -176,7 +176,6 @@ export abstract class Processor implements IProcessor {
                     if (result) {
                         this.closed = true;
                     }
-                    // await fn[i].apply(this, args);
                 } catch (err) {
                     console.log(err);
                 }
@@ -186,22 +185,11 @@ export abstract class Processor implements IProcessor {
 
     async process() {
         if (!this.config.destinations || this.config.destinations.length === 0) {
-            this.config.destinations = [{
-                type: 'stdout',
-            }];
+            throw Error('At least one destination is required.');
         }
         for (let i = 0; i < this.config.destinations.length; i++) {
             if (!this.config.destinations[i].batchSize) {
-                if (this.config.destinations[i].type === 'postgres') {
-                    this.config.destinations[i].batchSize = 10000;
-                } else if (this.config.destinations[i].type === 'mssql') {
-                    this.config.destinations[i].batchSize = 10000;
-                } else if (this.config.destinations[i].type === 'http') {
-                    this.config.destinations[i].batchSize = 10000;
-                }
-                else {
-                    this.config.destinations[i].batchSize = 10000;
-                }
+                throw Error('Batch size must be specified for destination.');
             }
         }
     }

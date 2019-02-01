@@ -1,19 +1,12 @@
 import * as bellboy from '../src';
-import * as utils from '../src/utils';
+import { Destination } from '../src/types';
 const mosca = require('mosca');
 
+let data: any[] = [];
 let interval: any;
 let server: any;
-let db: any = null;
-const connection = {
-    user: 'postgres',
-    host: 'postgres',
-    database: 'postgres',
-    password: 'password',
-};
 
 beforeAll(async () => {
-    db = await utils.getDb(connection, 'postgres');
     server = new mosca.Server();
     server.on('ready', () => {
         interval = setInterval(function () {
@@ -28,21 +21,15 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-    await db.query(`DROP TABLE IF EXISTS test`);
-    await db.query(`CREATE TABLE test
-    (
-        message text,
-        topic text
-    )`);
+    data = [];
 });
 
 afterAll(async () => {
-    await utils.closeDbConnection(connection);
     clearInterval(interval);
     server.close();
 })
 
-it('inserts messages from broker to postgres', async () => {
+it('gets messages from broker', async () => {
     const processor = new bellboy.MqttProcessor({
         connection: {
             topics: ['presence'],
@@ -50,13 +37,12 @@ it('inserts messages from broker to postgres', async () => {
         },
         destinations: [
             {
-                type: "postgres" as any,
-                setup: {
-                    connection,
-                    table: 'test',
-                },
+                type: 'custom',
                 batchSize: 1,
-            }
+                load: async (rows) => {
+                    data = rows;
+                }
+            } as Destination
         ],
 
     });
@@ -64,8 +50,7 @@ it('inserts messages from broker to postgres', async () => {
         return true;
     });
     await processor.process();
-    const res = await db.query(`select * from test`);
-    expect(res).toEqual([{
+    expect(data).toEqual([{
         message: 'test',
         topic: 'presence',
     }]);

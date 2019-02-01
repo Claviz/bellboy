@@ -37,12 +37,13 @@ it('inserts generated data to postgres', async () => {
         },
         destinations: [
             {
-                type: "postgres" as any,
+                type: 'postgres',
                 setup: {
                     connection,
                     table: 'test',
-                }
-            }
+                },
+                batchSize: 1,
+            } as Destination
         ],
 
     });
@@ -74,13 +75,14 @@ it('upserts generated data in postgres with multiple constraints', async () => {
         },
         destinations: [
             {
-                type: "postgres" as any,
+                type: 'postgres',
                 setup: {
                     connection,
                     table: 'test',
                     upsertConstraints: ['id', 'id2']
-                }
-            }
+                },
+                batchSize: 1,
+            } as Destination
         ],
 
     });
@@ -109,11 +111,12 @@ it('inserts json data to postgres', async () => {
         },
         destinations: [
             {
-                type: "postgres",
+                type: 'postgres',
                 setup: {
                     connection,
                     table: 'test',
                 },
+                batchSize: 1,
             } as Destination
         ],
 

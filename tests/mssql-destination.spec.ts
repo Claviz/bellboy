@@ -1,5 +1,6 @@
 import * as bellboy from '../src';
 import * as utils from '../src/utils';
+import { Destination } from '../src/types';
 
 let db: any = null;
 const connection = {
@@ -34,12 +35,13 @@ it('inserts generated data to mssql', async () => {
         },
         destinations: [
             {
-                type: "mssql" as any,
+                type: 'mssql',
                 setup: {
                     connection,
                     table: 'test'
-                }
-            }
+                },
+                batchSize: 1,
+            } as Destination
         ],
 
     });

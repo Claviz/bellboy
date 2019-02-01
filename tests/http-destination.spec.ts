@@ -22,12 +22,12 @@ beforeEach(async () => {
 
 afterAll(async () => {
     server.close();
-})
+});
 
 it('posts generated objects to http destination', async () => {
     const processor = new bellboy.DynamicProcessor({
         generator: async function* () {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 3; i++) {
                 yield {
                     text: 'something'
                 }
@@ -51,15 +51,13 @@ it('posts generated objects to http destination', async () => {
         text: 'something'
     }, {
         text: 'something'
-    }, {
-        text: 'something'
     }]);
 });
 
 it('posts transformed generated objects to http destination', async () => {
     const processor = new bellboy.DynamicProcessor({
         generator: async function* () {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 3; i++) {
                 yield {
                     text: 'something'
                 }
@@ -91,8 +89,6 @@ it('posts transformed generated objects to http destination', async () => {
         }],
     }, {
         objects: [{
-            text: 'something'
-        }, {
             text: 'something'
         }],
     }]);

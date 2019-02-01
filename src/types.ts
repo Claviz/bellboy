@@ -9,7 +9,7 @@ export interface IDbConnection {
 }
 
 interface IDestination {
-    batchSize?: number;
+    batchSize: number;
     recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
     batchTransformer?: (rows: any[]) => Promise<any[]>;
 }
@@ -17,6 +17,11 @@ interface IDestination {
 export interface IHttpConnection {
     method: 'GET' | 'POST' | 'DELETE' | 'PUT';
     uri: string;
+}
+
+export interface ICustomDestination extends IDestination {
+    type: 'custom',
+    load: (rows: any[]) => Promise<void>;
 }
 
 export interface IPostgresDestination extends IDestination {
@@ -103,4 +108,9 @@ export type event = (...args: any) => Promise<void | any>;
 
 export type emit = (event: string, ...args: any) => Promise<void | any>;
 
-export type Destination = IPostgresDestination | IStdoutDestination | IMssqlDestination | IHttpDestination;
+export type Destination =
+    IPostgresDestination |
+    IStdoutDestination |
+    IMssqlDestination |
+    IHttpDestination |
+    ICustomDestination;
