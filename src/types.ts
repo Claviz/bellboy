@@ -63,11 +63,17 @@ export interface IFileConfig extends IConfig {
 
 export interface IHttpConfig extends IConfig {
     connection: CoreOptions & UrlOptions;
+    nextRequest?: (header: any) => Promise<CoreOptions & UrlOptions>;
 }
 
-export interface IHttpJsonConfig extends IHttpConfig {
+export interface IJsonHttpConfig extends IHttpConfig {
+    dataFormat: 'json';
     jsonPath: string;
-    nextRequest?: (header: any) => Promise<CoreOptions & UrlOptions>;
+}
+
+export interface IDelimitedHttpConfig extends IHttpConfig {
+    dataFormat: 'delimited';
+    delimiter: string;
 }
 
 export interface IDatabaseConfig extends IConfig {

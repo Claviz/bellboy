@@ -1,6 +1,6 @@
 {
   "name": "bellboy",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",
@@ -44,6 +44,7 @@
     "pg-promise": "^8.5.5",
     "pg-query-stream": "^2.0.0",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2"
+    "request-promise": "^4.2.2",
+    "split2": "^3.1.0"
   }
 }

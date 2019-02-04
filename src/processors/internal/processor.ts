@@ -75,9 +75,9 @@ export abstract class Processor implements IProcessor {
                         try {
                             const recordGeneratorFn = destinations[i].recordGenerator;
                             if (!recordGeneratorFn) {
-                                data[i].push({ ...obj });
+                                data[i].push(obj);
                             } else {
-                                const recordGenerator = recordGeneratorFn({ ...obj });
+                                const recordGenerator = recordGeneratorFn(obj);
                                 for await (const record of recordGenerator) {
                                     data[i].push(record);
                                 }
@@ -137,7 +137,7 @@ export abstract class Processor implements IProcessor {
                 }
                 for (let j = 0; j < this.config.destinations.length; j++) {
                     results[j].push(...result.data[j]);
-                    while (results[j].length >= (this.config.destinations[j].batchSize || 10000)) {
+                    while (results[j].length >= this.config.destinations[j].batchSize) {
                         const destination = this.config.destinations[j];
                         const toSend = results[j].splice(0, destination.batchSize);
                         await this.sendToDestination(destination, toSend);
