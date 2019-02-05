@@ -81,6 +81,7 @@ export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
         });
         return db;
     } else {
+        const pgp = require('pg-promise')({ schema: databaseConfig.schema || 'public', });
         const db = pgp(databaseConfig);
         cachedDbConnections.set(dbKey, {
             db,

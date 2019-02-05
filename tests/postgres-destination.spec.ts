@@ -16,6 +16,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
     await db.query(`DROP TABLE IF EXISTS test`);
+    await db.query(`DROP SCHEMA IF EXISTS dbo CASCADE`);
 });
 
 afterAll(async () => {
@@ -127,6 +128,44 @@ it('inserts json data to postgres', async () => {
         data: {
             text: 'something',
         }
+    }]);
+
+});
+
+it('inserts generated data to postgres with specific schema', async () => {
+    await db.query(`CREATE SCHEMA dbo`);
+    await db.query(`CREATE TABLE dbo.test
+    (
+        id integer PRIMARY KEY,
+        text text
+    )`);
+    const processor = new bellboy.DynamicProcessor({
+        generator: async function* () {
+            yield {
+                id: 1,
+                text: 'something',
+            }
+        },
+        destinations: [
+            {
+                type: 'postgres',
+                setup: {
+                    connection: {
+                        ...connection,
+                        schema: 'dbo',
+                    },
+                    table: 'test',
+                },
+                batchSize: 1,
+            } as Destination
+        ],
+
+    });
+    await processor.process();
+    const res = await db.query(`select * from dbo.test`);
+    expect(res).toEqual([{
+        id: 1,
+        text: 'something',
     }]);
 
 });

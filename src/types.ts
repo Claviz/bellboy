@@ -6,6 +6,7 @@ export interface IDbConnection {
     server?: string;
     host?: string;
     database?: string;
+    schema?: string;
 }
 
 interface IDestination {

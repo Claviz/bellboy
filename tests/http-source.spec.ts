@@ -35,7 +35,6 @@ it('gets JSON data from HTTP', async () => {
             method: `GET`,
             url: `http://localhost:3000/json`,
         },
-        verbose: true,
         destinations: [
             {
                 type: 'custom',
@@ -61,7 +60,6 @@ it('gets delimited data from HTTP', async () => {
             method: `GET`,
             url: `http://localhost:3000/delimited`,
         },
-        verbose: true,
         destinations: [
             {
                 type: 'custom',
