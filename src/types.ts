@@ -85,6 +85,8 @@ export interface IDatabaseConfig extends IConfig {
 export interface IExcelConfig extends IFileConfig {
     hasHeader?: boolean;
     skipRows?: number;
+    sheetName?: string;
+    sheetIndex?: number;
 }
 
 export interface IJsonConfig extends IFileConfig {

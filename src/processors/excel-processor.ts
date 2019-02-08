@@ -31,6 +31,8 @@ export class ExcelProcessor extends DirectoryProcessor {
                 headers: this.config.hasHeader,
                 ignoreEmpty: true,
                 discardUnmappedColumns: true,
+                sheet: this.config.sheetName ? this.config.sheetName : null,
+                sheetIndex: this.config.sheetIndex ? this.config.sheetIndex : 0,
             }, this.config.hasHeader ? null : (x: any) => {
                 let transformed: any = {};
                 for (let k in x) {

@@ -111,3 +111,75 @@ it('parses all xlsx files by pattern', async () => {
         A: 'test',
     }]);
 });
+
+it('parses specific sheet by name', async () => {
+    let data: any[] = [];
+    const buffer = xlsx.build([{
+        name: 'sheet1',
+        data: [['test1']],
+    }, {
+        name: 'sheet2',
+        data: [['test2']],
+    }, {
+        name: 'sheet3',
+        data: [['test3']],
+    }]);
+    fs.writeFileSync(filePath, buffer);
+
+    const processor = new bellboy.ExcelProcessor({
+        hasHeader: false,
+        path: './',
+        files: [filePath],
+        sheetName: 'sheet2',
+        destinations: [
+            {
+                type: 'custom',
+                batchSize: 1,
+                load: async (rows) => {
+                    data = [...data, ...rows];
+                }
+            } as Destination
+        ],
+
+    });
+    await processor.process();
+    expect(data).toEqual([{
+        A: 'test2',
+    }]);
+});
+
+it('parses specific sheet by index', async () => {
+    let data: any[] = [];
+    const buffer = xlsx.build([{
+        name: 'sheet1',
+        data: [['test1']],
+    }, {
+        name: 'sheet2',
+        data: [['test2']],
+    }, {
+        name: 'sheet3',
+        data: [['test3']],
+    }]);
+    fs.writeFileSync(filePath, buffer);
+
+    const processor = new bellboy.ExcelProcessor({
+        hasHeader: false,
+        path: './',
+        files: [filePath],
+        sheetIndex: 2,
+        destinations: [
+            {
+                type: 'custom',
+                batchSize: 1,
+                load: async (rows) => {
+                    data = [...data, ...rows];
+                }
+            } as Destination
+        ],
+
+    });
+    await processor.process();
+    expect(data).toEqual([{
+        A: 'test3',
+    }]);
+});
