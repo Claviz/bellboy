@@ -1,10 +1,8 @@
-import fs from 'fs';
 import path from 'path';
+import { getXlsxStream } from 'xlstream';
 
 import { IExcelConfig } from '../types';
 import { DirectoryProcessor } from './internal/directory-processor';
-
-const excel = require('ek-excel-stream')
 
 export class ExcelProcessor extends DirectoryProcessor {
     /** @internal */
@@ -15,37 +13,23 @@ export class ExcelProcessor extends DirectoryProcessor {
         this.config = config;
     }
 
-    /** @internal */
-    private toColumnName(num: number) {
-        for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
-            ret = String.fromCharCode((num % b) / a + 65) + ret;
-        }
-        return ret;
-    }
-
     async process() {
         await super.process();
         for (let file of this.config.files!) {
             await super.emit('processingFile', file);
-            const readStream = fs.createReadStream(path.join(this.config.path, file)).pipe(excel({
-                headers: this.config.hasHeader,
-                ignoreEmpty: true,
-                discardUnmappedColumns: true,
-                sheet: this.config.sheetName ? this.config.sheetName : null,
-                sheetIndex: this.config.sheetIndex ? this.config.sheetIndex : 0,
-            }, this.config.hasHeader ? null : (x: any) => {
-                let transformed: any = {};
-                for (let k in x) {
-                    transformed[this.toColumnName(Number(k) + 1)] = x[k];
-                }
-                return transformed;
-            })).pause();
+            const readStream = await getXlsxStream({
+                filePath: path.join(this.config.path, file),
+                sheet: this.config.sheetName ?
+                    this.config.sheetName :
+                    this.config.sheetIndex ? this.config.sheetIndex : 0,
+                withHeader: this.config.hasHeader,
+            });
             if (this.config.skipRows) {
                 for (let i = 0; i < this.config.skipRows; i++) {
-                    await super.getNextRecord(readStream);
+                    await super.getNextRecord(readStream as any);
                 }
             }
-            await super.processStream(readStream);
+            await super.processStream(readStream as any);
             await super.emit('processedFile', file);
         }
     }

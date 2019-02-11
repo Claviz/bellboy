@@ -48,8 +48,14 @@ it('parses xlsx without header', async () => {
     });
     await processor.process();
     expect(data).toEqual([{
-        A: 'hello',
-        B: 'world',
+        formatted: {
+            arr: ['hello', 'world'],
+            obj: { A: 'hello', B: 'world' }
+        },
+        raw: {
+            arr: ['hello', 'world'],
+            obj: { A: 'hello', B: 'world' }
+        }
     }]);
 });
 
@@ -78,8 +84,14 @@ it('parses xlsx with header', async () => {
     });
     await processor.process();
     expect(data).toEqual([{
-        column1: 'hello',
-        column2: 'world',
+        formatted: {
+            arr: ['hello', 'world'],
+            obj: { column1: 'hello', column2: 'world' }
+        },
+        raw: {
+            arr: ['hello', 'world'],
+            obj: { column1: 'hello', column2: 'world' }
+        }
     }]);
 });
 
@@ -108,7 +120,14 @@ it('parses all xlsx files by pattern', async () => {
     });
     await processor.process();
     expect(data).toEqual([{
-        A: 'test',
+        formatted: {
+            arr: ['test'],
+            obj: { A: 'test' }
+        },
+        raw: {
+            arr: ['test'],
+            obj: { A: 'test' }
+        }
     }]);
 });
 
@@ -144,7 +163,14 @@ it('parses specific sheet by name', async () => {
     });
     await processor.process();
     expect(data).toEqual([{
-        A: 'test2',
+        formatted: {
+            arr: ['test2'],
+            obj: { A: 'test2' }
+        },
+        raw: {
+            arr: ['test2'],
+            obj: { A: 'test2' }
+        }
     }]);
 });
 
@@ -180,6 +206,13 @@ it('parses specific sheet by index', async () => {
     });
     await processor.process();
     expect(data).toEqual([{
-        A: 'test3',
+        formatted: {
+            arr: ['test3'],
+            obj: { A: 'test3' }
+        },
+        raw: {
+            arr: ['test3'],
+            obj: { A: 'test3' }
+        }
     }]);
 });
