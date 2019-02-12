@@ -23,6 +23,7 @@ export class ExcelProcessor extends DirectoryProcessor {
                     this.config.sheetName :
                     this.config.sheetIndex ? this.config.sheetIndex : 0,
                 withHeader: this.config.hasHeader,
+                ignoreEmpty: true,
             });
             if (this.config.skipRows) {
                 for (let i = 0; i < this.config.skipRows; i++) {
