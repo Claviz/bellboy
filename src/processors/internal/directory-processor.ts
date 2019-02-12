@@ -26,7 +26,7 @@ export abstract class DirectoryProcessor extends Processor {
         if (!this.config.files || this.config.files.length === 0) {
             const dir = await readdir(this.config.path);
             const regex = new RegExp(this.config.filePattern, 'g');
-            this.config.files = dir.filter((x) => x.match(regex));
+            this.config.files = dir.sort().filter((x) => x.match(regex));
         }
     }
 }
