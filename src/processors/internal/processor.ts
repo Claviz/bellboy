@@ -39,7 +39,7 @@ export abstract class Processor implements IProcessor {
                     console.table(data);
                 }
             } catch (err) {
-                console.log(err);
+                await this.emit('loadingDataError', err);
             }
             await this.emit('loadedData', destination);
         }
