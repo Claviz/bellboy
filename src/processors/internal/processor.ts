@@ -72,19 +72,14 @@ export abstract class Processor implements IProcessor {
                 removeListeners();
                 if (destinations) {
                     for (let i = 0; i < destinations.length; i++) {
-                        try {
-                            const recordGeneratorFn = destinations[i].recordGenerator;
-                            if (!recordGeneratorFn) {
-                                data[i].push(obj);
-                            } else {
-                                const recordGenerator = recordGeneratorFn(obj);
-                                for await (const record of recordGenerator) {
-                                    data[i].push(record);
-                                }
+                        const recordGeneratorFn = destinations[i].recordGenerator;
+                        if (!recordGeneratorFn) {
+                            data[i].push(obj);
+                        } else {
+                            const recordGenerator = recordGeneratorFn(obj);
+                            for await (const record of recordGenerator) {
+                                data[i].push(record);
                             }
-                        } catch (err) {
-                            console.log(err);
-                        } finally {
                         }
                     }
                     resolve({ data, header });
@@ -125,12 +120,7 @@ export abstract class Processor implements IProcessor {
         let header;
 
         while (!this.closed && (readStream.readable || (readStream as any).stream)) {
-            let result;
-            try {
-                result = await this.getNextRecord(
-                    readStream,
-                );
-            } catch (err) { }
+            const result = await this.getNextRecord(readStream);
             if (result) {
                 if (result.header) {
                     header = result.header;
@@ -171,13 +161,9 @@ export abstract class Processor implements IProcessor {
         }
         if (fn) {
             for (let i = 0; i < fn.length; i++) {
-                try {
-                    const result = await fn[i].apply(this, args);
-                    if (result) {
-                        this.closed = true;
-                    }
-                } catch (err) {
-                    console.log(err);
+                const result = await fn[i].apply(this, args);
+                if (result) {
+                    this.closed = true;
                 }
             }
         }
