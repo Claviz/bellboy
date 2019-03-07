@@ -1,5 +1,5 @@
 import path from 'path';
-import { getXlsxStream } from 'xlstream';
+import { getXlsxStream, getWorksheets } from 'xlstream';
 
 import { IExcelConfig } from '../types';
 import { DirectoryProcessor } from './internal/directory-processor';
@@ -16,12 +16,22 @@ export class ExcelProcessor extends DirectoryProcessor {
     async process() {
         await super.process();
         for (let file of this.config.files!) {
-            await super.emit('processingFile', file);
+            const filePath = path.join(this.config.path, file);
+            await super.emit('processingFile', file, filePath);
+            let sheet;
+            if (this.config.sheetName) {
+                sheet = this.config.sheetName;
+            } else if (this.config.sheetIndex) {
+                sheet = this.config.sheetIndex;
+            } else if (this.config.sheetGetter) {
+                const sheets = await getWorksheets({
+                    filePath,
+                });
+                sheet = await this.config.sheetGetter(sheets);
+            }
             const readStream = await getXlsxStream({
-                filePath: path.join(this.config.path, file),
-                sheet: this.config.sheetName ?
-                    this.config.sheetName :
-                    this.config.sheetIndex ? this.config.sheetIndex : 0,
+                filePath,
+                sheet: sheet ? sheet : 0,
                 withHeader: this.config.hasHeader,
                 ignoreEmpty: true,
             });

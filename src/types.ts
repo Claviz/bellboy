@@ -87,6 +87,7 @@ export interface IExcelConfig extends IFileConfig {
     skipRows?: number;
     sheetName?: string;
     sheetIndex?: number;
+    sheetGetter?(sheets: string[]): Promise<string>;
 }
 
 export interface IJsonConfig extends IFileConfig {

@@ -1,6 +1,6 @@
 {
   "name": "bellboy",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@types/jest": "^23.3.14",
     "@types/mssql": "^4.0.12",
-    "@types/node": "^10.12.25",
+    "@types/node": "^10.12.30",
     "@types/request-promise": "^4.1.42",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
@@ -33,19 +33,19 @@
     "mosca": "^2.8.3",
     "node-xlsx": "^0.14.1",
     "ts-jest": "^23.10.5",
-    "tslint": "^5.12.1",
-    "typescript": "^3.3.3"
+    "tslint": "^5.13.1",
+    "typescript": "^3.3.3333"
   },
   "dependencies": {
     "JSONStream": "^1.3.5",
-    "async-mqtt": "^2.0.0",
-    "mssql": "^4.3.1",
-    "pg": "^7.8.0",
-    "pg-promise": "^8.5.5",
+    "async-mqtt": "^2.2.0",
+    "mssql": "^4.3.3",
+    "pg": "^7.8.1",
+    "pg-promise": "^8.6.2",
     "pg-query-stream": "^2.0.0",
     "request": "^2.88.0",
-    "request-promise": "^4.2.2",
+    "request-promise": "^4.2.4",
     "split2": "^3.1.0",
-    "xlstream": "^1.0.6"
+    "xlstream": "^1.0.7"
   }
 }

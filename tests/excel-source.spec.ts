@@ -216,3 +216,48 @@ it('parses specific sheet by index', async () => {
         }
     }]);
 });
+
+it('parses specific sheet by function (function gets last sheet)', async () => {
+    let data: any[] = [];
+    const buffer = xlsx.build([{
+        name: 'sheet1',
+        data: [['test1']],
+    }, {
+        name: 'sheet2',
+        data: [['test2']],
+    }, {
+        name: 'sheet3',
+        data: [['test3']],
+    }]);
+    fs.writeFileSync(filePath, buffer);
+
+    const processor = new bellboy.ExcelProcessor({
+        hasHeader: false,
+        path: './',
+        files: [filePath],
+        sheetGetter: async (sheets) => {
+            return sheets[sheets.length - 1];
+        },
+        destinations: [
+            {
+                type: 'custom',
+                batchSize: 1,
+                load: async (rows) => {
+                    data = [...data, ...rows];
+                }
+            } as Destination
+        ],
+
+    });
+    await processor.process();
+    expect(data).toEqual([{
+        formatted: {
+            arr: ['test3'],
+            obj: { A: 'test3' }
+        },
+        raw: {
+            arr: ['test3'],
+            obj: { A: 'test3' }
+        }
+    }]);
+});
