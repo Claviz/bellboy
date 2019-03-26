@@ -169,3 +169,37 @@ it('inserts generated data to postgres with specific schema', async () => {
     }]);
 
 });
+
+it('inserts generated data to postgres by batches', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id integer PRIMARY KEY,
+        text text
+    )`);
+    const processor = new bellboy.DynamicProcessor({
+        generator: async function* () {
+            for (let i = 0; i < 3614; i++) {
+                yield {
+                    id: i,
+                    text: 'something',
+                }
+            }
+        },
+        destinations: [
+            {
+                type: 'postgres',
+                setup: {
+                    connection,
+                    table: 'test',
+                    upsertConstraints: ['id'],
+                },
+                batchSize: 100,
+            } as Destination
+        ],
+
+    });
+    await processor.process();
+    const res = await db.query(`select * from test`);
+    expect(res.length).toEqual(3614);
+
+});

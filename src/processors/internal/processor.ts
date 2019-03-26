@@ -47,7 +47,7 @@ export abstract class Processor implements IProcessor {
 
     /** @internal */
     protected async getNextRecord(readStream: ReadStream | Readable) {
-        return new Promise<{ data: any[][]; header: any }>((resolve, reject) => {
+        return new Promise<{ data: any[][]; header: any; end: boolean; }>((resolve, reject) => {
             const destinations = this.config.destinations;
             let data: any[][] = [];
             if (destinations) {
@@ -59,7 +59,7 @@ export abstract class Processor implements IProcessor {
 
             function niceEnding() {
                 removeListeners();
-                resolve({ data, header });
+                resolve({ data, header, end: true });
             }
 
             function errorEnding(error: any) {
@@ -82,9 +82,9 @@ export abstract class Processor implements IProcessor {
                             }
                         }
                     }
-                    resolve({ data, header });
+                    resolve({ data, header, end: false });
                 } else {
-                    resolve({ data: obj, header });
+                    resolve({ data: obj, header, end: false });
                 }
             }
 
@@ -95,6 +95,7 @@ export abstract class Processor implements IProcessor {
             function removeListeners() {
                 readStream.removeListener('close', niceEnding);
                 readStream.removeListener('end', niceEnding);
+                readStream.removeListener('done', niceEnding);
                 readStream.removeListener('error', errorEnding);
                 readStream.removeListener('data', handleData);
                 readStream.removeListener('row', handleData);
@@ -103,6 +104,7 @@ export abstract class Processor implements IProcessor {
 
             (readStream as any).on('close', niceEnding);
             (readStream as any).on('end', niceEnding);
+            (readStream as any).on('done', niceEnding);
             (readStream as any).on('error', errorEnding);
             (readStream as any).on('data', handleData);
             (readStream as any).on('row', handleData);
@@ -118,10 +120,12 @@ export abstract class Processor implements IProcessor {
             results[j] = [];
         }
         let header;
+        let end;
 
-        while (!this.closed && (readStream.readable || (readStream as any).stream)) {
+        while (!this.closed && !end && (readStream.readable || (readStream as any).stream)) {
             const result = await this.getNextRecord(readStream);
             if (result) {
+                end = result.end;
                 if (result.header) {
                     header = result.header;
                 }
