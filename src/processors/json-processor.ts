@@ -20,14 +20,15 @@ export class JsonProcessor extends DirectoryProcessor {
         if (!this.config.jsonPath) {
             throw new Error('No JSON path specified.');
         }
-        await super.emit('processingDirectory');
+        await super.emit('startProcessing');
         for (const file of this.config.files!) {
-            await super.emit('processingFile', file);
-            const readStream = fs.createReadStream(path.join(this.config.path, file)).pipe(JSONStream.parse(this.config.jsonPath));
+            const filePath = path.join(this.config.path, file);
+            await super.emit('processingFile', file, filePath);
+            const readStream = fs.createReadStream(filePath).pipe(JSONStream.parse(this.config.jsonPath));
             readStream.pause();
             await super.processStream(readStream);
-            await super.emit('processedFile', file);
+            await super.emit('processedFile', file, filePath);
         };
-        await super.emit('processedDirectory');
+        await super.emit('startProcessing');
     }
 }

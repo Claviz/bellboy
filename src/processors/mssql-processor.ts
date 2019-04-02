@@ -13,13 +13,13 @@ export class MssqlProcessor extends DatabaseProcessor {
 
     async process() {
         await super.process();
-        await super.emit('processingMssqlQuery');
+        await super.emit('startProcessing');
         const db = await getDb(this.config.connection, 'mssql');
         const readStream = db.request();
         readStream.stream = true;
         readStream.query(this.config.query);
         readStream.pause();
         await super.processStream(readStream);
-        await super.emit('processedMssqlQuery');
+        await super.emit('endProcessing');
     }
 }

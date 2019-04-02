@@ -15,6 +15,7 @@ export class ExcelProcessor extends DirectoryProcessor {
 
     async process() {
         await super.process();
+        await super.emit('startProcessing');
         for (let file of this.config.files!) {
             const filePath = path.join(this.config.path, file);
             await super.emit('processingFile', file, filePath);
@@ -41,7 +42,8 @@ export class ExcelProcessor extends DirectoryProcessor {
                 }
             }
             await super.processStream(readStream as any);
-            await super.emit('processedFile', file);
+            await super.emit('processedFile', file, filePath);
         }
+        await super.emit('endProcessing');
     }
 }

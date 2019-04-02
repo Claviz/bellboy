@@ -46,7 +46,7 @@ it('gets messages from broker', async () => {
         ],
 
     });
-    processor.on('loadedData', async () => {
+    processor.on('loadedBatch', async () => {
         return true;
     });
     await processor.process();

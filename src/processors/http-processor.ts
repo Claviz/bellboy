@@ -31,10 +31,10 @@ export class HttpProcessor extends Processor {
 
     /** @internal */
     async processHttpData(options: request.CoreOptions & request.UrlOptions) {
-        await super.emit('processingHttpData', options);
+        await super.emit('startProcessing');
         const readStream = await this.getReadStream(options);
         this.header = await super.processStream(readStream);
-        await super.emit('processedHttpData');
+        await super.emit('endProcessing');
         if (this.config.nextRequest) {
             const nextOptions = await this.config.nextRequest(this.header);
             if (nextOptions) {

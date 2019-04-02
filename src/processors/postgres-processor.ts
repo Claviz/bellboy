@@ -15,12 +15,12 @@ export class PostgresProcessor extends DatabaseProcessor {
 
     async process() {
         await super.process();
-        await super.emit('processingPostgresQuery');
+        await super.emit('startProcessing');
         const db = await getDb(this.config.connection, 'postgres');
         await db.stream(new QueryStream(this.config.query), async (stream: any) => {
             const readStream = stream.pause();
             await super.processStream(readStream);
-            await super.emit('processedPostgresQuery');
+            await super.emit('endProcessing');
         });
     }
 }

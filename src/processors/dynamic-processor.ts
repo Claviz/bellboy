@@ -16,7 +16,7 @@ export class DynamicProcessor extends Processor {
         if (!this.config.generator) {
             throw Error(`No generator function specified.`);
         }
-        await super.emit('processingDynamicSource');
+        await super.emit('startProcessing');
         const iterator = this.config.generator();
         const readStream = new Stream.Readable({
             objectMode: true,
@@ -29,6 +29,6 @@ export class DynamicProcessor extends Processor {
             },
         }).pause();
         await super.processStream(readStream);
-        await super.emit('processedDynamicSource');
+        await super.emit('endProcessing');
     }
 }

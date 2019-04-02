@@ -21,11 +21,11 @@ export abstract class Processor implements IProcessor {
     protected async sendToDestination(destination: Destination, data: any[]) {
         if (data.length) {
             if (destination.batchTransformer) {
-                await this.emit('transformingData', destination);
+                await this.emit('transformingBatch');
                 data = await destination.batchTransformer(data);
-                await this.emit('transformedData', destination);
+                await this.emit('transformedBatch');
             }
-            await this.emit('loadingData', destination);
+            await this.emit('loadingBatch');
             try {
                 if (destination.type === 'postgres') {
                     await insertToPostgres(data, destination);
@@ -39,15 +39,15 @@ export abstract class Processor implements IProcessor {
                     console.table(data);
                 }
             } catch (err) {
-                await this.emit('loadingDataError', err);
+                await this.emit('loadingBatchError', err);
             }
-            await this.emit('loadedData', destination);
+            await this.emit('loadedBatch');
         }
     }
 
     /** @internal */
     protected async getNextRecord(readStream: ReadStream | Readable) {
-        return new Promise<{ data: any[][]; header: any; end: boolean; }>((resolve, reject) => {
+        return new Promise<{ data: any[][]; header: any; }>((resolve, reject) => {
             const destinations = this.config.destinations;
             let data: any[][] = [];
             if (destinations) {
@@ -57,9 +57,10 @@ export abstract class Processor implements IProcessor {
             }
             let header: any = null;
 
-            function niceEnding() {
+            const niceEnding = () => {
                 removeListeners();
-                resolve({ data, header, end: true });
+                this.closed = true;
+                resolve({ data, header });
             }
 
             function errorEnding(error: any) {
@@ -82,9 +83,9 @@ export abstract class Processor implements IProcessor {
                             }
                         }
                     }
-                    resolve({ data, header, end: false });
+                    resolve({ data, header });
                 } else {
-                    resolve({ data: obj, header, end: false });
+                    resolve({ data: obj, header });
                 }
             }
 
@@ -120,12 +121,10 @@ export abstract class Processor implements IProcessor {
             results[j] = [];
         }
         let header;
-        let end;
 
-        while (!this.closed && !end && (readStream.readable || (readStream as any).stream)) {
+        while (!this.closed && (readStream.readable || (readStream as any).stream)) {
             const result = await this.getNextRecord(readStream);
             if (result) {
-                end = result.end;
                 if (result.header) {
                     header = result.header;
                 }

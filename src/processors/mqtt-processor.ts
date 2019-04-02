@@ -14,7 +14,7 @@ export class MqttProcessor extends Processor {
 
     async process() {
         await super.process();
-        await super.emit('processingMqttSource');
+        await super.emit('startProcessing');
         const readStream = new Stream.Readable({
             objectMode: true,
             read() { },
@@ -27,6 +27,6 @@ export class MqttProcessor extends Processor {
         await super.processStream(readStream);
         await client.unsubscribe(this.config.connection.topics);
         await client.end(true);
-        await super.emit('processedMqttSource');
+        await super.emit('endProcessing');
     }
 }
