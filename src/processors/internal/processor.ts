@@ -18,7 +18,7 @@ export abstract class Processor implements IProcessor {
     }
 
     /** @internal */
-    protected async sendToDestination(destination: Destination, data: any[]) {
+    protected async loadBatch(destination: Destination, data: any[]) {
         if (data.length) {
             if (destination.batchTransformer) {
                 await this.emit('transformingBatch');
@@ -133,14 +133,14 @@ export abstract class Processor implements IProcessor {
                     while (results[j].length >= this.config.destinations[j].batchSize) {
                         const destination = this.config.destinations[j];
                         const toSend = results[j].splice(0, destination.batchSize);
-                        await this.sendToDestination(destination, toSend);
+                        await this.loadBatch(destination, toSend);
                     }
                 }
             }
         }
         for (let j = 0; j < this.config.destinations.length; j++) {
             if (results[j].length) {
-                await this.sendToDestination(this.config.destinations[j], results[j]);
+                await this.loadBatch(this.config.destinations[j], results[j]);
             }
         }
         return header;
