@@ -116,6 +116,7 @@ export abstract class Processor implements IProcessor {
 
     /** @internal */
     protected async processStream(readStream: ReadStream | Readable) {
+        this.closed = false;
         const results: any[][] = [];
         for (let j = 0; j < this.config.destinations.length; j++) {
             results[j] = [];

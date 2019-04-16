@@ -38,7 +38,6 @@ export class HttpProcessor extends Processor {
         if (this.config.nextRequest) {
             const nextOptions = await this.config.nextRequest(this.header);
             if (nextOptions) {
-                this.header = null;
                 await this.processHttpData(nextOptions);
             }
         }
