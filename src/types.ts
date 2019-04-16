@@ -36,6 +36,7 @@ export interface IPostgresDestination extends IDestination {
 
 interface IStdoutDestination extends IDestination {
     type: 'stdout';
+    asTable?: boolean;
 }
 
 export interface IMssqlDestination extends IDestination {

@@ -36,7 +36,11 @@ export abstract class Processor implements IProcessor {
                 } else if (destination.type === 'custom') {
                     await destination.load(data);
                 } else {
-                    console.table(data);
+                    if (destination.asTable) {
+                        console.table(data);
+                    } else {
+                        console.log(data);
+                    }
                 }
             } catch (err) {
                 await this.emit('loadingBatchError', err);

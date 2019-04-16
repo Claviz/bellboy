@@ -254,10 +254,12 @@ Function which processes and transforms every row from source.
 Function which processes and transforms whole batch of rows. This function is being called after row count reaches `batchSize`. Data is being loaded to destination immediately after this function has been executed.
 
 ### stdout
-This destination logs out all data as a table to stdout (console).
+This destination logs out all data to stdout (console).
 
 #### Options
 * **type** `stdout` `required`
+* **asTable** `boolean`\
+If set to `true`, data will be printed as table.
 
 ### HTTP request
 Puts processed data one by one in `body` and executes specified HTTP request.
