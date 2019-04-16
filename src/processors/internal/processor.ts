@@ -82,8 +82,12 @@ export abstract class Processor implements IProcessor {
                             data[i].push(obj);
                         } else {
                             const recordGenerator = recordGeneratorFn(obj);
-                            for await (const record of recordGenerator) {
-                                data[i].push(record);
+                            try {
+                                for await (const record of recordGenerator) {
+                                    data[i].push(record);
+                                }
+                            } catch (err) {
+                                reject(err);
                             }
                         }
                     }
