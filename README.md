@@ -145,16 +145,18 @@ Options from [request](https://github.com/request/request#requestoptions-callbac
 * **jsonPath** `string` `required for json`\
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
 * **nextRequest** `async function(header)`\
-Function which must return `connection` for the next request or `null` if there is won't . If data format is `json`, it will have `header` parameter which will contain data before the first `jsonPath` match.
+Function which must return `connection` for the next request or `null` if the next request is not needed. If data format is `json`, it will have nullable `header` parameter which will contain data before the first `jsonPath` match.
 ```javascript
 // gets next connection from the header until last page is reached
 nextRequest: async function (header) {
-    const pagination = header.pagination;
-    if (pagination.total_pages > pagination.current_page) {
-        return {
-            ...connection,
-            url: `${url}&current_page=${pagination.current_page + 1}`
-        };
+    if (header) {
+        const pagination = header.pagination;
+        if (pagination.total_pages > pagination.current_page) {
+            return {
+                ...connection,
+                url: `${url}&current_page=${pagination.current_page + 1}`
+            };
+        }
     }
     return null;
 },
