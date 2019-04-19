@@ -55,7 +55,8 @@ it('parses xlsx without header', async () => {
         raw: {
             arr: ['hello', 'world'],
             obj: { A: 'hello', B: 'world' }
-        }
+        },
+        header: [],
     }]);
 });
 
@@ -91,7 +92,11 @@ it('parses xlsx with header', async () => {
         raw: {
             arr: ['hello', 'world'],
             obj: { column1: 'hello', column2: 'world' }
-        }
+        },
+        header: [
+            'column1',
+            'column2'
+        ]
     }]);
 });
 
@@ -127,7 +132,8 @@ it('parses all xlsx files by pattern', async () => {
         raw: {
             arr: ['test'],
             obj: { A: 'test' }
-        }
+        },
+        header: [],
     }]);
 });
 
@@ -170,7 +176,8 @@ it('parses specific sheet by name', async () => {
         raw: {
             arr: ['test2'],
             obj: { A: 'test2' }
-        }
+        },
+        header: [],
     }]);
 });
 
@@ -213,7 +220,8 @@ it('parses specific sheet by index', async () => {
         raw: {
             arr: ['test3'],
             obj: { A: 'test3' }
-        }
+        },
+        header: [],
     }]);
 });
 
@@ -258,6 +266,7 @@ it('parses specific sheet by function (function gets last sheet)', async () => {
         raw: {
             arr: ['test3'],
             obj: { A: 'test3' }
-        }
+        },
+        header: [],
     }]);
 });

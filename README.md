@@ -163,7 +163,7 @@ nextRequest: async function (header) {
 ```
 
 ### Directory processors
-Used for streaming text data from files in directory. There are currently two types of directory processors - `ExcelProcessor` and `JsonProcessor`. Such processors search for the files in the source directory and process them one by one.
+Used for streaming text data from files in directory. There are currently three types of directory processors - `ExcelProcessor`, `JsonProcessor` and `TailProcessor`. Such processors search for the files in the source directory and process them one by one.
 
 #### Options
 * **path** `string` `required`\
@@ -207,6 +207,18 @@ If no `sheetName` specified, value of the `sheetIndex` will be used. If it isn't
 #### Options
 * **jsonPath** `string` `required`\
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
+
+### [Tail](https://en.wikipedia.org/wiki/Tail_(Unix)) processor
+Watches for file changes and outputs last part of file as soon as new lines are added to the file.
+
+#### Options
+* **fromBeginning** `boolean`\
+In addition to emitting new lines, emits lines from the beginning of file, `false` by default.
+
+#### recordGenerator's row
+* **file** `string`\
+Name of the file the data came from.
+* **data** `string`
 
 ### Database processors
 Processes `SELECT` query row by row. There are two database processors - `PostgresProcessor` and `MssqlProcessor`. Both of them are having the same options.

@@ -29,6 +29,6 @@ export class JsonProcessor extends DirectoryProcessor {
             await super.processStream(readStream);
             await super.emit('processedFile', file, filePath);
         };
-        await super.emit('startProcessing');
+        await super.emit('endProcessing');
     }
 }

@@ -108,6 +108,7 @@ export abstract class Processor implements IProcessor {
                 readStream.removeListener('error', errorEnding);
                 readStream.removeListener('data', handleData);
                 readStream.removeListener('row', handleData);
+                readStream.removeListener('line', handleData);
                 readStream.removeListener('header', handleHeader);
             }
 
@@ -117,6 +118,7 @@ export abstract class Processor implements IProcessor {
             (readStream as any).on('error', errorEnding);
             (readStream as any).on('data', handleData);
             (readStream as any).on('row', handleData);
+            (readStream as any).on('line', handleData);
             (readStream as any).on('header', handleHeader);
             readStream.resume();
         });

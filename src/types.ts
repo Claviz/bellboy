@@ -95,6 +95,10 @@ export interface IJsonConfig extends IFileConfig {
     jsonPath: string;
 }
 
+export interface ITailConfig extends IFileConfig {
+    fromBeginning?: boolean;
+}
+
 export interface IDynamicConfig extends IConfig {
     generator: () => AsyncIterableIterator<any>;
 }
