@@ -86,6 +86,7 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 * `PostgresProcessor` processes data received from a **PostgreSQL** SELECT.
 * `MssqlProcessor` processes data received from a **MSSQL** SELECT.
 * `DynamicProcessor` processes **dynamically generated** data.
+* `TailProcessor` processes **new lines** added to the file.
 
 #### Processor instance methods
 
