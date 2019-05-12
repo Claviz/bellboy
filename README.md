@@ -119,6 +119,7 @@ Emitted when batch has been loaded.
 Listens for messages and processes them one by one. It also handles backpressure by queuing messages, so all messages can be eventually processed. 
 
 #### Options
+* [General processor options](#options)
 * **connection** `object` `required`
     * **url** `string`
     * **topics** `string[]`
@@ -127,6 +128,7 @@ Listens for messages and processes them one by one. It also handles backpressure
 [Usage examples](tests/http-source.spec.ts)
 
 #### Options
+* [General processor options](#options)
 * **connection** `object` `required`\
 Options from [request](https://github.com/request/request#requestoptions-callback) library.
 * **dataFormat** `delimited | json` `required`
@@ -155,12 +157,11 @@ nextRequest: async function (header) {
 Used for streaming text data from files in directory. There are currently three types of directory processors - `ExcelProcessor`, `JsonProcessor` and `TailProcessor`. Such processors search for the files in the source directory and process them one by one.
 
 #### Options
+* [General processor options](#options)
 * **path** `string` `required`\
 Path to the directory where files are located. 
-
 * **filePattern** `string`\
 Regex pattern for the files to be processed. If not specified, all files in the directory will be matched.
-
 * **files** `string[]`\
 Array of file names. If not specified, all files in the directory will be matched against `filePattern` regex and processed in alphabetical order.
 
@@ -176,6 +177,7 @@ Emitted after file has been processed.
 Processes `XLSX` files.
 
 #### Options
+* [Directory processor options](#options-3)
 * **hasHeader** `boolean`\
 Wether worksheet has header or not, `false` by default.
 * **skipRows** `number`\
@@ -196,6 +198,7 @@ If no `sheetName` specified, value of the `sheetIndex` will be used. If it isn't
 ### JsonProcessor
 
 #### Options
+* [Directory processor options](#options-3)
 * **jsonPath** `string` `required`\
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
 
@@ -205,6 +208,7 @@ Only values that match provided [JSONPath](https://goessner.net/articles/JsonPat
 Watches for file changes and outputs last part of file as soon as new lines are added to the file.
 
 #### Options
+* [Directory processor options](#options-3)
 * **fromBeginning** `boolean`\
 In addition to emitting new lines, emits lines from the beginning of file, `false` by default.
 
@@ -218,9 +222,9 @@ Processes `SELECT` query row by row. There are two database processors - `Postgr
 
 #### Options
 
+* [General processor options](#options)
 * **query** `string` `required`\
 Query to execute.
-
 * **connection** `object` `required`
   * **user**
   * **password**
@@ -234,6 +238,7 @@ Query to execute.
 Processor which generates records on the fly. Can be used to define custom data processors.
 
 #### Options
+* [General processor options](#options)
 * **generator** `async generator function` `required`\
 [Generator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) function which must yield records to process.
 ```javascript
@@ -267,6 +272,7 @@ Function which processes and transforms whole batch of rows. This function is be
 This destination logs out all data to stdout (console).
 
 #### Options
+* [General destination options](#options-9)
 * **type** `stdout` `required`
 * **asTable** `boolean`\
 If set to `true`, data will be printed as table.
@@ -277,6 +283,7 @@ If set to `true`, data will be printed as table.
 Puts processed data one by one in `body` and executes specified HTTP request.
 
 #### Options
+* [General destination options](#options-9)
 * **type** `http` `required`
 * **setup** `object` `required`\
 Options from [request](https://github.com/request/request#requestoptions-callback) library.
@@ -287,6 +294,7 @@ Options from [request](https://github.com/request/request#requestoptions-callbac
 Inserts data to PostgreSQL.
 
 #### Options
+* [General destination options](#options-9)
 * **type** `postgres` `required`
 * **setup** `object` `required`
   * **table** `string`\
@@ -307,6 +315,7 @@ Inserts data to PostgreSQL.
 Inserts data to MSSQL.
 
 #### Options
+* [General destination options](#options-9)
 * **type** `mssql` `required`
 * **setup** `object` `required`
   * **table** `string`\
@@ -322,6 +331,7 @@ Inserts data to MSSQL.
 Custom destination defined by `load` function.
 
 #### Options
+* [General destination options](#options-9)
 * **type** `custom` `required`
 * **load** `async function(rows)` `required`\
 Function which can be extended to implement custom destination.
