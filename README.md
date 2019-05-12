@@ -2,20 +2,6 @@
 
 Highly performant JavaScript data stream ETL engine.
 
-Supported sources (processors):
-* PostgreSQL
-* MSSQL
-* HTTP
-* MQTT
-* XLS/XLSX/JSON/CSV files
-
-Supported destinations:
-* PostgreSQL
-* MSSQL
-* HTTP
-* stdout
-* Custom
-
 ## How it works?
 Bellboy streams input data row by row. Every row, in turn, goes through user-defined function where it can be transformed. When enough data is collected in batch, it is being loaded to destination.
 
@@ -79,14 +65,14 @@ const rename = promisify(fs.rename);
 
 Each processor in `bellboy` is a class which has a single responsibility of processing data of specific type -
 
-* `MqttProcessor` processes **MQTT** protocol messages.
-* `HttpProcessor` processes data received from a **HTTP** call.
-* `ExcelProcessor` processes **XLSX** file data from the file system.
-* `JsonProcessor` processes **JSON** file data from the file system. 
-* `PostgresProcessor` processes data received from a **PostgreSQL** SELECT.
-* `MssqlProcessor` processes data received from a **MSSQL** SELECT.
-* `DynamicProcessor` processes **dynamically generated** data.
-* `TailProcessor` processes **new lines** added to the file.
+* [MqttProcessor](#MqttProcessor) processes **MQTT** protocol messages.
+* [HttpProcessor](#HttpProcessor) processes data received from a **HTTP** call.
+* [ExcelProcessor](#ExcelProcessor) processes **XLSX** file data from the file system.
+* [JsonProcessor](#JsonProcessor) processes **JSON** file data from the file system. 
+* [PostgresProcessor](#Database-Processors) processes data received from a **PostgreSQL** SELECT.
+* [MssqlProcessor](#Database-Processors) processes data received from a **MSSQL** SELECT.
+* [DynamicProcessor](#DynamicProcessor) processes **dynamically generated** data.
+* [TailProcessor](#TailProcessor) processes **new lines** added to the file.
 
 #### Processor instance methods
 
@@ -127,7 +113,8 @@ Emitted when batch load has failed.
 * **loadedBatch**\
 Emitted when batch has been loaded.
 
-### MQTT processor
+### MqttProcessor
+[Usage examples](tests/mqtt-source.spec.ts)
 
 Listens for messages and processes them one by one. It also handles backpressure by queuing messages, so all messages can be eventually processed. 
 
@@ -136,7 +123,8 @@ Listens for messages and processes them one by one. It also handles backpressure
     * **url** `string`
     * **topics** `string[]`
 
-### HTTP processor
+### HttpProcessor
+[Usage examples](tests/http-source.spec.ts)
 
 #### Options
 * **connection** `object` `required`\
@@ -182,7 +170,9 @@ Emitted when file is about to be processed.
 * **processedFile** `(file, filePath)`\
 Emitted after file has been processed.
 
-### Excel processor
+### ExcelProcessor
+[Usage examples](tests/excel-source.spec.ts)
+
 Processes `XLSX` files.
 
 #### Options
@@ -203,13 +193,15 @@ sheetGetter: async (sheets) => {
 ```
 If no `sheetName` specified, value of the `sheetIndex` will be used. If it isn't specified either, `sheetGetter` function will be called. If none options are specified, first sheet will be processed.
 
-### JSON processor
+### JsonProcessor
 
 #### Options
 * **jsonPath** `string` `required`\
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
 
-### [Tail](https://en.wikipedia.org/wiki/Tail_(Unix)) processor
+### TailProcessor
+[Usage examples](tests/tail-source.spec.ts)
+
 Watches for file changes and outputs last part of file as soon as new lines are added to the file.
 
 #### Options
@@ -222,7 +214,7 @@ Name of the file the data came from.
 * **data** `string`
 
 ### Database processors
-Processes `SELECT` query row by row. There are two database processors - `PostgresProcessor` and `MssqlProcessor`. Both of them are having the same options.
+Processes `SELECT` query row by row. There are two database processors - `PostgresProcessor` ([usage examples](tests/postgres-source.spec.ts)) and `MssqlProcessor` ([usage examples](tests/mssql-source.spec.ts)). Both of them are having the same options.
 
 #### Options
 
@@ -238,7 +230,7 @@ Query to execute.
   * **schema**\
     Currently available only for `PostgresProcessor`.
 
-### Dynamic processor
+### DynamicProcessor
 Processor which generates records on the fly. Can be used to define custom data processors.
 
 #### Options
@@ -257,6 +249,11 @@ generator: async function* () {
 
 Every processor can have as many destinations (outputs) as needed. For example, one processor can load processed data into a database, log this data to stdout and post it by HTTP simultaneously.
 
+* [stdout](#stdout) logs data to **console**.
+* [http](#http) executes **HTTP** request calls.
+* [postgres](#postgres) inserts/upserts data to **PostgreSQL** database.
+* [mssql](#mssql) inserts data to **MSSQL** database.
+
 ### Options
 
 * **batchSize** `number` `required`\
@@ -274,7 +271,9 @@ This destination logs out all data to stdout (console).
 * **asTable** `boolean`\
 If set to `true`, data will be printed as table.
 
-### HTTP request
+### http
+[Usage examples](tests/http-destination.spec.ts)
+
 Puts processed data one by one in `body` and executes specified HTTP request.
 
 #### Options
@@ -282,7 +281,9 @@ Puts processed data one by one in `body` and executes specified HTTP request.
 * **setup** `object` `required`\
 Options from [request](https://github.com/request/request#requestoptions-callback) library.
 
-### Postgres
+### postgres
+[Usage examples](tests/postgres-destination.spec.ts)
+
 Inserts data to PostgreSQL.
 
 #### Options
@@ -300,7 +301,9 @@ Inserts data to PostgreSQL.
     * **database**
     * **schema**
 
-### MSSQL
+### mssql
+[Usage examples](tests/mssql-destination.spec.ts)
+
 Inserts data to MSSQL.
 
 #### Options
