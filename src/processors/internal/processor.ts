@@ -167,6 +167,10 @@ export abstract class Processor implements IProcessor {
         }
     }
 
+    addDestination(destination: Destination) {
+        this.config.destinations.push(destination);
+    }
+
     /** @internal */
     protected async emit(eventName: string, ...args: any) {
         const fn = this.events[eventName];
