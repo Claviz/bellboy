@@ -30,7 +30,7 @@ export interface IPostgresDestination extends IDestination {
     setup: {
         table: string;
         connection: IDbConnection;
-        upsertConstraints: string[];
+        upsertConstraints?: string[];
     }
 }
 

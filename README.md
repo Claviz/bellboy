@@ -81,7 +81,7 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 
 * **process** `async function()`\
 Starts processing data.
-* **on** `function(event, async function listener`\
+* **on** `function(event, async function listener)`\
 Intercepts specified `event` and pauses processing until `listener` function will be executed.\
 If `on` returns some `truthy` value, processing will be stopped.
 ```javascript
