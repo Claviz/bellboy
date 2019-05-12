@@ -29,11 +29,14 @@ const rename = promisify(fs.rename);
         destinations: [
             {
                 type: 'postgres',
-                connection: {
-                    user: 'user',
-                    password: 'password',
-                    server: 'localhost',
-                    database: 'bellboy'
+                setup: {
+                    connection: {
+                        user: 'user',
+                        password: 'password',
+                        server: 'localhost',
+                        database: 'bellboy'
+                    },
+                    table: 'stats',
                 },
                 // tell bellboy to send records to destination 
                 // as soon as he collects 9999 records
@@ -42,7 +45,7 @@ const rename = promisify(fs.rename);
                 // add a new one - status field before sending to destination
                 recordGenerator: async function* (record) {
                     yield {
-                        ...record,
+                        ...record.raw.obj,
                         status: 'done'
                     };
                 }
