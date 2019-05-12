@@ -52,7 +52,7 @@ export abstract class Processor implements IProcessor {
     /** @internal */
     protected async getNextRecord(readStream: ReadStream | Readable) {
         return new Promise<{ data: any[][]; header: any; }>((resolve, reject) => {
-            const destinations = this.config.destinations;
+            const destinations = this.config.destinations!;
             let data: any[][] = [];
             if (destinations) {
                 for (let i = 0; i < destinations.length; i++) {
@@ -128,7 +128,8 @@ export abstract class Processor implements IProcessor {
     protected async processStream(readStream: ReadStream | Readable) {
         this.closed = false;
         const results: any[][] = [];
-        for (let j = 0; j < this.config.destinations.length; j++) {
+        const destinations = this.config.destinations!;
+        for (let j = 0; j < destinations.length; j++) {
             results[j] = [];
         }
         let header;
@@ -139,19 +140,19 @@ export abstract class Processor implements IProcessor {
                 if (result.header) {
                     header = result.header;
                 }
-                for (let j = 0; j < this.config.destinations.length; j++) {
+                for (let j = 0; j < destinations.length; j++) {
                     results[j].push(...result.data[j]);
-                    while (results[j].length >= this.config.destinations[j].batchSize) {
-                        const destination = this.config.destinations[j];
+                    while (results[j].length >= destinations[j].batchSize) {
+                        const destination = destinations[j];
                         const toSend = results[j].splice(0, destination.batchSize);
                         await this.loadBatch(destination, toSend);
                     }
                 }
             }
         }
-        for (let j = 0; j < this.config.destinations.length; j++) {
+        for (let j = 0; j < destinations.length; j++) {
             if (results[j].length) {
-                await this.loadBatch(this.config.destinations[j], results[j]);
+                await this.loadBatch(destinations[j], results[j]);
             }
         }
         return header;
@@ -168,6 +169,9 @@ export abstract class Processor implements IProcessor {
     }
 
     addDestination(destination: Destination) {
+        if (!this.config.destinations) {
+            this.config.destinations = [];
+        }
         this.config.destinations.push(destination);
     }
 

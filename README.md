@@ -92,10 +92,12 @@ processor.on('processedFile', async (file) => {
     await rename(filePath, newFilePath);
 });
 ```
+* **addDestination** `function(Destination)`\
+Adds a new destination to the processor.
 
 #### Options
 Each processor has specific set of options in addition to general options - 
-* **destinations** `Destination[]` `required`\
+* **destinations** `Destination[]`\
 List of processor destinations.
 * **verbose** `boolean`\
 If set to `true`, all events will be logged to stdout.

@@ -53,7 +53,7 @@ export interface IHttpDestination extends IDestination {
 }
 
 export interface IConfig {
-    destinations: Destination[];
+    destinations?: Destination[];
     verbose?: boolean;
 }
 
@@ -113,6 +113,7 @@ export interface IMqttConfig extends IConfig {
 export interface IProcessor {
     on(eventName: string, cb: event): void;
     process(): Promise<void>;
+    addDestination(destination: Destination): void;
 }
 
 
