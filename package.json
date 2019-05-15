@@ -8,7 +8,7 @@
     "build": "tsc -p .",
     "test": "jest",
     "test-coverage": "jest --coverage",
-    "coveralls": "cat ./coverage/lcov.info | coveralls"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
     "type": "git",
