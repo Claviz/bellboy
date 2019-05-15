@@ -410,4 +410,4 @@ class CustomDestination extends bellboy.Destination {
 
 ## Testing
 
-Tests can be run by using `docker-compose up` command.
+Tests can be run by using `docker-compose up --abort-on-container-exit --exit-code-from test` command.
