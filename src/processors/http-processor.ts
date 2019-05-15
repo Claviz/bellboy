@@ -1,64 +1,63 @@
-import { IDelimitedHttpConfig, IJsonHttpConfig } from '../types';
 import request = require('request');
-import { Processor } from './internal/processor';
+
+import { emit, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
+import { Processor } from './base/processor';
+
 const split2 = require('split2');
 
 const JSONStream = require('JSONStream');
 
 export class HttpProcessor extends Processor {
-    /** @internal */
-    protected config: IDelimitedHttpConfig | IJsonHttpConfig;
-    /** @internal */
-    private header: any;
 
-    constructor(config: IDelimitedHttpConfig | IJsonHttpConfig) {
+    protected connection: request.CoreOptions & request.UrlOptions;
+    protected nextRequest: ((header: any) => Promise<any>) | undefined;
+    protected jsonPath: string | undefined;
+    protected delimiter: string | undefined;
+
+    constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
         super(config);
-        this.config = config;
-    }
-
-    /** @internal */
-    async getReadStream(options: request.CoreOptions & request.UrlOptions) {
-        if (this.config.dataFormat === 'delimited') {
-            return request(options)
-                .pipe(split2(this.config.delimiter))
-                .pause();
-        } else if (this.config.dataFormat === 'json') {
-            return request(options)
-                .pipe(JSONStream.parse(this.config.jsonPath))
-                .pause();
-        }
-    }
-
-    /** @internal */
-    async processHttpData(options: request.CoreOptions & request.UrlOptions) {
-        await super.emit('startProcessing');
-        const readStream = await this.getReadStream(options);
-        this.header = await super.processStream(readStream);
-        await super.emit('endProcessing');
-        if (this.config.nextRequest) {
-            const nextOptions = await this.config.nextRequest(this.header);
-            if (nextOptions) {
-                await this.processHttpData(nextOptions);
-            }
-        }
-    }
-
-    async process() {
-        await super.process();
-
-        if (!this.config.connection) {
+        if (!config.connection) {
             throw new Error(`No connection specified.`);
         }
-        if (this.config.dataFormat === 'delimited') {
-            if (!this.config.delimiter) {
+        this.connection = config.connection;
+        if (config.dataFormat === 'delimited') {
+            if (!config.delimiter) {
                 throw new Error('No delimiter specified.');
             }
-        } else if (this.config.dataFormat === 'json') {
-            if (!this.config.jsonPath) {
+            this.delimiter = config.delimiter;
+        } else if (config.dataFormat === 'json') {
+            if (!config.jsonPath) {
                 throw new Error('No JSON path specified.');
             }
+            this.jsonPath = config.jsonPath;
         }
+        this.nextRequest = config.nextRequest;
+    }
 
-        await this.processHttpData(this.config.connection);
+    protected async getReadStream(options: request.CoreOptions & request.UrlOptions) {
+        if (this.delimiter) {
+            return request(options)
+                .pipe(split2(this.delimiter))
+                .pause();
+        } else if (this.jsonPath) {
+            return request(options)
+                .pipe(JSONStream.parse(this.jsonPath))
+                .pause();
+        }
+    }
+
+    protected async processHttpData(processStream: processStream, options: request.CoreOptions & request.UrlOptions) {
+        const readStream = await this.getReadStream(options);
+        const header = await processStream(readStream);
+        if (this.nextRequest) {
+            const nextOptions = await this.nextRequest(header);
+            if (nextOptions) {
+                await this.processHttpData(processStream, nextOptions);
+            }
+        }
+    }
+
+    async process(processStream: processStream, emit: emit) {
+        await this.processHttpData(processStream, this.connection);
     }
 }

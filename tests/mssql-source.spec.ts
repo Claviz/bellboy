@@ -1,8 +1,7 @@
-import * as bellboy from '../src';
+import { Job, MssqlProcessor } from '../src';
 import * as utils from '../src/utils';
-import { Destination } from '../src/types';
+import { CustomDestination } from './helpers';
 
-let data: any[] = [];
 let db: any = null;
 const connection = {
     user: 'sa',
@@ -16,7 +15,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-    data = [];
     await db.query(`DROP TABLE IF EXISTS test`);
     await db.query(`CREATE TABLE test
     (
@@ -30,22 +28,16 @@ afterAll(async () => {
 })
 
 it('gets data from mssql', async () => {
-    const processor = new bellboy.MssqlProcessor({
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new MssqlProcessor({
         connection,
         query: `select id from test`,
-        destinations: [
-            {
-                type: 'custom',
-                batchSize: 1,
-                load: async (rows) => {
-                    data = rows;
-                }
-            } as Destination
-        ],
-
     });
-    await processor.process();
-    expect(data).toEqual([{
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
         id: 123,
     }]);
 });

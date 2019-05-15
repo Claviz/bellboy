@@ -1,23 +1,22 @@
-import { Processor } from './internal/processor';
 import { Stream } from 'stream';
-import { IDynamicConfig } from '../types';
+
+import { IDynamicProcessorConfig, processStream, emit } from '../types';
+import { Processor } from './base/processor';
 
 export class DynamicProcessor extends Processor {
-    /** @internal */
-    protected config: IDynamicConfig;
 
-    constructor(config: IDynamicConfig) {
+    protected generator: () => AsyncIterableIterator<any>;
+
+    constructor(config: IDynamicProcessorConfig) {
         super(config);
-        this.config = config;
-    }
-
-    async process() {
-        await super.process();
-        if (!this.config.generator) {
+        if (!config.generator) {
             throw Error(`No generator function specified.`);
         }
-        await super.emit('startProcessing');
-        const iterator = this.config.generator();
+        this.generator = config.generator;
+    }
+
+    async process(processStream: processStream, emit: emit) {
+        const iterator = this.generator();
         const readStream = new Stream.Readable({
             objectMode: true,
             async read() {
@@ -28,7 +27,6 @@ export class DynamicProcessor extends Processor {
                 this.push(result.value);
             },
         }).pause();
-        await super.processStream(readStream);
-        await super.emit('endProcessing');
+        await processStream(readStream);
     }
 }

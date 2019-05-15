@@ -1,8 +1,8 @@
-import * as bellboy from '../src';
-import { Destination } from '../src/types';
+import { Job, MqttProcessor } from '../src';
+import { CustomDestination } from './helpers';
+
 const mosca = require('mosca');
 
-let data: any[] = [];
 let interval: any;
 let server: any;
 
@@ -21,7 +21,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-    data = [];
 });
 
 afterAll(async () => {
@@ -30,27 +29,19 @@ afterAll(async () => {
 })
 
 it('gets messages from broker', async () => {
-    const processor = new bellboy.MqttProcessor({
-        connection: {
-            topics: ['presence'],
-            url: 'mqtt://localhost',
-        },
-        destinations: [
-            {
-                type: 'custom',
-                batchSize: 1,
-                load: async (rows) => {
-                    data = rows;
-                }
-            } as Destination
-        ],
-
+    const destination = new CustomDestination({
+        batchSize: 1,
     });
-    processor.on('loadedBatch', async () => {
+    const processor = new MqttProcessor({
+        topics: ['presence'],
+        url: 'mqtt://localhost',
+    });
+    const job = new Job(processor, [destination]);
+    job.on('loadedBatch', async () => {
         return true;
     });
-    await processor.process();
-    expect(data).toEqual([{
+    await job.run();
+    expect(destination.getData()).toEqual([{
         message: 'test',
         topic: 'presence',
     }]);

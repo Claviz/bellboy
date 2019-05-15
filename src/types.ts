@@ -1,4 +1,6 @@
 import { CoreOptions, UrlOptions } from 'request';
+import { ReadStream } from 'fs';
+import { Readable } from 'stream';
 
 export interface IDbConnection {
     user?: string;
@@ -9,124 +11,117 @@ export interface IDbConnection {
     schema?: string;
 }
 
-interface IDestination {
-    batchSize: number;
-    recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
-    batchTransformer?: (rows: any[]) => Promise<any[]>;
-}
-
-export interface IHttpConnection {
-    method: 'GET' | 'POST' | 'DELETE' | 'PUT';
-    uri: string;
-}
-
-export interface ICustomDestination extends IDestination {
-    type: 'custom',
-    load: (rows: any[]) => Promise<void>;
-}
-
-export interface IPostgresDestination extends IDestination {
-    type: 'postgres';
-    setup: {
-        table: string;
-        connection: IDbConnection;
-        upsertConstraints?: string[];
-    }
-}
-
-interface IStdoutDestination extends IDestination {
-    type: 'stdout';
-    asTable?: boolean;
-}
-
-export interface IMssqlDestination extends IDestination {
-    type: 'mssql';
-    setup: {
-        table: string;
-        connection: IDbConnection;
-    }
-}
-
-export interface IHttpDestination extends IDestination {
-    type: 'http';
-    setup: IHttpConnection;
-}
-
-export interface IConfig {
-    destinations?: Destination[];
+export interface IJobConfig {
     verbose?: boolean;
 }
 
-export interface IFileConfig extends IConfig {
+export interface IJob {
+    on(eventName: string, cb: event): void;
+    run(): Promise<void>;
+}
+
+export interface IProcessorConfig {
+}
+
+export interface IDynamicProcessorConfig extends IProcessorConfig {
+    generator: () => AsyncIterableIterator<any>;
+}
+
+export interface IDirectoryProcessorConfig extends IProcessorConfig {
     path: string;
     filePattern?: string;
     files?: string[];
 }
 
-export interface IHttpConfig extends IConfig {
+export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
+    hasHeader?: boolean;
+    sheetName?: string;
+    sheetIndex?: number;
+    sheetGetter?: sheetGetter;
+}
+
+export interface IProcessor {
+    process(processStream: processStream, emit: emit): Promise<void>;
+}
+
+export interface IDestination {
+    loadBatch: (data: any[]) => Promise<void>;
+    batchSize: number;
+    recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
+    batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
+}
+
+export interface IDestinationConfig {
+    batchSize?: number;
+    recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
+    batchTransformer?: (rows: any[]) => Promise<any[]>;
+}
+
+export interface IDatabaseDestinationConfig extends IDestinationConfig {
+    table: string;
+    connection: IDbConnection;
+}
+
+export interface IPostgresDestinationConfig extends IDatabaseDestinationConfig {
+    upsertConstraints?: string[];
+}
+
+export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig { }
+
+export interface IHttpDestinationConfig extends IDestinationConfig {
+    method: 'GET' | 'POST' | 'DELETE' | 'PUT';
+    uri: string;
+}
+
+export interface IStdoutDestinationConfig extends IDestinationConfig {
+    asTable?: boolean;
+}
+
+export interface IHttpProcessorConfig extends IProcessorConfig {
     connection: CoreOptions & UrlOptions;
     nextRequest?: (header: any) => Promise<any>;
 }
 
-export interface IJsonHttpConfig extends IHttpConfig {
+export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'json';
     jsonPath: string;
 }
 
-export interface IDelimitedHttpConfig extends IHttpConfig {
+export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'delimited';
     delimiter: string;
 }
 
-export interface IDatabaseConfig extends IConfig {
+export interface IDatabaseProcessorConfig extends IProcessorConfig {
     connection: any;
     query: string;
 }
 
-export interface IExcelConfig extends IFileConfig {
-    hasHeader?: boolean;
-    skipRows?: number;
-    sheetName?: string;
-    sheetIndex?: number;
-    sheetGetter?(sheets: string[]): Promise<string>;
-}
-
-export interface IJsonConfig extends IFileConfig {
+export interface IJsonProcessorConfig extends IDirectoryProcessorConfig {
     jsonPath: string;
 }
 
-export interface ITailConfig extends IFileConfig {
+export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {
+}
+
+export interface IPostgresProcessorConfig extends IDatabaseProcessorConfig {
+}
+
+export interface ITailProcessorConfig extends IDirectoryProcessorConfig {
     fromBeginning?: boolean;
 }
 
-export interface IDynamicConfig extends IConfig {
-    generator: () => AsyncIterableIterator<any>;
+export interface IMqttProcessorConfig extends IProcessorConfig {
+    url: string;
+    topics: string[];
 }
-
-export interface IMqttConfig extends IConfig {
-    connection: {
-        url: string;
-        topics: string[];
-    }
-}
-
-export interface IProcessor {
-    on(eventName: string, cb: event): void;
-    process(): Promise<void>;
-    addDestination(destination: Destination): void;
-}
-
-
 
 export type DbTypes = 'postgres' | 'mssql';
 
 export type event = (...args: any) => Promise<void | any>;
 
+export type sheetGetter = (sheets: string[]) => Promise<string | number>;
+
 export type emit = (event: string, ...args: any) => Promise<void | any>;
 
-export type Destination =
-    IPostgresDestination |
-    IStdoutDestination |
-    IMssqlDestination |
-    IHttpDestination |
-    ICustomDestination;
+export type processStream = (readStream: ReadStream | Readable) => Promise<any>;

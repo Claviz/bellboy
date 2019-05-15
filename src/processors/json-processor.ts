@@ -1,34 +1,31 @@
 import fs from 'fs';
 import path from 'path';
 
-import { IJsonConfig } from '../types';
-import { DirectoryProcessor } from './internal/directory-processor';
+import { emit, IJsonProcessorConfig, processStream } from '../types';
+import { DirectoryProcessor } from './base/directory-processor';
 
 const JSONStream = require('JSONStream');
 
 export class JsonProcessor extends DirectoryProcessor {
-    /** @internal */
-    protected config: IJsonConfig;
 
-    constructor(config: IJsonConfig) {
+    protected jsonPath: string;
+
+    constructor(config: IJsonProcessorConfig) {
         super(config);
-        this.config = config;
-    }
-
-    async process() {
-        await super.process();
-        if (!this.config.jsonPath) {
+        if (!config.jsonPath) {
             throw new Error('No JSON path specified.');
         }
-        await super.emit('startProcessing');
-        for (const file of this.config.files!) {
-            const filePath = path.join(this.config.path, file);
-            await super.emit('processingFile', file, filePath);
-            const readStream = fs.createReadStream(filePath).pipe(JSONStream.parse(this.config.jsonPath));
+        this.jsonPath = config.jsonPath;
+    }
+
+    async process(processStream: processStream, emit: emit) {
+        for (const file of this.files) {
+            const filePath = path.join(this.path, file);
+            await emit('processingFile', file, filePath);
+            const readStream = fs.createReadStream(filePath).pipe(JSONStream.parse(this.jsonPath));
             readStream.pause();
-            await super.processStream(readStream);
-            await super.emit('processedFile', file, filePath);
+            await processStream(readStream);
+            await emit('processedFile', file, filePath);
         };
-        await super.emit('endProcessing');
     }
 }

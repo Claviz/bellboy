@@ -1,5 +1,4 @@
-import * as bellboy from '../src';
-import { Destination } from '../src/types';
+import { Job, DynamicProcessor, HttpDestination } from '../src';
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -25,7 +24,7 @@ afterAll(async () => {
 });
 
 it('posts generated objects to http destination', async () => {
-    const processor = new bellboy.DynamicProcessor({
+    const processor = new DynamicProcessor({
         generator: async function* () {
             for (let i = 0; i < 3; i++) {
                 yield {
@@ -33,18 +32,14 @@ it('posts generated objects to http destination', async () => {
                 }
             }
         },
-        destinations: [
-            {
-                type: 'http',
-                setup: {
-                    method: 'POST',
-                    uri: 'http://localhost:3000'
-                },
-                batchSize: 2,
-            } as Destination
-        ],
     });
-    await processor.process();
+    const destination = new HttpDestination({
+        method: 'POST',
+        uri: 'http://localhost:3000',
+        batchSize: 2,
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
     expect(data).toEqual([{
         text: 'something'
     }, {
@@ -55,7 +50,7 @@ it('posts generated objects to http destination', async () => {
 });
 
 it('posts transformed generated objects to http destination', async () => {
-    const processor = new bellboy.DynamicProcessor({
+    const processor = new DynamicProcessor({
         generator: async function* () {
             for (let i = 0; i < 3; i++) {
                 yield {
@@ -63,24 +58,19 @@ it('posts transformed generated objects to http destination', async () => {
                 }
             }
         },
-        destinations: [
-            {
-                type: 'http',
-                setup: {
-                    method: 'POST',
-                    uri: 'http://localhost:3000'
-                },
-                batchSize: 2,
-                batchTransformer: async (rows) => {
-                    return [{
-                        objects: rows,
-                    }];
-                }
-            } as Destination
-        ],
-
     });
-    await processor.process();
+    const destination = new HttpDestination({
+        method: 'POST',
+        uri: 'http://localhost:3000',
+        batchSize: 2,
+        batchTransformer: async (rows) => {
+            return [{
+                objects: rows,
+            }];
+        }
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
     expect(data).toEqual([{
         objects: [{
             text: 'something'

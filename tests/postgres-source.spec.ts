@@ -1,8 +1,7 @@
-import * as bellboy from '../src';
+import { Job, PostgresProcessor } from '../src';
 import * as utils from '../src/utils';
-import { Destination } from '../src/types';
+import { CustomDestination, CustomTimeoutDestination } from './helpers';
 
-let data: any[] = [];
 let db: any = null;
 const connection = {
     user: 'postgres',
@@ -16,7 +15,6 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-    data = [];
     await db.query(`DROP TABLE IF EXISTS test`);
     await db.query(`CREATE TABLE test
     (
@@ -28,47 +26,34 @@ beforeEach(async () => {
 afterAll(async () => {
     await utils.closeDbConnection(connection);
 })
-const timeout = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 it('gets data from postgres', async () => {
-    const processor = new bellboy.PostgresProcessor({
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new PostgresProcessor({
         connection,
         query: `select id from test`,
-        destinations: [
-            {
-                type: 'custom',
-                batchSize: 1,
-                load: async (rows) => {
-                    data = rows;
-                }
-            } as Destination
-        ],
-
     });
-    await processor.process();
-    expect(data).toEqual([{
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
         id: 123,
     }]);
 });
 
 it('waits for data to be loaded before ending processing', async () => {
-    const processor = new bellboy.PostgresProcessor({
+    const destination = new CustomTimeoutDestination({
+        batchSize: 100,
+        timeout: 1000,
+    });
+    const processor = new PostgresProcessor({
         connection,
         query: `select id from test`,
-        destinations: [
-            {
-                type: 'custom',
-                batchSize: 100,
-                load: async (rows) => {
-                    await timeout(1000);
-                    data = rows;
-                }
-            } as Destination
-        ],
-
     });
-    await processor.process();
-    expect(data).toEqual([{
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
         id: 123,
     }]);
 });

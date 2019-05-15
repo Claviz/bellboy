@@ -1,32 +1,33 @@
-import { Processor } from './internal/processor';
 import { Stream } from 'stream';
-import { IMqttConfig } from '../types';
+
+import { emit, IMqttProcessorConfig, processStream } from '../types';
+import { Processor } from './base/processor';
+
 let mqtt = require('async-mqtt');
 
 export class MqttProcessor extends Processor {
-    /** @internal */
-    protected config: IMqttConfig;
 
-    constructor(config: IMqttConfig) {
+    protected url: string;
+    protected topics: string[];
+
+    constructor(config: IMqttProcessorConfig) {
         super(config);
-        this.config = config;
+        this.url = config.url;
+        this.topics = config.topics;
     }
 
-    async process() {
-        await super.process();
-        await super.emit('startProcessing');
+    async process(processStream: processStream, emit: emit) {
         const readStream = new Stream.Readable({
             objectMode: true,
             read() { },
         }).pause();
-        const client = mqtt.connect(this.config.connection.url);
-        await client.subscribe(this.config.connection.topics);
+        const client = mqtt.connect(this.url);
+        await client.subscribe(this.topics);
         client.on('message', (topic: string, message: any) => {
             readStream.push({ topic, message: message.toString() });
         });
-        await super.processStream(readStream);
-        await client.unsubscribe(this.config.connection.topics);
+        await processStream(readStream);
+        await client.unsubscribe(this.topics);
         await client.end(true);
-        await super.emit('endProcessing');
     }
 }

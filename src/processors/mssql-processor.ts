@@ -1,25 +1,19 @@
-import { IDatabaseConfig } from '../types';
+import { IMssqlProcessorConfig, processStream, emit } from '../types';
 import { getDb } from '../utils';
-import { DatabaseProcessor } from './internal/database-processor';
+import { DatabaseProcessor } from './base/database-processor';
 
 export class MssqlProcessor extends DatabaseProcessor {
-    /** @internal */
-    protected config: IDatabaseConfig;
 
-    constructor(config: IDatabaseConfig) {
+    constructor(config: IMssqlProcessorConfig) {
         super(config);
-        this.config = config;
     }
 
-    async process() {
-        await super.process();
-        await super.emit('startProcessing');
-        const db = await getDb(this.config.connection, 'mssql');
+    async process(processStream: processStream, emit: emit) {
+        const db = await getDb(this.connection, 'mssql');
         const readStream = db.request();
         readStream.stream = true;
-        readStream.query(this.config.query);
+        readStream.query(this.query);
         readStream.pause();
-        await super.processStream(readStream);
-        await super.emit('endProcessing');
+        await processStream(readStream);
     }
 }

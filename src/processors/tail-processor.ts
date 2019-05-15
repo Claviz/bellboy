@@ -1,36 +1,31 @@
-import fs from 'fs';
 import path from 'path';
-
-import { DirectoryProcessor } from './internal/directory-processor';
-import { ITailConfig } from '../types';
-import { Processor } from './internal/processor';
 import { Stream } from 'stream';
 
-const JSONStream = require('JSONStream');
+import { emit, ITailProcessorConfig, processStream } from '../types';
+import { DirectoryProcessor } from './base/directory-processor';
+
 const Tail = require('tail').Tail;
 
 export class TailProcessor extends DirectoryProcessor {
-    /** @internal */
-    protected config: ITailConfig;
 
-    constructor(config: ITailConfig) {
+    protected fromBeginning: boolean;
+
+    constructor(config: ITailProcessorConfig) {
         super(config);
-        this.config = config;
+        this.fromBeginning = !!config.fromBeginning;
     }
 
-    async process() {
-        await super.process();
-        await super.emit('startProcessing');
+    async process(processStream: processStream, emit: emit) {
         const readStream = new Stream.Readable({
             objectMode: true,
             read() { },
         }).pause();
         const tails = [];
-        for (const file of this.config.files!) {
-            const filePath = path.join(this.config.path, file);
-            await super.emit('processingFile', file, filePath);
+        for (const file of this.files) {
+            const filePath = path.join(this.path, file);
+            await emit('processingFile', file, filePath);
             const tail = new Tail(filePath, {
-                fromBeginning: this.config.fromBeginning,
+                fromBeginning: this.fromBeginning,
             });
             tail.on('line', (data: any) => {
                 readStream.push({ file, data });
@@ -39,10 +34,9 @@ export class TailProcessor extends DirectoryProcessor {
                 readStream.emit('error', exception);
             });
             tails.push(tail);
-            await super.emit('processedFile', file, filePath);
+            await emit('processedFile', file, filePath);
         };
-        await super.processStream(readStream);
+        await processStream(readStream);
         tails.forEach(tail => tail.unwatch());
-        await super.emit('endProcessing');
     }
 }

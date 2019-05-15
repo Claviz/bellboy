@@ -1,49 +1,44 @@
 import path from 'path';
 import { getXlsxStream, getWorksheets } from 'xlstream';
 
-import { IExcelConfig } from '../types';
-import { DirectoryProcessor } from './internal/directory-processor';
+import { DirectoryProcessor } from './base/directory-processor';
+import { IExcelProcessorConfig, processStream, emit } from '../types';
 
 export class ExcelProcessor extends DirectoryProcessor {
-    /** @internal */
-    protected config: IExcelConfig;
 
-    constructor(config: IExcelConfig) {
+    protected hasHeader: boolean;
+    protected sheetGetter: (filePath: string) => Promise<string | number>;
+
+    constructor(config: IExcelProcessorConfig) {
         super(config);
-        this.config = config;
-    }
-
-    async process() {
-        await super.process();
-        await super.emit('startProcessing');
-        for (let file of this.config.files!) {
-            const filePath = path.join(this.config.path, file);
-            await super.emit('processingFile', file, filePath);
-            let sheet;
-            if (this.config.sheetName) {
-                sheet = this.config.sheetName;
-            } else if (this.config.sheetIndex) {
-                sheet = this.config.sheetIndex;
-            } else if (this.config.sheetGetter) {
+        this.hasHeader = !!config.hasHeader;
+        this.sheetGetter = async (filePath: string) => {
+            if (config.sheetName) {
+                return config.sheetName;
+            } else if (config.sheetIndex) {
+                return config.sheetIndex;
+            } else if (config.sheetGetter) {
                 const sheets = await getWorksheets({
                     filePath,
                 });
-                sheet = await this.config.sheetGetter(sheets);
+                return await config.sheetGetter(sheets);
             }
+            return 0;
+        };
+    }
+
+    async process(processStream: processStream, emit: emit) {
+        for (let file of this.files) {
+            const filePath = path.join(this.path, file);
+            await emit('processingFile', file, filePath);
             const readStream = await getXlsxStream({
                 filePath,
-                sheet: sheet ? sheet : 0,
-                withHeader: this.config.hasHeader,
+                sheet: await this.sheetGetter(filePath),
+                withHeader: this.hasHeader,
                 ignoreEmpty: true,
             });
-            if (this.config.skipRows) {
-                for (let i = 0; i < this.config.skipRows; i++) {
-                    await super.getNextRecord(readStream as any);
-                }
-            }
-            await super.processStream(readStream as any);
-            await super.emit('processedFile', file, filePath);
+            await processStream(readStream as any);
+            await emit('processedFile', file, filePath);
         }
-        await super.emit('endProcessing');
     }
 }

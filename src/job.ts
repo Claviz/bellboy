@@ -1,24 +1,37 @@
 import { ReadStream } from 'fs';
-
-import { Destination, emit, event, IConfig, IProcessor } from '../../types';
-import { insertToMsSql, insertToPostgres, sendRequest } from '../../utils';
 import { Readable } from 'stream';
 
-export abstract class Processor implements IProcessor {
-    /** @internal */
-    protected config: IConfig;
-    /** @internal */
-    protected events: { [fn: string]: emit[] };
-    /** @internal */
-    closed = false;
+import { emit, event, IJob, IDestination, IProcessor, IJobConfig } from './types';
 
-    constructor(config: IConfig) {
-        this.config = config;
-        this.events = {};
+export class Job implements IJob {
+
+    protected closed: boolean = false;
+    protected verbose: boolean;
+    protected events: { [fn: string]: emit[] } = {};
+
+    constructor(protected processor: IProcessor, protected destinations: IDestination[], options: IJobConfig = {}) {
+        this.verbose = !!options.verbose;
     }
 
-    /** @internal */
-    protected async loadBatch(destination: Destination, data: any[]) {
+    async run() {
+        await this.emit('startProcessing');
+        await this.processor.process(
+            async (readStream) => (await this.processStream(readStream)),
+            async (eventName, ...args) => (await this.emit(eventName, ...args)),
+        );
+        await this.emit('endProcessing');
+    }
+
+    on(eventName: string, fn: event) {
+        const event = this.events[eventName];
+        if (!event) {
+            this.events[eventName] = [fn];
+        } else {
+            this.events[eventName].push(fn);
+        }
+    }
+
+    protected async loadBatch(destination: IDestination, data: any[]) {
         if (data.length) {
             if (destination.batchTransformer) {
                 await this.emit('transformingBatch');
@@ -27,21 +40,7 @@ export abstract class Processor implements IProcessor {
             }
             await this.emit('loadingBatch');
             try {
-                if (destination.type === 'postgres') {
-                    await insertToPostgres(data, destination);
-                } else if (destination.type === 'mssql') {
-                    await insertToMsSql(data, destination);
-                } else if (destination.type === 'http') {
-                    await sendRequest(data, destination);
-                } else if (destination.type === 'custom') {
-                    await destination.load(data);
-                } else {
-                    if (destination.asTable) {
-                        console.table(data);
-                    } else {
-                        console.log(data);
-                    }
-                }
+                await destination.loadBatch(data);
             } catch (err) {
                 await this.emit('loadingBatchError', err);
             }
@@ -49,10 +48,9 @@ export abstract class Processor implements IProcessor {
         }
     }
 
-    /** @internal */
     protected async getNextRecord(readStream: ReadStream | Readable) {
         return new Promise<{ data: any[][]; header: any; }>((resolve, reject) => {
-            const destinations = this.config.destinations!;
+            const destinations = this.destinations;
             let data: any[][] = [];
             if (destinations) {
                 for (let i = 0; i < destinations.length; i++) {
@@ -124,11 +122,10 @@ export abstract class Processor implements IProcessor {
         });
     }
 
-    /** @internal */
     protected async processStream(readStream: ReadStream | Readable) {
         this.closed = false;
         const results: any[][] = [];
-        const destinations = this.config.destinations!;
+        const destinations = this.destinations;
         for (let j = 0; j < destinations.length; j++) {
             results[j] = [];
         }
@@ -142,7 +139,7 @@ export abstract class Processor implements IProcessor {
                 }
                 for (let j = 0; j < destinations.length; j++) {
                     results[j].push(...result.data[j]);
-                    while (results[j].length >= destinations[j].batchSize) {
+                    while (destinations[j].batchSize && results[j].length >= destinations[j].batchSize) {
                         const destination = destinations[j];
                         const toSend = results[j].splice(0, destination.batchSize);
                         await this.loadBatch(destination, toSend);
@@ -158,27 +155,9 @@ export abstract class Processor implements IProcessor {
         return header;
     }
 
-
-    on(eventName: string, fn: event) {
-        const event = this.events[eventName];
-        if (!event) {
-            this.events[eventName] = [fn];
-        } else {
-            this.events[eventName].push(fn);
-        }
-    }
-
-    addDestination(destination: Destination) {
-        if (!this.config.destinations) {
-            this.config.destinations = [];
-        }
-        this.config.destinations.push(destination);
-    }
-
-    /** @internal */
     protected async emit(eventName: string, ...args: any) {
         const fn = this.events[eventName];
-        if (this.config.verbose) {
+        if (this.verbose) {
             console.log({ eventName, args });
         }
         if (fn) {
@@ -187,17 +166,6 @@ export abstract class Processor implements IProcessor {
                 if (result) {
                     this.closed = true;
                 }
-            }
-        }
-    }
-
-    async process() {
-        if (!this.config.destinations || this.config.destinations.length === 0) {
-            throw Error('At least one destination is required.');
-        }
-        for (let i = 0; i < this.config.destinations.length; i++) {
-            if (!this.config.destinations[i].batchSize) {
-                throw Error('Batch size must be specified for destination.');
             }
         }
     }

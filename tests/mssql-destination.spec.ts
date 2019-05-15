@@ -1,6 +1,5 @@
-import * as bellboy from '../src';
+import { Job, DynamicProcessor, MssqlDestination } from '../src';
 import * as utils from '../src/utils';
-import { Destination } from '../src/types';
 
 let db: any = null;
 const connection = {
@@ -27,25 +26,20 @@ afterAll(async () => {
 })
 
 it('inserts generated data to mssql', async () => {
-    const processor = new bellboy.DynamicProcessor({
+    const processor = new DynamicProcessor({
         generator: async function* () {
             yield {
                 id: 1,
             }
         },
-        destinations: [
-            {
-                type: 'mssql',
-                setup: {
-                    connection,
-                    table: 'test'
-                },
-                batchSize: 1,
-            } as Destination
-        ],
-
     });
-    await processor.process();
+    const destination = new MssqlDestination({
+        connection,
+        table: 'test',
+        batchSize: 1,
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
     const res = await db.query(`select * from test`);
     expect(res.recordset).toEqual([{
         id: 1,

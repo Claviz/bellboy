@@ -1,19 +1,15 @@
 import * as fs from 'fs';
 
-import * as bellboy from '../src';
-import { Destination } from '../src/types';
-
-let data: any[] = [];
+import { Job, TailProcessor } from '../src';
+import { CustomDestination } from './helpers';
 
 const filePath = 'test.txt';
 let interval: any;
 
 beforeAll(async () => {
-
 });
 
 beforeEach(async () => {
-    data = [];
     fs.appendFileSync(filePath, 'First line\n');
     fs.appendFileSync(filePath, 'Second line\n');
     interval = setInterval(function () {
@@ -29,50 +25,39 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-
 });
 
 it('tails file', async () => {
-    const processor = new bellboy.TailProcessor({
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new TailProcessor({
         path: './',
         files: [filePath],
-        destinations: [
-            {
-                type: 'custom',
-                batchSize: 1,
-                load: async (rows) => {
-                    data = rows;
-                }
-            } as Destination
-        ],
     });
-    processor.on('loadedBatch', async () => {
+    const job = new Job(processor, [destination]);
+    job.on('loadedBatch', async () => {
         return true;
     });
-    await processor.process();
-    expect(data).toEqual([{ file: filePath, data: 'Hello, world!' }]);
+    await job.run();
+    expect(destination.getData()).toEqual([{ file: filePath, data: 'Hello, world!' }]);
 });
 
 it('tails file from beginning', async () => {
-    const processor = new bellboy.TailProcessor({
+    const destination = new CustomDestination({
+        batchSize: 3,
+    });
+    const processor = new TailProcessor({
         path: './',
         files: [filePath],
         fromBeginning: true,
-        destinations: [
-            {
-                type: 'custom',
-                batchSize: 3,
-                load: async (rows) => {
-                    data = rows;
-                }
-            } as Destination
-        ],
     });
-    processor.on('loadedBatch', async () => {
+    const job = new Job(processor, [destination]);
+    job.on('loadedBatch', async () => {
         return true;
     });
-    await processor.process();
-    expect(data).toEqual([
+    await job.run();
+    expect(destination.getData()).toEqual([
         { file: filePath, data: 'First line' },
         { file: filePath, data: 'Second line' },
         { file: filePath, data: 'Hello, world!' },
