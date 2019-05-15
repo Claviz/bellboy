@@ -26,12 +26,14 @@ const path = require('path');
 
 (async () => {
     const srcPath = `C:/source`;
-    // 1. create a processor which will process Excel files one by one in the folder 
+    // 1. create a processor which will process 
+    // Excel files one by one in the folder 
     const processor = new bellboy.ExcelProcessor({
         path: srcPath,
         hasHeader: true,
     });
-    // 2. create a destination which will add a new 'status' field to each row and load processed data to Postgres database
+    // 2. create a destination which will add a new 'status' 
+    // field to each row and load processed data to Postgres database
     const destination = new bellboy.PostgresDestination({
         connection: {
             user: 'user',
@@ -138,9 +140,9 @@ Listens for messages and processes them one by one. It also handles backpressure
 
 ### HttpProcessor <div id='http-processor'/>
 
-Processes data received from a HTTP call. Can process `JSON` as well as `delimited` data. Can handle pagination by using `nextRequest` function.
-
 [Usage examples](tests/http-source.spec.ts)
+
+Processes data received from a HTTP call. Can process `JSON` as well as `delimited` data. Can handle pagination by using `nextRequest` function.
 
 #### Options
 * **connection** `object` `required`\
@@ -188,6 +190,7 @@ Emitted when file is about to be processed.
 Emitted after file has been processed.
 
 ### ExcelProcessor <div id='excel-processor'/>
+
 [Usage examples](tests/excel-source.spec.ts)
 
 Processes `XLSX` files in the directory.
@@ -225,6 +228,7 @@ Processes `JSON` files in the directory.
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
 
 ### TailProcessor <div id='tail-processor'/>
+
 [Usage examples](tests/tail-source.spec.ts)
 
 Watches for file changes and outputs last part of file as soon as new lines are added to the file.
@@ -300,6 +304,7 @@ Logs out all data to stdout (console).
 If set to `true`, data will be printed as table.
 
 ### HttpDestination <div id='http-destination'/>
+
 [Usage examples](tests/http-destination.spec.ts)
 
 Puts processed data one by one in `body` and executes specified HTTP request.
@@ -309,6 +314,7 @@ Puts processed data one by one in `body` and executes specified HTTP request.
 * Options from [request](https://github.com/request/request#requestoptions-callback) library.
 
 ### PostgresDestination <div id='postgres-destination'/>
+
 [Usage examples](tests/postgres-destination.spec.ts)
 
 Inserts data to PostgreSQL.
@@ -328,6 +334,7 @@ Inserts data to PostgreSQL.
   * **schema**
 
 ### MssqlDestination <div id='mssql-destination'/>
+
 [Usage examples](tests/mssql-destination.spec.ts)
 
 Inserts data to MSSQL.
