@@ -1,5 +1,8 @@
 language: node_js
 
+install:
+  - npm install -g codecov
+
 services:
   - docker
 
@@ -14,4 +17,4 @@ script:
   - docker-compose -f docker-compose.yml -f docker-compose.coveralls.yml up --abort-on-container-exit --exit-code-from test
 
 after_success:
-  - npm run coveralls
+  - codecov
