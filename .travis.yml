@@ -11,4 +11,4 @@ before_script:
   - npm run build
 
 script:
-  - docker-compose -f docker-compose.coveralls.yml up --abort-on-container-exit --exit-code-from test
+  - docker-compose -f docker-compose.yml -f docker-compose.coveralls.yml up --abort-on-container-exit --exit-code-from test
