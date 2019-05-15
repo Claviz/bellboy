@@ -1,0 +1,16 @@
+language: node_js
+
+services:
+  - docker
+
+node_js:
+  - node
+
+before_script:
+  - npm run build
+
+script:
+  - docker-compose up
+
+after_success:
+  - npm run coveralls

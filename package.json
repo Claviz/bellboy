@@ -6,7 +6,8 @@
   "types": "lib/index",
   "scripts": {
     "build": "tsc -p .",
-    "test": "jest"
+    "test": "jest",
+    "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
     "@types/node": "^12.0.0",
     "@types/request-promise": "^4.1.43",
     "body-parser": "^1.19.0",
+    "coveralls": "^3.0.3",
     "express": "^4.16.4",
     "jest": "^24.8.0",
     "mosca": "^2.8.3",
