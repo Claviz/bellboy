@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc -p .",
     "test": "jest",
-    "coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls"
+    "test-coverage": "jest --coverage --coverageReporters=text-lcov",
+    "coveralls": "coveralls"
   },
   "repository": {
     "type": "git",
