@@ -1,0 +1,3 @@
+services:
+  test:
+    command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- npm run coveralls
