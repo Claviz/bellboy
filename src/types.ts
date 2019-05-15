@@ -101,6 +101,10 @@ export interface IJsonProcessorConfig extends IDirectoryProcessorConfig {
     jsonPath: string;
 }
 
+export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
+    delimiter: string;
+}
+
 export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {
 }
 

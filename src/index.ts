@@ -12,6 +12,7 @@ export { DynamicProcessor } from './processors/dynamic-processor';
 export { JsonProcessor } from './processors/json-processor';
 export { MqttProcessor } from './processors/mqtt-processor';
 export { TailProcessor } from './processors/tail-processor';
+export { DelimitedProcessor } from './processors/delimited-processor';
 
 export { Destination } from './destinations/base/destination';
 export { DatabaseDestination } from './destinations/base/database-destination';

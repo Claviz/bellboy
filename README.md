@@ -121,7 +121,8 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 * [MqttProcessor](#mqtt-processor) processes **MQTT** protocol messages.
 * [HttpProcessor](#http-rocessor) processes data received from a **HTTP** call.
 * [ExcelProcessor](#excel-processor) processes **XLSX** file data from the file system.
-* [JsonProcessor](#json-rocessor) processes **JSON** file data from the file system. 
+* [JsonProcessor](#json-processor) processes **JSON** file data from the file system. 
+* [DelimitedProcessor](#delimited-processor) processes files with **delimited data** from the file system. 
 * [PostgresProcessor](#database-processors) processes data received from a **PostgreSQL** SELECT.
 * [MssqlProcessor](#database-processors) processes data received from a **MSSQL** SELECT.
 * [DynamicProcessor](#dynamic-processor) processes **dynamically generated** data.
@@ -226,6 +227,16 @@ Processes `JSON` files in the directory.
 * [Directory processor options](#directory-processor-options)
 * **jsonPath** `string` `required`\
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
+
+### DelimitedProcessor <div id='delimited-processor'/>
+
+[Usage examples](tests/delimited-source.spec.ts)
+
+Processes files with delimited data in the directory.
+
+#### Options
+* [Directory processor options](#directory-processor-options)
+* **delimiter** `string` `required`
 
 ### TailProcessor <div id='tail-processor'/>
 
