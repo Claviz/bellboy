@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/Claviz/bellboy.svg?branch=master)](https://travis-ci.org/Claviz/bellboy)
+[![Coverage Status](https://coveralls.io/repos/github/Claviz/bellboy/badge.svg?branch=master)](https://coveralls.io/github/Claviz/bellboy?branch=master)
+![npm](https://img.shields.io/npm/v/bellboy.svg)
+
 # bellboy
 
 Highly performant JavaScript data stream ETL engine.
