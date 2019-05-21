@@ -12,7 +12,6 @@ export interface IDbConnection {
 }
 
 export interface IJobConfig {
-    verbose?: boolean;
 }
 
 export interface IJob {

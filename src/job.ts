@@ -1,16 +1,14 @@
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 
-import { emit, event, IJob, IDestination, IProcessor, IJobConfig } from './types';
+import { emit, event, IDestination, IJob, IJobConfig, IProcessor } from './types';
 
 export class Job implements IJob {
 
     protected closed: boolean = false;
-    protected verbose: boolean;
     protected events: { [fn: string]: emit[] } = {};
 
     constructor(protected processor: IProcessor, protected destinations: IDestination[], options: IJobConfig = {}) {
-        this.verbose = !!options.verbose;
     }
 
     async run() {
@@ -33,24 +31,30 @@ export class Job implements IJob {
 
     protected async loadBatch(destination: IDestination, data: any[]) {
         if (data.length) {
+            const destinationIndex = this.destinations.indexOf(destination);
             if (destination.batchTransformer) {
-                await this.emit('transformingBatch');
-                data = await destination.batchTransformer(data);
-                await this.emit('transformedBatch');
+                await this.emit('transformingBatch', destinationIndex, data);
+                try {
+                    data = await destination.batchTransformer(data);
+                } catch (err) {
+                    await this.emit('transformingBatchError', destinationIndex, err);
+                }
+                await this.emit('transformedBatch', destinationIndex, data);
             }
-            await this.emit('loadingBatch');
+            await this.emit('loadingBatch', destinationIndex, data);
             try {
                 await destination.loadBatch(data);
             } catch (err) {
-                await this.emit('loadingBatchError', err);
+                await this.emit('loadingBatchError', destinationIndex, err);
             }
-            await this.emit('loadedBatch');
+            await this.emit('loadedBatch', destinationIndex);
         }
     }
 
     protected async getNextRecord(readStream: ReadStream | Readable) {
         return new Promise<{ data: any[][]; header: any; }>((resolve, reject) => {
             const destinations = this.destinations;
+            const emit = (eventName: string, ...args: any) => this.emit(eventName, ...args);
             let data: any[][] = [];
             if (destinations) {
                 for (let i = 0; i < destinations.length; i++) {
@@ -62,7 +66,7 @@ export class Job implements IJob {
             const niceEnding = () => {
                 removeListeners();
                 this.closed = true;
-                resolve({ data, header });
+                resolve();
             }
 
             function errorEnding(error: any) {
@@ -73,26 +77,31 @@ export class Job implements IJob {
             async function handleData(obj: any) {
                 readStream.pause();
                 removeListeners();
-                if (destinations) {
-                    for (let i = 0; i < destinations.length; i++) {
-                        const recordGeneratorFn = destinations[i].recordGenerator;
-                        if (!recordGeneratorFn) {
-                            data[i].push(obj);
-                        } else {
-                            const recordGenerator = recordGeneratorFn(obj);
+                await emit('startProcessingRow', obj);
+                for (let i = 0; i < destinations.length; i++) {
+                    const recordGeneratorFn = destinations[i].recordGenerator;
+                    if (!recordGeneratorFn) {
+                        data[i].push(obj);
+                        await emit('rowAddedToBatch', i, obj);
+                    } else {
+                        const wrapper = async function* (recordGenerator: AsyncIterableIterator<{}>) {
                             try {
                                 for await (const record of recordGenerator) {
-                                    data[i].push(record);
+                                    yield record;
                                 }
                             } catch (err) {
-                                reject(err);
+                                await emit('rowProcessingError', i, err);
                             }
                         }
+                        let recordGenerator = wrapper(recordGeneratorFn(obj));
+                        for await (const record of recordGenerator) {
+                            data[i].push(record);
+                            await emit('rowAddedToBatch', i, record);
+                        }
                     }
-                    resolve({ data, header });
-                } else {
-                    resolve({ data: obj, header });
                 }
+                await emit('endProcessingRow');
+                resolve({ data, header });
             }
 
             function handleHeader(x: any) {
@@ -157,12 +166,12 @@ export class Job implements IJob {
 
     protected async emit(eventName: string, ...args: any) {
         const fn = this.events[eventName];
-        if (this.verbose) {
-            console.log({ eventName, args });
-        }
         if (fn) {
             for (let i = 0; i < fn.length; i++) {
-                const result = await fn[i].apply(this, args);
+                let result;
+                try {
+                    result = await fn[i].apply(this, args);
+                } catch (err) { }
                 if (result) {
                     this.closed = true;
                 }

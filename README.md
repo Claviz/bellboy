@@ -1,8 +1,4 @@
-[![Build Status](https://travis-ci.org/Claviz/bellboy.svg?branch=master)](https://travis-ci.org/Claviz/bellboy)
-[![codecov](https://codecov.io/gh/Claviz/bellboy/branch/master/graph/badge.svg)](https://codecov.io/gh/Claviz/bellboy)
-![npm](https://img.shields.io/npm/v/bellboy.svg)
-
-# bellboy
+# bellboy [![Build Status](https://travis-ci.org/Claviz/bellboy.svg?branch=master)](https://travis-ci.org/Claviz/bellboy) [![codecov](https://codecov.io/gh/Claviz/bellboy/branch/master/graph/badge.svg)](https://codecov.io/gh/Claviz/bellboy) ![npm](https://img.shields.io/npm/v/bellboy.svg)
 
 Highly performant JavaScript data stream ETL engine.
 
@@ -103,20 +99,25 @@ job.on('processedFile', async (file) => {
 ```
 
 #### Events
-* **startProcessing**\
-Emitted when processor starts working.
-* **processedFile**\
-Emitted when processor ends it's work.
-* **transformingBatch**\
-Emitted when batch is about to be transformed - right before calling `batchTransformer` function.
-* **transformedBatch**\
-Emitted when batch has been transformed - after calling `batchTransformer` function.
-* **loadingBatch**\
-Emitted when batch is about to be loaded in destination.
-* **loadingBatchError** `(error)`\
-Emitted when batch load has failed.
-* **loadedBatch**\
-Emitted when batch has been loaded.
+
+The following table lists the job life-cycle events and parameters they emit.
+
+| Event                  | Parameters              | Description                                                                                           |
+| ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| startProcessing        |                         | Job has started execution.                                                                            |
+| startProcessingRow     | data                    | Received row is about to be processed.                                                                |
+| rowAddedToBatch        | destinationIndex, data  | Received row has been added to the destination batch (wether as is or by `recordGenerator` function). |
+| rowProcessingError     | destinationIndex, error | Received row processing has been failed.                                                              |
+| endProcessingRow       |                         | Received row has been processed.                                                                      |
+| transformingBatch      | destinationIndex, data  | Batch is about to be transformed (before calling `batchTransformer` function).                        |
+| transformingBatchError | destinationIndex, error | Batch transformation has been failed (`batchTransformer` function has thrown an error).               |
+| transformedBatch       | destinationIndex, data  | Batch has been transformed (after calling `batchTransformer` function).                               |
+| loadingBatch           | destinationIndex, data  | Batch is about to be loaded in destination.                                                           |
+| loadingBatchError      | destinationIndex, error | Batch load has failed.                                                                                |
+| loadedBatch            | destinationIndex        | Batch load has been finished.                                                                         |
+| endProcessing          |                         | Job has finished execution.                                                                           |
+
+
 
 ## Processors <div id='processors'/>
 
