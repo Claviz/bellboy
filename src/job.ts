@@ -12,7 +12,7 @@ export class Job implements IJob {
     }
 
     async run() {
-        await this.emit('startProcessing');
+        await this.emit('startProcessing', this.processor, this.destinations);
         await this.processor.process(
             async (readStream) => (await this.processStream(readStream)),
             async (eventName, ...args) => (await this.emit(eventName, ...args)),

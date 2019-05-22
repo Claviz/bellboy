@@ -68,16 +68,17 @@ A job in `bellboy` is a relationship link between [processor](#processors) and [
 
 #### Initialization
 
-To initialize a Job instance, pass [processor](#processors), some [destination(s)](#destinations) and [options](#job-options) if needed.
+To initialize a Job instance, pass [processor](#processors) and some [destination(s)](#destinations). 
+<!-- and [options](#job-options) if needed. -->
 
 ```javascript
 const job = new bellboy.Job(processor_instance, [destination_instance], job_options = {});
 ```
 
-#### Options <div id="job-options"/>
+<!-- #### Options <div id="job-options"/>
 
 * **verbose** `boolean`\
-If set to `true`, all events will be logged to stdout (`false` by default).
+If set to `true`, all events will be logged to stdout (`false` by default). -->
 
 #### Instance methods
 
@@ -102,20 +103,20 @@ job.on('processedFile', async (file) => {
 
 The following table lists the job life-cycle events and parameters they emit.
 
-| Event                  | Parameters              | Description                                                                                           |
-| ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
-| startProcessing        |                         | Job has started execution.                                                                            |
-| startProcessingRow     | data                    | Received row is about to be processed.                                                                |
-| rowAddedToBatch        | destinationIndex, data  | Received row has been added to the destination batch (wether as is or by `recordGenerator` function). |
-| rowProcessingError     | destinationIndex, error | Received row processing has been failed.                                                              |
-| endProcessingRow       |                         | Received row has been processed.                                                                      |
-| transformingBatch      | destinationIndex, data  | Batch is about to be transformed (before calling `batchTransformer` function).                        |
-| transformingBatchError | destinationIndex, error | Batch transformation has been failed (`batchTransformer` function has thrown an error).               |
-| transformedBatch       | destinationIndex, data  | Batch has been transformed (after calling `batchTransformer` function).                               |
-| loadingBatch           | destinationIndex, data  | Batch is about to be loaded in destination.                                                           |
-| loadingBatchError      | destinationIndex, error | Batch load has failed.                                                                                |
-| loadedBatch            | destinationIndex        | Batch load has been finished.                                                                         |
-| endProcessing          |                         | Job has finished execution.                                                                           |
+| Event                  | Parameters                               | Description                                                                                           |
+| ---------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| startProcessing        | processorInstance, destinationInstance[] | Job has started execution.                                                                            |
+| startProcessingRow     | data                                     | Received row is about to be processed.                                                                |
+| rowAddedToBatch        | destinationIndex, data                   | Received row has been added to the destination batch (wether as is or by `recordGenerator` function). |
+| rowProcessingError     | destinationIndex, error                  | Received row processing has been failed.                                                              |
+| endProcessingRow       |                                          | Received row has been processed.                                                                      |
+| transformingBatch      | destinationIndex, data                   | Batch is about to be transformed (before calling `batchTransformer` function).                        |
+| transformingBatchError | destinationIndex, error                  | Batch transformation has been failed (`batchTransformer` function has thrown an error).               |
+| transformedBatch       | destinationIndex, data                   | Batch has been transformed (after calling `batchTransformer` function).                               |
+| loadingBatch           | destinationIndex, data                   | Batch is about to be loaded in destination.                                                           |
+| loadingBatchError      | destinationIndex, error                  | Batch load has failed.                                                                                |
+| loadedBatch            | destinationIndex                         | Batch load has been finished.                                                                         |
+| endProcessing          |                                          | Job has finished execution.                                                                           |
 
 
 
