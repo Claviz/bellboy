@@ -12,6 +12,7 @@ export interface IDbConnection {
 }
 
 export interface IJobConfig {
+    previewMode?: boolean;
 }
 
 export interface IJob {
@@ -48,12 +49,14 @@ export interface IDestination {
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
+    enabledInPreviewMode: boolean;
 }
 
 export interface IDestinationConfig {
     batchSize?: number;
     recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
     batchTransformer?: (rows: any[]) => Promise<any[]>;
+    enabledInPreviewMode?: boolean;
 }
 
 export interface IDatabaseDestinationConfig extends IDestinationConfig {

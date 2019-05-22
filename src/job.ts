@@ -7,8 +7,10 @@ export class Job implements IJob {
 
     protected closed: boolean = false;
     protected events: { [fn: string]: emit[] } = {};
+    protected previewMode: boolean = false;
 
     constructor(protected processor: IProcessor, protected destinations: IDestination[], options: IJobConfig = {}) {
+        this.previewMode = !!options.previewMode;
     }
 
     async run() {
@@ -42,10 +44,12 @@ export class Job implements IJob {
                 await this.emit('transformedBatch', destinationIndex, data);
             }
             await this.emit('loadingBatch', destinationIndex, data);
-            try {
-                await destination.loadBatch(data);
-            } catch (err) {
-                await this.emit('loadingBatchError', destinationIndex, err);
+            if (destination.enabledInPreviewMode || !this.previewMode) {
+                try {
+                    await destination.loadBatch(data);
+                } catch (err) {
+                    await this.emit('loadingBatchError', destinationIndex, err);
+                }
             }
             await this.emit('loadedBatch', destinationIndex);
         }
