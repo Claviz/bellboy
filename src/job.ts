@@ -136,10 +136,14 @@ export class Job implements IJob {
     }
 
     protected async processStream(readStream: ReadStream | Readable) {
+        const destinations = this.previewMode ? this.destinations.filter(x => x.previewModeLoadEnabled) : this.destinations;
+        if (!destinations.length) {
+            return null;
+        }
+
         this.closed = false;
         const results: any[][] = [];
         const loadedRowNumber: number[] = [];
-        const destinations = this.destinations;
         for (let j = 0; j < destinations.length; j++) {
             results[j] = [];
             loadedRowNumber[j] = 0;

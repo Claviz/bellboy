@@ -13,13 +13,13 @@ export abstract class Destination implements IDestination {
         this.rowLimit = 0;
         this.previewModeLoadEnabled = false;
         if (config) {
+            this.rowLimit = config.rowLimit || 0;
             this.batchSize = config.batchSize || 0;
             this.recordGenerator = config.recordGenerator;
             this.batchTransformer = config.batchTransformer;
-            this.rowLimit = config.rowLimit || 0;
-            if (config.previewMode) {
-                this.previewModeLoadEnabled = config.previewMode.enabled;
-                this.rowLimit = config.previewMode.rowLimit || 10;
+            if (config.previewMode && config.previewMode.enabled) {
+                this.previewModeLoadEnabled = true;
+                this.rowLimit = config.previewMode.rowLimit || this.rowLimit || 10;
                 this.batchSize = config.previewMode.batchSize || this.batchSize;
                 this.recordGenerator = config.previewMode.recordGenerator || this.recordGenerator;
                 this.batchTransformer = config.previewMode.batchTransformer || this.batchTransformer;

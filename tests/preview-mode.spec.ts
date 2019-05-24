@@ -73,6 +73,30 @@ it(`destination shouldn't load more than 10 rows if in preview mode`, async () =
     expect(destination.getData().length).toEqual(10);
 });
 
+it(`destination shouldn't process more than 10 rows if in preview mode`, async () => {
+    const data: any[] = [];
+    const destination = new CustomDestination({
+        previewMode: {
+            enabled: true,
+        },
+    });
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            for (let i = 0; i < 100; i++) {
+                yield `test${i}`;
+            }
+        }
+    });
+    const job = new Job(processor, [destination], {
+        previewMode: true,
+    });
+    job.on('startProcessingRow', async (row) => {
+        data.push(row);
+    });
+    await job.run();
+    expect(data.length).toEqual(10);
+});
+
 it(`destination should respect previewMode's rowLimit if in preview mode`, async () => {
     const destination = new CustomDestination({
         previewMode: {
