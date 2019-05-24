@@ -17,9 +17,9 @@ export abstract class Destination implements IDestination {
             this.batchSize = config.batchSize || 0;
             this.recordGenerator = config.recordGenerator;
             this.batchTransformer = config.batchTransformer;
-            if (config.previewMode && config.previewMode.enabled) {
-                this.previewModeLoadEnabled = true;
-                this.rowLimit = config.previewMode.rowLimit || this.rowLimit || 10;
+            if (config.previewMode) {
+                this.previewModeLoadEnabled = !!config.previewMode.loadEnabled;
+                this.rowLimit = config.previewMode.rowLimit || this.rowLimit;
                 this.batchSize = config.previewMode.batchSize || this.batchSize;
                 this.recordGenerator = config.previewMode.recordGenerator || this.recordGenerator;
                 this.batchTransformer = config.previewMode.batchTransformer || this.batchTransformer;

@@ -45,7 +45,7 @@ export interface IProcessor {
 }
 
 export interface IDestinationPreviewMode {
-    enabled: boolean;
+    loadEnabled: boolean;
 }
 
 export interface IDestination {
@@ -69,7 +69,7 @@ export interface IDestinationConfig extends IBaseDestinationConfig {
 }
 
 export interface IPreviewDestinationConfig extends IBaseDestinationConfig {
-    enabled: boolean;
+    loadEnabled?: boolean;
 }
 
 export interface IDatabaseDestinationConfig extends IDestinationConfig {
