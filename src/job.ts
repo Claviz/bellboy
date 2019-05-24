@@ -44,7 +44,7 @@ export class Job implements IJob {
                 await this.emit('transformedBatch', destinationIndex, data);
             }
             await this.emit('loadingBatch', destinationIndex, data);
-            if (!this.previewMode || destination.previewModeLoadEnabled) {
+            if (!this.previewMode || destination.loadInPreviewMode) {
                 try {
                     await destination.loadBatch(data);
                 } catch (err) {
