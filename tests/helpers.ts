@@ -7,13 +7,19 @@ async function timeout(ms: number) {
 export class CustomDestination extends Destination {
 
     data: any[] = [];
+    batchCount: number = 0;
 
     async loadBatch(rows: any[]) {
+        this.batchCount++;
         this.data = [...this.data, ...rows];
     }
 
     getData() {
         return this.data;
+    }
+
+    getBatchCount() {
+        return this.batchCount;
     }
 }
 

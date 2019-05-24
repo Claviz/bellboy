@@ -30,16 +30,13 @@ afterAll(async () => {
 
 it('gets messages from broker', async () => {
     const destination = new CustomDestination({
-        batchSize: 1,
+        rowLimit: 1,
     });
     const processor = new MqttProcessor({
         topics: ['presence'],
         url: 'mqtt://localhost',
     });
     const job = new Job(processor, [destination]);
-    job.on('loadedBatch', async () => {
-        return true;
-    });
     await job.run();
     expect(destination.getData()).toEqual([{
         message: 'test',

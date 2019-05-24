@@ -36,13 +36,19 @@ export class HttpProcessor extends Processor {
 
     protected async getReadStream(options: request.CoreOptions & request.UrlOptions) {
         if (this.delimiter) {
-            return request(options)
-                .pipe(split2(this.delimiter))
-                .pause();
+            const requestStream = request(options);
+            const delimitedStream = requestStream.pipe(split2(this.delimiter)).pause();
+            delimitedStream.on('close', function () {
+                requestStream.destroy()
+            });
+            return delimitedStream;
         } else if (this.jsonPath) {
-            return request(options)
-                .pipe(JSONStream.parse(this.jsonPath))
-                .pause();
+            const requestStream = request(options);
+            const jsonStream = requestStream.pipe(JSONStream.parse(this.jsonPath)).pause();
+            jsonStream.on('close', function () {
+                requestStream.destroy()
+            });
+            return jsonStream;
         }
     }
 

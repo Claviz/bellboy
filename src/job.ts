@@ -7,10 +7,10 @@ export class Job implements IJob {
 
     protected closed: boolean = false;
     protected events: { [fn: string]: emit[] } = {};
-    protected previewMode: boolean = false;
+    protected previewMode: boolean;
 
-    constructor(protected processor: IProcessor, protected destinations: IDestination[], options: IJobConfig = {}) {
-        this.previewMode = !!options.previewMode;
+    constructor(protected processor: IProcessor, protected destinations: IDestination[], config: IJobConfig = {}) {
+        this.previewMode = !!config.previewMode;
     }
 
     async run() {
@@ -44,7 +44,7 @@ export class Job implements IJob {
                 await this.emit('transformedBatch', destinationIndex, data);
             }
             await this.emit('loadingBatch', destinationIndex, data);
-            if (destination.enabledInPreviewMode || !this.previewMode) {
+            if (!this.previewMode || destination.previewModeLoadEnabled) {
                 try {
                     await destination.loadBatch(data);
                 } catch (err) {
@@ -138,9 +138,11 @@ export class Job implements IJob {
     protected async processStream(readStream: ReadStream | Readable) {
         this.closed = false;
         const results: any[][] = [];
+        const loadedRowNumber: number[] = [];
         const destinations = this.destinations;
         for (let j = 0; j < destinations.length; j++) {
             results[j] = [];
+            loadedRowNumber[j] = 0;
         }
         let header;
 
@@ -151,12 +153,30 @@ export class Job implements IJob {
                     header = result.header;
                 }
                 for (let j = 0; j < destinations.length; j++) {
+                    const destination = destinations[j];
                     results[j].push(...result.data[j]);
-                    while (destinations[j].batchSize && results[j].length >= destinations[j].batchSize) {
-                        const destination = destinations[j];
-                        const toSend = results[j].splice(0, destination.batchSize);
-                        await this.loadBatch(destination, toSend);
+                    if (!destination.batchSize) {
+                        if (destination.rowLimit && results[j].length > destination.rowLimit) {
+                            const toSend = results[j].splice(0, destination.rowLimit);
+                            results[j] = toSend;
+                        }
+                        loadedRowNumber[j] = results[j].length;
+                    } else {
+                        while (results[j].length >= destination.batchSize && (!destination.rowLimit || loadedRowNumber[j] < destination.rowLimit)) {
+                            let toSend = results[j].splice(0, destination.batchSize);
+                            const futureLength = loadedRowNumber[j] + toSend.length;
+                            if (destination.rowLimit && futureLength > destination.rowLimit) {
+                                toSend = toSend.splice(0, futureLength - destination.rowLimit);
+                                results[j] = [];
+                            }
+                            await this.loadBatch(destination, toSend);
+                            loadedRowNumber[j] += toSend.length;
+                        }
                     }
+                }
+                const shouldStop = destinations.every((x, j) => !!x.rowLimit && loadedRowNumber[j] === x.rowLimit);
+                if (shouldStop) {
+                    readStream.destroy();
                 }
             }
         }

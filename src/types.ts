@@ -44,19 +44,32 @@ export interface IProcessor {
     process(processStream: processStream, emit: emit): Promise<void>;
 }
 
+export interface IDestinationPreviewMode {
+    enabled: boolean;
+}
+
 export interface IDestination {
     loadBatch: (data: any[]) => Promise<void>;
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
-    enabledInPreviewMode: boolean;
+    rowLimit: number;
+    previewModeLoadEnabled: boolean;
 }
 
-export interface IDestinationConfig {
+export interface IBaseDestinationConfig {
     batchSize?: number;
     recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
     batchTransformer?: (rows: any[]) => Promise<any[]>;
-    enabledInPreviewMode?: boolean;
+    rowLimit?: number;
+}
+
+export interface IDestinationConfig extends IBaseDestinationConfig {
+    previewMode?: IPreviewDestinationConfig;
+}
+
+export interface IPreviewDestinationConfig extends IBaseDestinationConfig {
+    enabled: boolean;
 }
 
 export interface IDatabaseDestinationConfig extends IDestinationConfig {

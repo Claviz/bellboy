@@ -29,23 +29,20 @@ afterAll(async () => {
 
 it('tails file', async () => {
     const destination = new CustomDestination({
-        batchSize: 1,
+        rowLimit: 1,
     });
     const processor = new TailProcessor({
         path: './',
         files: [filePath],
     });
     const job = new Job(processor, [destination]);
-    job.on('loadedBatch', async () => {
-        return true;
-    });
     await job.run();
     expect(destination.getData()).toEqual([{ file: filePath, data: 'Hello, world!' }]);
 });
 
 it('tails file from beginning', async () => {
     const destination = new CustomDestination({
-        batchSize: 3,
+        rowLimit: 3,
     });
     const processor = new TailProcessor({
         path: './',
@@ -53,9 +50,6 @@ it('tails file from beginning', async () => {
         fromBeginning: true,
     });
     const job = new Job(processor, [destination]);
-    job.on('loadedBatch', async () => {
-        return true;
-    });
     await job.run();
     expect(destination.getData()).toEqual([
         { file: filePath, data: 'First line' },
