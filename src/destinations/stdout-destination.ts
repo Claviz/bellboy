@@ -5,9 +5,12 @@ export class StdoutDestination extends Destination {
 
     protected asTable: boolean;
 
-    constructor(config: IStdoutDestinationConfig) {
+    constructor(config?: IStdoutDestinationConfig) {
         super(config);
-        this.asTable = config.asTable ? true : false;
+        this.asTable = false;
+        if (config) {
+            this.asTable = config.asTable || false;
+        }
     }
 
     async loadBatch(data: any[]) {
