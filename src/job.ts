@@ -157,7 +157,7 @@ export class Job implements IJob {
                 for (let j = 0; j < destinations.length; j++) {
                     const destination = destinations[j];
                     results[j].push(...result.data[j]);
-                    if (!destination.batchSize) {
+                    if (!destination.batchSize || (!!destination.rowLimit && destination.rowLimit < destination.batchSize)) {
                         if (destination.rowLimit && results[j].length > destination.rowLimit) {
                             const toSend = results[j].splice(0, destination.rowLimit);
                             results[j] = toSend;

@@ -32,3 +32,26 @@ it('destination should stop loading when rowLimit is specified and reached', asy
         'test2',
     ]);
 });
+
+it(`destination should respsect row limit even if it is less than batchSize`, async () => {
+    const data: any[] = [];
+    const destination = new CustomDestination({
+        batchSize: 10,
+        rowLimit: 3,
+    });
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            for (let i = 0; i < 100; i++) {
+                yield `test${i}`;
+            }
+        }
+    });
+    const job = new Job(processor, [destination], {
+        previewMode: true,
+    });
+    job.on('startProcessingRow', async (row) => {
+        data.push(row);
+    });
+    await job.run();
+    expect(data.length).toEqual(3);
+});
