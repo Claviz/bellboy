@@ -96,14 +96,14 @@ it(`destination shouldn't process more than 10 rows if job is in preview mode an
 it(`destination should respect previewMode's rowLimit if in preview mode`, async () => {
     const destination = new CustomDestination({
         loadInPreviewMode: true,
-        rowLimit: 33,
     });
     const processor = new DynamicProcessor({
         generator: async function* () {
             for (let i = 0; i < 100; i++) {
                 yield `test${i}`;
             }
-        }
+        },
+        rowLimit: 33,
     });
     const job = new Job(processor, [destination], {
         previewMode: true,

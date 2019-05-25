@@ -23,7 +23,7 @@ afterAll(async () => {
 it('reads root data from JSON file', async () => {
     const json = ['hello', 'world'];
     fs.appendFileSync(filePath, JSON.stringify(json));
-    const destination = new CustomDestination({});
+    const destination = new CustomDestination();
     const processor = new JsonProcessor({
         path: './',
         files: [filePath],
@@ -40,7 +40,7 @@ it('reads root data from JSON file', async () => {
 it('reads nested data from JSON file', async () => {
     const json = { fields: ['hello', 'world'] };
     fs.appendFileSync(filePath, JSON.stringify(json));
-    const destination = new CustomDestination({});
+    const destination = new CustomDestination();
     const processor = new JsonProcessor({
         path: './',
         files: [filePath],

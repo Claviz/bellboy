@@ -21,6 +21,7 @@ export interface IJob {
 }
 
 export interface IProcessorConfig {
+    rowLimit?: number;
 }
 
 export interface IDynamicProcessorConfig extends IProcessorConfig {
@@ -42,6 +43,7 @@ export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
 
 export interface IProcessor {
     process(processStream: processStream, emit: emit): Promise<void>;
+    rowLimit: number;
 }
 
 export interface IDestination {
@@ -49,7 +51,6 @@ export interface IDestination {
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
-    rowLimit: number;
     loadInPreviewMode: boolean;
 }
 
@@ -58,7 +59,6 @@ export interface IDestinationConfig {
     batchSize?: number;
     recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
     batchTransformer?: (rows: any[]) => Promise<any[]>;
-    rowLimit?: number;
 }
 
 export interface IDatabaseDestinationConfig extends IDestinationConfig {

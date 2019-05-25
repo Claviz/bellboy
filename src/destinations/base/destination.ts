@@ -5,15 +5,12 @@ export abstract class Destination implements IDestination {
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
-    rowLimit: number;
     loadInPreviewMode: boolean;
 
-    constructor(config: IDestinationConfig | undefined) {
+    constructor(config?: IDestinationConfig) {
         this.batchSize = 0;
-        this.rowLimit = 0;
         this.loadInPreviewMode = false;
         if (config) {
-            this.rowLimit = config.rowLimit || 0;
             this.batchSize = config.batchSize || 0;
             this.recordGenerator = config.recordGenerator;
             this.batchTransformer = config.batchTransformer;

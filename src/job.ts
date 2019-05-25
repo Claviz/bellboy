@@ -138,53 +138,38 @@ export class Job implements IJob {
     protected async processStream(readStream: ReadStream | Readable) {
         this.closed = false;
         const results: any[][] = [];
-        const loadedRowNumber: number[] = [];
         const destinations = this.destinations;
         for (let j = 0; j < destinations.length; j++) {
-            const destination = destinations[j];
-            destination.rowLimit = this.previewMode && !destination.rowLimit ? 10 : destination.rowLimit;
             results[j] = [];
-            loadedRowNumber[j] = 0;
         }
+        let processedRowCount = 0;
+        const rowLimit = this.previewMode && !this.processor.rowLimit ? 10 : this.processor.rowLimit;
         let header;
 
         while (!this.closed && (readStream.readable || (readStream as any).stream)) {
             const result = await this.getNextRecord(readStream);
+            processedRowCount++;
             if (result) {
                 if (result.header) {
                     header = result.header;
                 }
-                for (let j = 0; j < destinations.length; j++) {
-                    const destination = destinations[j];
-                    results[j].push(...result.data[j]);
-                    if (!destination.batchSize || (!!destination.rowLimit && destination.rowLimit < destination.batchSize)) {
-                        if (destination.rowLimit && results[j].length > destination.rowLimit) {
-                            const toSend = results[j].splice(0, destination.rowLimit);
-                            results[j] = toSend;
-                        }
-                        loadedRowNumber[j] = results[j].length;
-                    } else {
-                        while (results[j].length >= destination.batchSize && (!destination.rowLimit || loadedRowNumber[j] < destination.rowLimit)) {
-                            let toSend = results[j].splice(0, destination.batchSize);
-                            const futureLength = loadedRowNumber[j] + toSend.length;
-                            if (destination.rowLimit && futureLength > destination.rowLimit) {
-                                toSend = toSend.splice(0, futureLength - destination.rowLimit);
-                                results[j] = [];
-                            }
-                            await this.loadBatch(destination, toSend);
-                            loadedRowNumber[j] += toSend.length;
-                        }
+                for (let i = 0; i < destinations.length; i++) {
+                    results[i].push(...result.data[i]);
+                    while (destinations[i].batchSize && results[i].length >= destinations[i].batchSize) {
+                        const destination = destinations[i];
+                        const toSend = results[i].splice(0, destination.batchSize);
+                        await this.loadBatch(destination, toSend);
                     }
                 }
-                const shouldStop = destinations.every((x, j) => !!x.rowLimit && loadedRowNumber[j] === x.rowLimit);
-                if (shouldStop) {
-                    readStream.destroy();
-                }
+            }
+            const shouldStop = rowLimit === processedRowCount;
+            if (shouldStop) {
+                readStream.destroy();
             }
         }
-        for (let j = 0; j < destinations.length; j++) {
-            if (results[j].length) {
-                await this.loadBatch(destinations[j], results[j]);
+        for (let i = 0; i < destinations.length; i++) {
+            if (results[i].length) {
+                await this.loadBatch(destinations[i], results[i]);
             }
         }
         return header;

@@ -28,12 +28,11 @@ afterAll(async () => {
 });
 
 it('tails file', async () => {
-    const destination = new CustomDestination({
-        rowLimit: 1,
-    });
+    const destination = new CustomDestination();
     const processor = new TailProcessor({
         path: './',
         files: [filePath],
+        rowLimit: 1,
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -41,13 +40,12 @@ it('tails file', async () => {
 });
 
 it('tails file from beginning', async () => {
-    const destination = new CustomDestination({
-        rowLimit: 3,
-    });
+    const destination = new CustomDestination();
     const processor = new TailProcessor({
         path: './',
         files: [filePath],
         fromBeginning: true,
+        rowLimit: 3,
     });
     const job = new Job(processor, [destination]);
     await job.run();

@@ -29,12 +29,11 @@ afterAll(async () => {
 })
 
 it('gets messages from broker', async () => {
-    const destination = new CustomDestination({
-        rowLimit: 1,
-    });
+    const destination = new CustomDestination();
     const processor = new MqttProcessor({
         topics: ['presence'],
         url: 'mqtt://localhost',
+        rowLimit: 1,
     });
     const job = new Job(processor, [destination]);
     await job.run();
