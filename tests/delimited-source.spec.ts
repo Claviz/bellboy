@@ -23,13 +23,12 @@ afterAll(async () => {
 it('reads data from file delimited by new lines', async () => {
     fs.appendFileSync(filePath, 'First line\n');
     fs.appendFileSync(filePath, 'Second line\n');
-    const destination = new CustomDestination({
-        rowLimit: 2,
-    });
+    const destination = new CustomDestination();
     const processor = new DelimitedProcessor({
         path: './',
         files: [filePath],
         delimiter: '\n',
+        rowLimit: 2,
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -41,13 +40,12 @@ it('reads data from file delimited by new lines', async () => {
 
 it('reads data from file delimited by commas', async () => {
     fs.appendFileSync(filePath, 'Hello, world!');
-    const destination = new CustomDestination({
-        rowLimit: 2,
-    });
+    const destination = new CustomDestination();
     const processor = new DelimitedProcessor({
         path: './',
         files: [filePath],
         delimiter: ',',
+        rowLimit: 2,
     });
     const job = new Job(processor, [destination]);
     await job.run();
