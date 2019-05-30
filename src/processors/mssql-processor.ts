@@ -1,4 +1,4 @@
-import { IMssqlProcessorConfig, processStream, emit } from '../types';
+import { IMssqlProcessorConfig, processStream } from '../types';
 import { getDb } from '../utils';
 import { DatabaseProcessor } from './base/database-processor';
 
@@ -8,7 +8,7 @@ export class MssqlProcessor extends DatabaseProcessor {
         super(config);
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         const db = await getDb(this.connection, 'mssql');
         const readStream = db.request();
         readStream.stream = true;

@@ -1,27 +1,48 @@
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 
-import { emit, event, IDestination, IJob, IJobConfig, IProcessor } from './types';
+import { emit, event, IDestination, IJob, IJobConfig, IProcessor, IReporter } from './types';
 
 export class Job implements IJob {
 
     protected closed: boolean = false;
     protected events: { [fn: string]: emit[] } = {};
-    protected previewMode: boolean;
+    protected reporters: IReporter[];
 
     constructor(protected processor: IProcessor, protected destinations: IDestination[], config: IJobConfig = {}) {
-        this.previewMode = !!config.previewMode;
+        this.reporters = config.reporters || [];
+        for (let i = 0; i < this.reporters.length; i++) {
+            this.reporters[i].report(this);
+        }
     }
 
     async run() {
         await this.emit('startProcessing', this.processor, this.destinations);
-        await this.processor.process(
-            async (readStream) => (await this.processStream(readStream)),
-            async (eventName, ...args) => (await this.emit(eventName, ...args)),
-        );
-        await this.emit('endProcessing');
+        try {
+            await this.processor.process(
+                async (readStream, ...args: any) => (await this.processStream(readStream, ...args)),
+            );
+            await this.emit('endProcessing');
+        } catch (err) {
+            await this.emit('processingError', err);
+        }
     }
 
+    on(eventName: 'endProcessing', fn: (() => Promise<any>)): any
+    on(eventName: 'loadedBatch', fn: ((destinationIndex: number, data: any[]) => Promise<any>)): any
+    on(eventName: 'processingError', fn: ((error: any) => Promise<any>)): any
+    on(eventName: 'loadingBatchError', fn: ((destinationIndex: number, data: any[], error: any) => Promise<any>)): any
+    on(eventName: 'loadingBatch', fn: ((destinationIndex: number, data: any[]) => Promise<any>)): any
+    on(eventName: 'transformedBatch', fn: ((destinationIndex: number, data: any) => Promise<any>)): any
+    on(eventName: 'transformingBatchError', fn: ((destinationIndex: number, data: any[], error: any) => Promise<any>)): any
+    on(eventName: 'transformingBatch', fn: ((destinationIndex: number, data: any[]) => Promise<any>)): any
+    on(eventName: 'endProcessingRow', fn: (() => Promise<any>)): any
+    on(eventName: 'rowGenerationError', fn: ((destinationIndex: number, data: any, error: any) => Promise<any>)): any
+    on(eventName: 'rowGenerated', fn: ((destinationIndex: number, row: any) => Promise<any>)): any
+    on(eventName: 'startProcessingRow', fn: ((row: any) => Promise<any>)): any
+    on(eventName: 'startProcessing', fn: (() => Promise<any>)): any
+    on(eventName: 'endProcessingStream', fn: (() => Promise<any>)): any
+    on(eventName: 'startProcessingStream', fn: ((...args: any) => Promise<any>)): any
     on(eventName: string, fn: event) {
         const event = this.events[eventName];
         if (!event) {
@@ -31,27 +52,26 @@ export class Job implements IJob {
         }
     }
 
-    protected async loadBatch(destination: IDestination, data: any[]) {
+    protected async loadBatch(destinationIndex: number, destination: IDestination, data: any[]) {
         if (data.length) {
-            const destinationIndex = this.destinations.indexOf(destination);
             if (destination.batchTransformer) {
                 await this.emit('transformingBatch', destinationIndex, data);
                 try {
                     data = await destination.batchTransformer(data);
+                    await this.emit('transformedBatch', destinationIndex, data);
                 } catch (err) {
-                    await this.emit('transformingBatchError', destinationIndex, err);
+                    await this.emit('transformingBatchError', destinationIndex, data, err);
                 }
-                await this.emit('transformedBatch', destinationIndex, data);
             }
-            await this.emit('loadingBatch', destinationIndex, data);
-            if (!this.previewMode || destination.loadInPreviewMode) {
+            if (!destination.disableLoad) {
+                await this.emit('loadingBatch', destinationIndex, data);
                 try {
                     await destination.loadBatch(data);
+                    await this.emit('loadedBatch', destinationIndex, data);
                 } catch (err) {
-                    await this.emit('loadingBatchError', destinationIndex, err);
+                    await this.emit('loadingBatchError', destinationIndex, data, err);
                 }
             }
-            await this.emit('loadedBatch', destinationIndex);
         }
     }
 
@@ -86,7 +106,7 @@ export class Job implements IJob {
                     const recordGeneratorFn = destinations[i].recordGenerator;
                     if (!recordGeneratorFn) {
                         data[i].push(obj);
-                        await emit('rowAddedToBatch', i, obj);
+                        // await emit('rowGenerated', i, obj);
                     } else {
                         const wrapper = async function* (recordGenerator: AsyncIterableIterator<{}>) {
                             try {
@@ -94,13 +114,13 @@ export class Job implements IJob {
                                     yield record;
                                 }
                             } catch (err) {
-                                await emit('rowProcessingError', i, err);
+                                await emit('rowGenerationError', i, obj, err);
                             }
                         }
                         let recordGenerator = wrapper(recordGeneratorFn(obj));
                         for await (const record of recordGenerator) {
                             data[i].push(record);
-                            await emit('rowAddedToBatch', i, record);
+                            await emit('rowGenerated', i, record);
                         }
                     }
                 }
@@ -135,7 +155,8 @@ export class Job implements IJob {
         });
     }
 
-    protected async processStream(readStream: ReadStream | Readable) {
+    protected async processStream(readStream: ReadStream | Readable, ...args: any) {
+        this.emit('startProcessingStream', ...args);
         this.closed = false;
         const results: any[][] = [];
         const destinations = this.destinations;
@@ -143,7 +164,6 @@ export class Job implements IJob {
             results[j] = [];
         }
         let processedRowCount = 0;
-        const rowLimit = this.previewMode && !this.processor.rowLimit ? 10 : this.processor.rowLimit;
         let header;
 
         while (!this.closed && (readStream.readable || (readStream as any).stream)) {
@@ -158,20 +178,21 @@ export class Job implements IJob {
                     while (destinations[i].batchSize && results[i].length >= destinations[i].batchSize) {
                         const destination = destinations[i];
                         const toSend = results[i].splice(0, destination.batchSize);
-                        await this.loadBatch(destination, toSend);
+                        await this.loadBatch(i, destination, toSend);
                     }
                 }
             }
-            const shouldStop = rowLimit === processedRowCount;
+            const shouldStop = this.processor.rowLimit === processedRowCount;
             if (shouldStop) {
                 readStream.destroy();
             }
         }
         for (let i = 0; i < destinations.length; i++) {
             if (results[i].length) {
-                await this.loadBatch(destinations[i], results[i]);
+                await this.loadBatch(i, destinations[i], results[i]);
             }
         }
+        this.emit('endProcessingStream');
         return header;
     }
 

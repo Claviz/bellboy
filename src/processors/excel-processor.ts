@@ -1,8 +1,8 @@
 import path from 'path';
-import { getXlsxStream, getWorksheets } from 'xlstream';
+import { getWorksheets, getXlsxStream } from 'xlstream';
 
+import { IExcelProcessorConfig, processStream } from '../types';
 import { DirectoryProcessor } from './base/directory-processor';
-import { IExcelProcessorConfig, processStream, emit } from '../types';
 
 export class ExcelProcessor extends DirectoryProcessor {
 
@@ -27,18 +27,16 @@ export class ExcelProcessor extends DirectoryProcessor {
         };
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         for (let file of this.files) {
             const filePath = path.join(this.path, file);
-            await emit('processingFile', file, filePath);
             const readStream = await getXlsxStream({
                 filePath,
                 sheet: await this.sheetGetter(filePath),
                 withHeader: this.hasHeader,
                 ignoreEmpty: true,
             });
-            await processStream(readStream as any);
-            await emit('processedFile', file, filePath);
+            await processStream(readStream as any, file, filePath);
         }
     }
 }

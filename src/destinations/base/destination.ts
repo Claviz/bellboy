@@ -5,16 +5,16 @@ export abstract class Destination implements IDestination {
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
-    loadInPreviewMode: boolean;
+    disableLoad: boolean;
 
     constructor(config?: IDestinationConfig) {
         this.batchSize = 0;
-        this.loadInPreviewMode = false;
+        this.disableLoad = false;
         if (config) {
             this.batchSize = config.batchSize || 0;
             this.recordGenerator = config.recordGenerator;
             this.batchTransformer = config.batchTransformer;
-            this.loadInPreviewMode = !!config.loadInPreviewMode;
+            this.disableLoad = !!config.disableLoad;
         }
     }
 

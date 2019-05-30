@@ -1,6 +1,6 @@
 import request = require('request');
 
-import { emit, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
+import { IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
 import { Processor } from './base/processor';
 
 const split2 = require('split2');
@@ -63,7 +63,7 @@ export class HttpProcessor extends Processor {
         }
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         await this.processHttpData(processStream, this.connection);
     }
 }

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { emit, IDelimitedProcessorConfig, processStream } from '../types';
+
+import { IDelimitedProcessorConfig, processStream } from '../types';
 import { DirectoryProcessor } from './base/directory-processor';
 
 const split2 = require('split2');
@@ -17,17 +18,15 @@ export class DelimitedProcessor extends DirectoryProcessor {
         this.delimiter = config.delimiter;
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         for (const file of this.files) {
             const filePath = path.join(this.path, file);
-            await emit('processingFile', file, filePath);
             const fileReadStream = fs.createReadStream(filePath);
             const readStream = fileReadStream.pipe(split2(this.delimiter)).pause();
             readStream.on('close', function () {
                 fileReadStream.destroy()
             });
-            await processStream(readStream);
-            await emit('processedFile', file, filePath);
+            await processStream(readStream, file, filePath);
         };
     }
 }

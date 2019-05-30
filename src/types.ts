@@ -11,8 +11,12 @@ export interface IDbConnection {
     schema?: string;
 }
 
+export interface IReporter {
+    report(job: IJob): void;
+}
+
 export interface IJobConfig {
-    previewMode?: boolean;
+    reporters?: IReporter[];
 }
 
 export interface IJob {
@@ -42,7 +46,7 @@ export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
 }
 
 export interface IProcessor {
-    process(processStream: processStream, emit: emit): Promise<void>;
+    process(processStream: processStream, ...args: any): Promise<void>;
     rowLimit: number;
 }
 
@@ -51,11 +55,12 @@ export interface IDestination {
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
-    loadInPreviewMode: boolean;
+    // loadInMode: boolean;
+    disableLoad: boolean;
 }
 
 export interface IDestinationConfig {
-    loadInPreviewMode?: boolean;
+    disableLoad?: boolean;
     batchSize?: number;
     recordGenerator?: (row: any) => AsyncIterableIterator<{}>;
     batchTransformer?: (rows: any[]) => Promise<any[]>;
@@ -126,10 +131,10 @@ export interface IMqttProcessorConfig extends IProcessorConfig {
 
 export type DbTypes = 'postgres' | 'mssql';
 
-export type event = (...args: any) => Promise<void | any>;
+export type event = (...args: any) => Promise<any>;
 
 export type sheetGetter = (sheets: string[]) => Promise<string | number>;
 
-export type emit = (event: string, ...args: any) => Promise<void | any>;
+export type emit = (event: string, ...args: any) => Promise<any>;
 
-export type processStream = (readStream: ReadStream | Readable) => Promise<any>;
+export type processStream = (readStream: ReadStream | Readable, ...args: any) => Promise<any>;

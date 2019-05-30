@@ -52,7 +52,7 @@ const path = require('path');
     // 3. create a job which will glue processor and destination together
     const job = new bellboy.Job(processor, [destination]);
     // 4. tell bellboy to move file away as soon as it was processed
-    job.on('processedFile', async (file) => {
+    job.on('endProcessingStream', async (file) => {
         const filePath = path.join(srcPath, file);
         const newFilePath = path.join(`./destination`, file);
         await fs.renameSync(filePath, newFilePath);
@@ -75,11 +75,6 @@ To initialize a Job instance, pass [processor](#processors) and some [destinatio
 const job = new bellboy.Job(processor_instance, [destination_instance], job_options = {});
 ```
 
-<!-- #### Options <div id="job-options"/>
-
-* **verbose** `boolean`\
-If set to `true`, all events will be logged to stdout (`false` by default). -->
-
 #### Instance methods
 
 * **run** `async function()`\
@@ -91,8 +86,8 @@ If `on` returns some `truthy` value, processing will be stopped.
 <div id="moving-file"/>
 
 ```javascript
-// move file to the new location when processedFile event is fired
-job.on('processedFile', async (file) => {
+// move file to the new location when endProcessingStream event is fired
+job.on('endProcessingStream', async (file) => {
     const filePath = path.join(srcPath, file);
     const newFilePath = path.join(`./destination`, file);
     await rename(filePath, newFilePath);
@@ -103,22 +98,23 @@ job.on('processedFile', async (file) => {
 
 The following table lists the job life-cycle events and parameters they emit.
 
-| Event                  | Parameters                               | Description                                                                                           |
-| ---------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| startProcessing        | processorInstance, destinationInstance[] | Job has started execution.                                                                            |
-| startProcessingRow     | data                                     | Received row is about to be processed.                                                                |
-| rowAddedToBatch        | destinationIndex, data                   | Received row has been added to the destination batch (wether as is or by `recordGenerator` function). |
-| rowProcessingError     | destinationIndex, error                  | Received row processing has been failed.                                                              |
-| endProcessingRow       |                                          | Received row has been processed.                                                                      |
-| transformingBatch      | destinationIndex, data                   | Batch is about to be transformed (before calling `batchTransformer` function).                        |
-| transformingBatchError | destinationIndex, error                  | Batch transformation has been failed (`batchTransformer` function has thrown an error).               |
-| transformedBatch       | destinationIndex, data                   | Batch has been transformed (after calling `batchTransformer` function).                               |
-| loadingBatch           | destinationIndex, data                   | Batch is about to be loaded in destination.                                                           |
-| loadingBatchError      | destinationIndex, error                  | Batch load has failed.                                                                                |
-| loadedBatch            | destinationIndex                         | Batch load has been finished.                                                                         |
-| endProcessing          |                                          | Job has finished execution.                                                                           |
-
-
+| Event                  | Parameters                    | Description                                                                                                                                   |
+| ---------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| startProcessing        |                               | Job has started execution.                                                                                                                    |
+| endProcessing          |                               | Job has finished execution.                                                                                                                   |
+| startProcessingStream  | ...args                       | Stream processing has been started (before calling `processStream` inside processor). Passed parameters may vary based on specific processor. |
+| endProcessingStream    |                               | Stream processing has been finished (after calling `processStream` inside processor).                                                         |
+| processingError        | error                         | Job has failed.                                                                                                                               |
+| startProcessingRow     | data                          | Received row is about to be processed.                                                                                                        |
+| endProcessingRow       |                               | Received row has been processed.                                                                                                              |
+| rowGenerated           | destinationIndex, data        | Row has been generated using `recordGenerator` function.                                                                                      |
+| rowGenerationError     | destinationIndex, data, error | Record generation function `recordGenerator` has been failed.                                                                                 |
+| transformingBatch      | destinationIndex, data        | Batch is about to be transformed (before calling `batchTransformer` function).                                                                |
+| transformedBatch       | destinationIndex, data        | Batch has been successfully transformed (after calling `batchTransformer` function).                                                          |
+| transformingBatchError | destinationIndex, data, error | Batch transformation has been failed (`batchTransformer` function has thrown an error).                                                       |
+| loadingBatch           | destinationIndex, data        | Batch is about to be loaded in destination.                                                                                                   |
+| loadedBatch            | destinationIndex              | Batch load has been finished.                                                                                                                 |
+| loadingBatchError      | destinationIndex, data, error | Batch load has failed.                                                                                                                        |
 
 ## Processors <div id='processors'/>
 
@@ -134,6 +130,10 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 * [DynamicProcessor](#dynamic-processor) processes **dynamically generated** data.
 * [TailProcessor](#tail-processor) processes **new lines** added to the file.
 
+### Options <div id='processor-options'/>
+
+* **rowLimit** `number`\
+Number of records to be processed before stopping processor. If not specified or `0` is passed, all records will be processed.
 
 ### MqttProcessor <div id='mqtt-processor'/>
 
@@ -142,6 +142,7 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 Listens for messages and processes them one by one. It also handles backpressure by queuing messages, so all messages can be eventually processed. 
 
 #### Options
+* [Processor options](#processor-options)
 * **url** `string` `required`
 * **topics** `string[]` `required`
 
@@ -152,6 +153,7 @@ Listens for messages and processes them one by one. It also handles backpressure
 Processes data received from a HTTP call. Can process `JSON` as well as `delimited` data. Can handle pagination by using `nextRequest` function.
 
 #### Options
+* [Processor options](#processor-options)
 * **connection** `object` `required`\
 Options from [request](https://github.com/request/request#requestoptions-callback) library.
 * **dataFormat** `delimited | json` `required`
@@ -182,19 +184,16 @@ const processor = new bellboy.HttpProcessor({
 ### Directory processors <div id='directory-processors'/>
 Used for streaming text data from files in directory. There are currently three types of directory processors - `ExcelProcessor`, `JsonProcessor` and `TailProcessor`. Such processors search for the files in the source directory and process them one by one.
 
+File name (`file`) and full file path (`filePath`) parameters will be passed to `startProcessingStream` event.
+
 #### Options <div id='directory-processor-options'/>
+* [Processor options](#processor-options)
 * **path** `string` `required`\
 Path to the directory where files are located. 
 * **filePattern** `string`\
 Regex pattern for the files to be processed. If not specified, all files in the directory will be matched.
 * **files** `string[]`\
 Array of file names. If not specified, all files in the directory will be matched against `filePattern` regex and processed in alphabetical order.
-
-#### Events
-* **processingFile** `(file, filePath)`\
-Emitted when file is about to be processed.
-* **processedFile** `(file, filePath)`\
-Emitted after file has been processed.
 
 ### ExcelProcessor <div id='excel-processor'/>
 
@@ -265,6 +264,7 @@ Processes `SELECT` query row by row. There are two database processors - `Postgr
 
 #### Options
 
+* [Processor options](#processor-options)
 * **query** `string` `required`\
 Query to execute.
 * **connection** `object` `required`
@@ -280,6 +280,7 @@ Query to execute.
 Processor which generates records on the fly. Can be used to define custom data processors.
 
 #### Options
+* [Processor options](#processor-options)
 * **generator** `async generator function` `required`\
 [Generator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) function which must yield records to process.
 ```javascript
@@ -304,6 +305,8 @@ Every [job](#job) can have as many destinations (outputs) as needed. For example
 
 ### Options <div id='destination-options'/>
 
+* **disableLoad** `boolean`\
+If `true`, no data will be loaded to the destination. In combination with [reports](#reports), this option can become handy during testing process. 
 * **batchSize** `number`\
 Number of records to be processed before loading them to the destination. If not specified or `0` is passed, all records will be processed. 
 * **recordGenerator** `async generator function(row)`\
@@ -377,18 +380,15 @@ New [processors](#processors) and [destinations](#destinations) can be made by e
 
 [Processor class examples](src/processors)
 
-To create a new processor, you must extend `Processor` class and implement async `process` function. This function accepts two parameters:
+To create a new processor, you must extend `Processor` class and implement async `process` function. This function accepts one parameter:
 
-* **processStream** `async function(readStream)` `required`\
-  Callback function which accepts [Readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable). After calling this function, `job` instance will handle passed stream internally.
-* **emit** `async function(event, ...arguments)`\
-  Callback function which accepts `event` name and custom `arguments`. Such events can be then caught with [on](#job-on) job function.
+* **processStream** `async function(readStream, ...args)` `required`\
+  Callback function which accepts [Readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable). After calling this function, `job` instance will handle passed stream internally. Passed parameters (`args`) will be emitted with `startProcessingStream` event during job execution.
 
 ```javascript
 class CustomProcessor extends bellboy.Processor {
-    async process(processStream, emit) {
-        // await processStream(readStream);
-        // await emit('customEvent', 'hello', 'world');
+    async process(processStream) {
+        // await processStream(readStream, 'hello', 'world');
     }
 }
 ```
@@ -406,6 +406,23 @@ To create a new destination, you must extend `Destination` class and implement a
 class CustomDestination extends bellboy.Destination {
     async loadBatch(data) {
         console.log(data);
+    }
+}
+```
+
+### Creating a new reporter
+
+Reporter is a job wrapper which can operate with [job instance](#job) (for example, listen to events using job `on` method). To create a new reporter, you must extend `Reporter` class and implement `report` function, which will be executed during job instance initialization. This function accepts one parameter:
+
+* **job** `Job` `required`\
+  [Job](#job) instance
+
+```javascript
+class CustomReporter extends bellboy.Reporter {
+    report(job) {
+        job.on('startProcessing', async () => {
+            console.log('Job has been started.');
+        });
     }
 }
 ```

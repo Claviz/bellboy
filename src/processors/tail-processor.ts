@@ -1,7 +1,7 @@
 import path from 'path';
 import { Stream } from 'stream';
 
-import { emit, ITailProcessorConfig, processStream } from '../types';
+import { ITailProcessorConfig, processStream } from '../types';
 import { DirectoryProcessor } from './base/directory-processor';
 
 const Tail = require('tail').Tail;
@@ -15,7 +15,7 @@ export class TailProcessor extends DirectoryProcessor {
         this.fromBeginning = !!config.fromBeginning;
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         const readStream = new Stream.Readable({
             objectMode: true,
             read() { },
@@ -23,7 +23,6 @@ export class TailProcessor extends DirectoryProcessor {
         const tails = [];
         for (const file of this.files) {
             const filePath = path.join(this.path, file);
-            await emit('processingFile', file, filePath);
             const tail = new Tail(filePath, {
                 fromBeginning: this.fromBeginning,
             });
@@ -34,7 +33,6 @@ export class TailProcessor extends DirectoryProcessor {
                 readStream.emit('error', exception);
             });
             tails.push(tail);
-            await emit('processedFile', file, filePath);
         };
         await processStream(readStream);
         tails.forEach(tail => tail.unwatch());

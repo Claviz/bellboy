@@ -1,6 +1,6 @@
 import { Stream } from 'stream';
 
-import { emit, IMqttProcessorConfig, processStream } from '../types';
+import { IMqttProcessorConfig, processStream } from '../types';
 import { Processor } from './base/processor';
 
 let mqtt = require('async-mqtt');
@@ -16,7 +16,7 @@ export class MqttProcessor extends Processor {
         this.topics = config.topics;
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         const readStream = new Stream.Readable({
             objectMode: true,
             read() { },

@@ -1,6 +1,6 @@
 import { Stream } from 'stream';
 
-import { IDynamicProcessorConfig, processStream, emit } from '../types';
+import { IDynamicProcessorConfig, processStream } from '../types';
 import { Processor } from './base/processor';
 
 export class DynamicProcessor extends Processor {
@@ -15,7 +15,7 @@ export class DynamicProcessor extends Processor {
         this.generator = config.generator;
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         const iterator = this.generator();
         const readStream = new Stream.Readable({
             objectMode: true,

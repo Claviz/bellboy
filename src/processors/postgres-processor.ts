@@ -1,4 +1,4 @@
-import { emit, IPostgresProcessorConfig, processStream } from '../types';
+import { IPostgresProcessorConfig, processStream } from '../types';
 import { getDb } from '../utils';
 import { DatabaseProcessor } from './base/database-processor';
 
@@ -10,7 +10,7 @@ export class PostgresProcessor extends DatabaseProcessor {
         super(config);
     }
 
-    async process(processStream: processStream, emit: emit) {
+    async process(processStream: processStream) {
         const query = new QueryStream(this.query);
         const db = await getDb(this.connection, 'postgres');
         const connection = await db.connect();
