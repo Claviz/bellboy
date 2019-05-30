@@ -416,7 +416,7 @@ class CustomDestination extends bellboy.Destination {
 
 ### Creating a new reporter <div id='reporters'/>
 
-[Official stdout reporter](https://github.com/jansivans/bellboy-stdout-reporter)
+[Official stdout reporter](https://github.com/claviz/bellboy-stdout-reporter)
 
 Reporter is a job wrapper which can operate with [job instance](#job) (for example, listen to events using job `on` method). To create a new reporter, you must extend `Reporter` class and implement `report` function, which will be executed during job instance initialization. This function accepts one parameter:
 
