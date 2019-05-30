@@ -75,6 +75,10 @@ To initialize a Job instance, pass [processor](#processors) and some [destinatio
 const job = new bellboy.Job(processor_instance, [destination_instance], job_options = {});
 ```
 
+#### Options
+* **reporters** `Reporter[]`\
+Array of [reporters](#reporters).
+
 #### Instance methods
 
 * **run** `async function()`\
@@ -306,7 +310,7 @@ Every [job](#job) can have as many destinations (outputs) as needed. For example
 ### Options <div id='destination-options'/>
 
 * **disableLoad** `boolean`\
-If `true`, no data will be loaded to the destination. In combination with [reports](#reports), this option can become handy during testing process. 
+If `true`, no data will be loaded to the destination. In combination with [reporters](#reporters), this option can become handy during testing process. 
 * **batchSize** `number`\
 Number of records to be processed before loading them to the destination. If not specified or `0` is passed, all records will be processed. 
 * **recordGenerator** `async generator function(row)`\
@@ -410,7 +414,9 @@ class CustomDestination extends bellboy.Destination {
 }
 ```
 
-### Creating a new reporter
+### Creating a new reporter <div id='reporters'/>
+
+[Official stdout reporter](https://github.com/jansivans/bellboy-stdout-reporter)
 
 Reporter is a job wrapper which can operate with [job instance](#job) (for example, listen to events using job `on` method). To create a new reporter, you must extend `Reporter` class and implement `report` function, which will be executed during job instance initialization. This function accepts one parameter:
 
