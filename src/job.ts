@@ -41,7 +41,7 @@ export class Job implements IJob {
     on(eventName: 'rowGenerated', fn: ((destinationIndex: number, row: any) => Promise<any>)): any
     on(eventName: 'startProcessingRow', fn: ((row: any) => Promise<any>)): any
     on(eventName: 'startProcessing', fn: (() => Promise<any>)): any
-    on(eventName: 'endProcessingStream', fn: (() => Promise<any>)): any
+    on(eventName: 'endProcessingStream', fn: ((...args: any) => Promise<any>)): any
     on(eventName: 'startProcessingStream', fn: ((...args: any) => Promise<any>)): any
     on(eventName: string, fn: event) {
         const event = this.events[eventName];
@@ -192,7 +192,7 @@ export class Job implements IJob {
                 await this.loadBatch(i, destinations[i], results[i]);
             }
         }
-        this.emit('endProcessingStream');
+        this.emit('endProcessingStream', ...args);
         return header;
     }
 

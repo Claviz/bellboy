@@ -107,7 +107,7 @@ The following table lists the job life-cycle events and parameters they emit.
 | startProcessing        |                               | Job has started execution.                                                                                                                    |
 | endProcessing          |                               | Job has finished execution.                                                                                                                   |
 | startProcessingStream  | ...args                       | Stream processing has been started (before calling `processStream` inside processor). Passed parameters may vary based on specific processor. |
-| endProcessingStream    |                               | Stream processing has been finished (after calling `processStream` inside processor).                                                         |
+| endProcessingStream    | ...args                       | Stream processing has been finished (after calling `processStream` inside processor). Passed parameters may vary based on specific processor. |
 | processingError        | error                         | Job has failed.                                                                                                                               |
 | startProcessingRow     | data                          | Received row is about to be processed.                                                                                                        |
 | endProcessingRow       |                               | Received row has been processed.                                                                                                              |
