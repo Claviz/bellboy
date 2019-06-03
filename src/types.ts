@@ -40,6 +40,7 @@ export interface IDirectoryProcessorConfig extends IProcessorConfig {
 
 export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
     hasHeader?: boolean;
+    ignoreEmpty?: boolean;
     sheetName?: string;
     sheetIndex?: number;
     sheetGetter?: sheetGetter;

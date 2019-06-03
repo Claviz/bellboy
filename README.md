@@ -209,6 +209,8 @@ Processes `XLSX` files in the directory.
 * [Directory processor options](#directory-processor-options)
 * **hasHeader** `boolean`\
 Wether worksheet has header or not, `false` by default.
+* **ignoreEmpty** `boolean`\
+Wether ignore empty rows or not, `true` by default.
 * **sheetName** `string`
 * **sheetIndex** `number`\
 Starts from `0`.

@@ -7,11 +7,13 @@ import { DirectoryProcessor } from './base/directory-processor';
 export class ExcelProcessor extends DirectoryProcessor {
 
     protected hasHeader: boolean;
+    protected ignoreEmpty: boolean;
     protected sheetGetter: (filePath: string) => Promise<string | number>;
 
     constructor(config: IExcelProcessorConfig) {
         super(config);
         this.hasHeader = !!config.hasHeader;
+        this.ignoreEmpty = config.ignoreEmpty === false ? false : true;
         this.sheetGetter = async (filePath: string) => {
             if (config.sheetName) {
                 return config.sheetName;
@@ -34,7 +36,7 @@ export class ExcelProcessor extends DirectoryProcessor {
                 filePath,
                 sheet: await this.sheetGetter(filePath),
                 withHeader: this.hasHeader,
-                ignoreEmpty: true,
+                ignoreEmpty: this.ignoreEmpty,
             });
             await processStream(readStream as any, file, filePath);
         }
