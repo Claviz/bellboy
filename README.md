@@ -348,7 +348,8 @@ Puts processed data one by one in `body` and executes specified HTTP request.
 
 #### Options
 * [General destination options](#destination-options)
-* Options from [request](https://github.com/request/request#requestoptions-callback) library.
+* **request** `required`\
+Options from [request](https://github.com/request/request#requestoptions-callback) library.
 
 ### PostgresDestination <div id='postgres-destination'/>
 

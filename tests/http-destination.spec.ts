@@ -34,8 +34,10 @@ it('posts generated objects to http destination', async () => {
         },
     });
     const destination = new HttpDestination({
-        method: 'POST',
-        uri: 'http://localhost:3000',
+        request: {
+            method: 'POST',
+            uri: 'http://localhost:3000',
+        },
         batchSize: 2,
     });
     const job = new Job(processor, [destination]);
@@ -60,8 +62,10 @@ it('posts transformed generated objects to http destination', async () => {
         },
     });
     const destination = new HttpDestination({
-        method: 'POST',
-        uri: 'http://localhost:3000',
+        request: {
+            method: 'POST',
+            uri: 'http://localhost:3000',
+        },
         batchSize: 2,
         batchTransformer: async (rows) => {
             return [{

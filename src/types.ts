@@ -1,6 +1,7 @@
-import { CoreOptions, UrlOptions } from 'request';
+import { CoreOptions, UrlOptions, UriOptions } from 'request';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
+import { RequestPromiseOptions } from 'request-promise';
 
 export interface IDbConnection {
     user?: string;
@@ -77,8 +78,7 @@ export interface IPostgresDestinationConfig extends IDatabaseDestinationConfig {
 export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig { }
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
-    method: 'GET' | 'POST' | 'DELETE' | 'PUT';
-    uri: string;
+    request: (UriOptions & RequestPromiseOptions) | (UrlOptions & RequestPromiseOptions);
 }
 
 export interface IStdoutDestinationConfig extends IDestinationConfig {
