@@ -41,9 +41,7 @@ export interface IDirectoryProcessorConfig extends IProcessorConfig {
 export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
     hasHeader?: boolean;
     ignoreEmpty?: boolean;
-    sheetName?: string;
-    sheetIndex?: number;
-    sheetGetter?: sheetGetter;
+    sheets?: (number | string)[];
 }
 
 export interface IProcessor {
@@ -89,7 +87,7 @@ export interface IStdoutDestinationConfig extends IDestinationConfig {
 
 export interface IHttpProcessorConfig extends IProcessorConfig {
     connection: CoreOptions & UrlOptions;
-    nextRequest?: (header: any) => Promise<any>;
+    nextRequest?: (header: any) => Promise<CoreOptions & UrlOptions>;
 }
 
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {

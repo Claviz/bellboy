@@ -39,17 +39,7 @@ it('parses xlsx without header', async () => {
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual([{
-        formatted: {
-            arr: ['hello', 'world'],
-            obj: { A: 'hello', B: 'world' }
-        },
-        raw: {
-            arr: ['hello', 'world'],
-            obj: { A: 'hello', B: 'world' }
-        },
-        header: [],
-    }]);
+    expect(destination.getData()).toMatchSnapshot();
 });
 
 it('parses xlsx with header', async () => {
@@ -69,20 +59,7 @@ it('parses xlsx with header', async () => {
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual([{
-        formatted: {
-            arr: ['hello', 'world'],
-            obj: { column1: 'hello', column2: 'world' }
-        },
-        raw: {
-            arr: ['hello', 'world'],
-            obj: { column1: 'hello', column2: 'world' }
-        },
-        header: [
-            'column1',
-            'column2'
-        ]
-    }]);
+    expect(destination.getData()).toMatchSnapshot();
 });
 
 it('parses all xlsx files by pattern', async () => {
@@ -102,17 +79,7 @@ it('parses all xlsx files by pattern', async () => {
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual([{
-        formatted: {
-            arr: ['test'],
-            obj: { A: 'test' }
-        },
-        raw: {
-            arr: ['test'],
-            obj: { A: 'test' }
-        },
-        header: [],
-    }]);
+    expect(destination.getData()).toMatchSnapshot();
 });
 
 it('parses specific sheet by name', async () => {
@@ -135,21 +102,11 @@ it('parses specific sheet by name', async () => {
         hasHeader: false,
         path: './',
         files: [filePath],
-        sheetName: 'sheet2',
+        sheets: ['sheet2'],
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual([{
-        formatted: {
-            arr: ['test2'],
-            obj: { A: 'test2' }
-        },
-        raw: {
-            arr: ['test2'],
-            obj: { A: 'test2' }
-        },
-        header: [],
-    }]);
+    expect(destination.getData()).toMatchSnapshot();
 });
 
 it('parses specific sheet by index', async () => {
@@ -172,24 +129,14 @@ it('parses specific sheet by index', async () => {
         hasHeader: false,
         path: './',
         files: [filePath],
-        sheetIndex: 2,
+        sheets: [2],
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual([{
-        formatted: {
-            arr: ['test3'],
-            obj: { A: 'test3' }
-        },
-        raw: {
-            arr: ['test3'],
-            obj: { A: 'test3' }
-        },
-        header: [],
-    }]);
+    expect(destination.getData()).toMatchSnapshot();
 });
 
-it('parses specific sheet by function (function gets last sheet)', async () => {
+it('parses multiple sheets', async () => {
     const buffer = xlsx.build([{
         name: 'sheet1',
         data: [['test1']],
@@ -209,21 +156,9 @@ it('parses specific sheet by function (function gets last sheet)', async () => {
         hasHeader: false,
         path: './',
         files: [filePath],
-        sheetGetter: async (sheets) => {
-            return sheets[sheets.length - 1];
-        },
+        sheets: [2, 'sheet2', 0],
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual([{
-        formatted: {
-            arr: ['test3'],
-            obj: { A: 'test3' }
-        },
-        raw: {
-            arr: ['test3'],
-            obj: { A: 'test3' }
-        },
-        header: [],
-    }]);
+    expect(destination.getData()).toMatchSnapshot();
 });

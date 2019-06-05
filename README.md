@@ -211,7 +211,9 @@ Processes `XLSX` files in the directory.
 Wether worksheet has header or not, `false` by default.
 * **ignoreEmpty** `boolean`\
 Wether ignore empty rows or not, `true` by default.
-* **sheetName** `string`
+* **sheets** `(string | number)[]`\
+Array of sheet names and/or sheet indexes. If not specified or empty array is passed, first sheet will be processed.
+<!-- * **sheetName** `string`
 * **sheetIndex** `number`\
 Starts from `0`.
 * **sheetGetter** `async function(sheets)`\
@@ -225,7 +227,7 @@ const processor = new bellboy.ExcelProcessor({
     // ...
 });
 ```
-If no `sheetName` specified, value of the `sheetIndex` will be used. If it isn't specified either, `sheetGetter` function will be called. If none options are specified, first sheet will be processed.
+If no `sheetName` specified, value of the `sheetIndex` will be used. If it isn't specified either, `sheetGetter` function will be called. If none options are specified, first sheet will be processed. -->
 
 #### Produced row
 To see how processed row will look like, proceed to [xlstream](https://github.com/Claviz/xlstream) library documentation which is used for Excel processing.
