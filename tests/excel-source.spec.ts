@@ -136,6 +136,35 @@ it('parses specific sheet by index', async () => {
     expect(destination.getData()).toMatchSnapshot();
 });
 
+it('parses specific sheet by function', async () => {
+    const buffer = xlsx.build([{
+        name: 'sheet1',
+        data: [['test1']],
+    }, {
+        name: 'sheet2',
+        data: [['test2']],
+    }, {
+        name: 'sheet3',
+        data: [['test3']],
+    }]);
+    fs.writeFileSync(filePath, buffer);
+
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new ExcelProcessor({
+        hasHeader: false,
+        path: './',
+        files: [filePath],
+        sheets: async function (sheets) {
+            return [sheets[sheets.length - 1]];
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toMatchSnapshot();
+});
+
 it('parses multiple sheets', async () => {
     const buffer = xlsx.build([{
         name: 'sheet1',

@@ -41,7 +41,7 @@ export interface IDirectoryProcessorConfig extends IProcessorConfig {
 export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
     hasHeader?: boolean;
     ignoreEmpty?: boolean;
-    sheets?: (number | string)[];
+    sheets?: ((number | string)[] | sheetGetter);
 }
 
 export interface IProcessor {
@@ -87,7 +87,7 @@ export interface IStdoutDestinationConfig extends IDestinationConfig {
 
 export interface IHttpProcessorConfig extends IProcessorConfig {
     connection: CoreOptions & UrlOptions;
-    nextRequest?: (header: any) => Promise<CoreOptions & UrlOptions>;
+    nextRequest?: (header: any) => Promise<(CoreOptions & UrlOptions) | null | undefined>;
 }
 
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
@@ -132,7 +132,7 @@ export type DbTypes = 'postgres' | 'mssql';
 
 export type event = (...args: any) => Promise<any>;
 
-export type sheetGetter = (sheets: string[]) => Promise<string | number>;
+export type sheetGetter = (sheetNames: string[]) => Promise<string[]>;
 
 export type emit = (event: string, ...args: any) => Promise<any>;
 

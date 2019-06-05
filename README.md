@@ -211,8 +211,17 @@ Processes `XLSX` files in the directory.
 Wether worksheet has header or not, `false` by default.
 * **ignoreEmpty** `boolean`\
 Wether ignore empty rows or not, `true` by default.
-* **sheets** `(string | number)[]`\
-Array of sheet names and/or sheet indexes. If not specified or empty array is passed, first sheet will be processed.
+* **sheets** `(string | number)[] | async function(sheets)`\
+Array of sheet names and/or sheet indexes or async function, which accepts array of all sheet names and must return another array of sheets that needs to be processed. If not specified, first sheet will be processed.
+```javascript
+const processor = new bellboy.ExcelProcessor({
+    // process last sheet
+    sheets: async (sheets) => {
+        return [sheets[sheets.length - 1]];
+    },
+    // ...
+});
+```
 <!-- * **sheetName** `string`
 * **sheetIndex** `number`\
 Starts from `0`.

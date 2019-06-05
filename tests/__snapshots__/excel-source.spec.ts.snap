@@ -86,6 +86,30 @@ Array [
 ]
 `;
 
+exports[`parses specific sheet by function 1`] = `
+Array [
+  Object {
+    "formatted": Object {
+      "arr": Array [
+        "test3",
+      ],
+      "obj": Object {
+        "A": "test3",
+      },
+    },
+    "header": Array [],
+    "raw": Object {
+      "arr": Array [
+        "test3",
+      ],
+      "obj": Object {
+        "A": "test3",
+      },
+    },
+  },
+]
+`;
+
 exports[`parses specific sheet by index 1`] = `
 Array [
   Object {
