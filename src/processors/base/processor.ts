@@ -1,4 +1,4 @@
-import { IProcessor, IProcessorConfig, processStream, emit } from '../../types';
+import { IProcessor, IProcessorConfig, processStream } from '../../types';
 
 export abstract class Processor implements IProcessor {
 

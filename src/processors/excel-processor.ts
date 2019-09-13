@@ -38,7 +38,7 @@ export class ExcelProcessor extends DirectoryProcessor {
                     withHeader: this.hasHeader,
                     ignoreEmpty: this.ignoreEmpty,
                 });
-                await processStream(readStream as any, file, filePath, sheets[i]);
+                await processStream(readStream, file, filePath, sheets[i]);
             }
         }
     }

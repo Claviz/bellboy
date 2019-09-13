@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 
 import { Job, ExcelProcessor } from '../src';
 import { CustomDestination } from './helpers';
@@ -16,9 +16,7 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
+    await fs.unlink(filePath);
 });
 
 
@@ -27,7 +25,7 @@ it('parses xlsx without header', async () => {
         name: 'sheet1',
         data: [['hello', 'world']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -47,7 +45,7 @@ it('parses xlsx with header', async () => {
         name: 'sheet1',
         data: [['column1', 'column2'], ['hello', 'world']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -67,7 +65,7 @@ it('parses all xlsx files by pattern', async () => {
         name: 'sheet1',
         data: [['test']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -93,7 +91,7 @@ it('parses specific sheet by name', async () => {
         name: 'sheet3',
         data: [['test3']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -120,7 +118,7 @@ it('parses specific sheet by index', async () => {
         name: 'sheet3',
         data: [['test3']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -147,7 +145,7 @@ it('parses specific sheet by function', async () => {
         name: 'sheet3',
         data: [['test3']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -176,7 +174,7 @@ it('parses multiple sheets', async () => {
         name: 'sheet3',
         data: [['test3']],
     }]);
-    fs.writeFileSync(filePath, buffer);
+    await fs.writeFile(filePath, buffer);
 
     const destination = new CustomDestination({
         batchSize: 1,
@@ -186,6 +184,27 @@ it('parses multiple sheets', async () => {
         path: './',
         files: [filePath],
         sheets: [2, 'sheet2', 0],
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toMatchSnapshot();
+});
+
+it('respects rowLimit', async () => {
+    const buffer = xlsx.build([{
+        name: 'sheet1',
+        data: [['1'], ['2'], ['3'], ['4']],
+    }]);
+    await fs.writeFile(filePath, buffer);
+
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new ExcelProcessor({
+        hasHeader: false,
+        path: './',
+        files: [filePath],
+        rowLimit: 3,
     });
     const job = new Job(processor, [destination]);
     await job.run();

@@ -135,3 +135,19 @@ it('gets paginated JSON data from HTTP', async () => {
         text: 'hello2',
     }]);
 });
+
+it('respects rowLimit', async () => {
+    const destination = new CustomDestination();
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        jsonPath: 'arr.*',
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/big-json`,
+        },
+        rowLimit: 3,
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData().length).toEqual(3);
+});

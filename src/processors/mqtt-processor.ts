@@ -1,4 +1,4 @@
-import { Stream } from 'stream';
+import { Readable } from 'stream';
 
 import { IMqttProcessorConfig, processStream } from '../types';
 import { Processor } from './base/processor';
@@ -17,10 +17,10 @@ export class MqttProcessor extends Processor {
     }
 
     async process(processStream: processStream) {
-        const readStream = new Stream.Readable({
+        const readStream = new Readable({
             objectMode: true,
             read() { },
-        }).pause();
+        });
         const client = mqtt.connect(this.url);
         await client.subscribe(this.topics);
         client.on('message', (topic: string, message: any) => {

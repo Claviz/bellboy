@@ -22,11 +22,9 @@ export class DelimitedProcessor extends DirectoryProcessor {
         for (const file of this.files) {
             const filePath = path.join(this.path, file);
             const fileReadStream = fs.createReadStream(filePath);
-            const readStream = fileReadStream.pipe(split2(this.delimiter)).pause();
-            readStream.on('close', function () {
-                fileReadStream.destroy()
-            });
-            await processStream(readStream, file, filePath);
+            const readStream = fileReadStream.pipe(split2(this.delimiter));
+            await processStream(readStream);
+            fileReadStream.destroy();
         };
     }
 }

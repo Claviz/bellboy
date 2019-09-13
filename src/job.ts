@@ -1,4 +1,3 @@
-import { ReadStream } from 'fs';
 import { Readable } from 'stream';
 
 import { emit, event, IDestination, IJob, IJobConfig, IProcessor, IReporter } from './types';
@@ -19,9 +18,60 @@ export class Job implements IJob {
     async run() {
         await this.emit('startProcessing', this.processor, this.destinations);
         try {
-            await this.processor.process(
-                async (readStream, ...args: any) => (await this.processStream(readStream, ...args)),
-            );
+            const results: any[][] = [];
+            for (let j = 0; j < this.destinations.length; j++) {
+                results[j] = [];
+            }
+            let processedRowCount = 0;
+            const processStreamWrapper = async (readStream: Readable, ...args: any[]) => {
+                await this.emit('startProcessingStream', ...args);
+                for await (const row of readStream) {
+                    await this.emit('startProcessingRow', row);
+                    for (let i = 0; i < this.destinations.length; i++) {
+                        const recordGeneratorFn = this.destinations[i].recordGenerator;
+                        if (!recordGeneratorFn) {
+                            results[i].push(row);
+                        } else {
+                            const wrapper = async function* (recordGenerator: AsyncIterableIterator<{}>, emit: any) {
+                                try {
+                                    for await (const record of recordGenerator) {
+                                        yield record;
+                                    }
+                                } catch (err) {
+                                    await emit('rowGenerationError', i, row, err);
+                                }
+                            }
+                            let recordGenerator = wrapper(recordGeneratorFn(row), (eventName: string, ...args: any) => this.emit(eventName, ...args));
+                            for await (const record of recordGenerator) {
+                                results[i].push(record);
+                                await this.emit('rowGenerated', i, record);
+                            }
+                        }
+                    }
+                    await this.emit('endProcessingRow');
+                    for (let i = 0; i < this.destinations.length; i++) {
+                        while (this.destinations[i].batchSize && results[i].length >= this.destinations[i].batchSize) {
+                            const destination = this.destinations[i];
+                            const toSend = results[i].splice(0, destination.batchSize);
+                            await this.loadBatch(i, destination, toSend);
+                        }
+                    }
+                    processedRowCount++;
+                    this.closed = this.processor.rowLimit === processedRowCount
+                    if (this.closed) {
+                        readStream.destroy();
+                        break;
+                    }
+                }
+                for (let i = 0; i < this.destinations.length; i++) {
+                    if (results[i].length) {
+                        await this.loadBatch(i, this.destinations[i], results[i]);
+                    }
+                    results[i] = [];
+                }
+                await this.emit('endProcessingStream', ...args);
+            }
+            await this.processor.process(processStreamWrapper);
             await this.emit('endProcessing');
         } catch (err) {
             await this.emit('processingError', err);
@@ -73,127 +123,6 @@ export class Job implements IJob {
                 }
             }
         }
-    }
-
-    protected async getNextRecord(readStream: ReadStream | Readable) {
-        return new Promise<{ data: any[][]; header: any; }>((resolve, reject) => {
-            const destinations = this.destinations;
-            const emit = (eventName: string, ...args: any) => this.emit(eventName, ...args);
-            let data: any[][] = [];
-            if (destinations) {
-                for (let i = 0; i < destinations.length; i++) {
-                    data[i] = [];
-                }
-            }
-            let header: any = null;
-
-            const niceEnding = () => {
-                removeListeners();
-                this.closed = true;
-                resolve();
-            }
-
-            function errorEnding(error: any) {
-                removeListeners();
-                reject(error);
-            }
-
-            async function handleData(obj: any) {
-                readStream.pause();
-                removeListeners();
-                await emit('startProcessingRow', obj);
-                for (let i = 0; i < destinations.length; i++) {
-                    const recordGeneratorFn = destinations[i].recordGenerator;
-                    if (!recordGeneratorFn) {
-                        data[i].push(obj);
-                        // await emit('rowGenerated', i, obj);
-                    } else {
-                        const wrapper = async function* (recordGenerator: AsyncIterableIterator<{}>) {
-                            try {
-                                for await (const record of recordGenerator) {
-                                    yield record;
-                                }
-                            } catch (err) {
-                                await emit('rowGenerationError', i, obj, err);
-                            }
-                        }
-                        let recordGenerator = wrapper(recordGeneratorFn(obj));
-                        for await (const record of recordGenerator) {
-                            data[i].push(record);
-                            await emit('rowGenerated', i, record);
-                        }
-                    }
-                }
-                await emit('endProcessingRow');
-                resolve({ data, header });
-            }
-
-            function handleHeader(x: any) {
-                header = x;
-            }
-
-            function removeListeners() {
-                readStream.removeListener('close', niceEnding);
-                readStream.removeListener('end', niceEnding);
-                readStream.removeListener('done', niceEnding);
-                readStream.removeListener('error', errorEnding);
-                readStream.removeListener('data', handleData);
-                readStream.removeListener('row', handleData);
-                readStream.removeListener('line', handleData);
-                readStream.removeListener('header', handleHeader);
-            }
-
-            (readStream as any).on('close', niceEnding);
-            (readStream as any).on('end', niceEnding);
-            (readStream as any).on('done', niceEnding);
-            (readStream as any).on('error', errorEnding);
-            (readStream as any).on('data', handleData);
-            (readStream as any).on('row', handleData);
-            (readStream as any).on('line', handleData);
-            (readStream as any).on('header', handleHeader);
-            readStream.resume();
-        });
-    }
-
-    protected async processStream(readStream: ReadStream | Readable, ...args: any) {
-        this.emit('startProcessingStream', ...args);
-        this.closed = false;
-        const results: any[][] = [];
-        const destinations = this.destinations;
-        for (let j = 0; j < destinations.length; j++) {
-            results[j] = [];
-        }
-        let processedRowCount = 0;
-        let header;
-
-        while (!this.closed && (readStream.readable || (readStream as any).stream)) {
-            const result = await this.getNextRecord(readStream);
-            processedRowCount++;
-            if (result) {
-                if (result.header) {
-                    header = result.header;
-                }
-                for (let i = 0; i < destinations.length; i++) {
-                    results[i].push(...result.data[i]);
-                    while (destinations[i].batchSize && results[i].length >= destinations[i].batchSize) {
-                        const destination = destinations[i];
-                        const toSend = results[i].splice(0, destination.batchSize);
-                        await this.loadBatch(i, destination, toSend);
-                    }
-                }
-            }
-            const shouldStop = this.processor.rowLimit === processedRowCount;
-            if (shouldStop) {
-                readStream.destroy();
-            }
-        }
-        for (let i = 0; i < destinations.length; i++) {
-            if (results[i].length) {
-                await this.loadBatch(i, destinations[i], results[i]);
-            }
-        }
-        this.emit('endProcessingStream', ...args);
-        return header;
     }
 
     protected async emit(eventName: string, ...args: any) {

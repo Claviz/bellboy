@@ -1,4 +1,5 @@
 import sql from 'mssql';
+import { Readable } from 'stream';
 
 import { DbTypes, IDbConnection } from './types';
 
@@ -39,4 +40,46 @@ export async function closeDbConnection(databaseConfig: IDbConnection) {
             cachedDbConnections.delete(dbKey);
         }
     }
+}
+
+export function getReadableJsonStream(jsonStream: Readable): Readable {
+    const readableJsonStream = new Readable({
+        objectMode: true,
+        async read() {
+            const data = await magic();
+            if (!data) {
+                return this.push(null);
+            }
+            this.push(data);
+        },
+    });
+    const magic = async () => {
+        return new Promise<any>(async (resolve, reject) => {
+            function removeListeners() {
+                jsonStream.removeListener('data', onRow);
+                jsonStream.removeListener('done', onDone);
+                jsonStream.removeListener('close', onDone);
+                jsonStream.removeListener('error', onError);
+            };
+            async function onRow(row: any) {
+                jsonStream.pause();
+                removeListeners();
+                resolve(row);
+            };
+            async function onDone() {
+                removeListeners();
+                resolve();
+            };
+            async function onError(err: any) {
+                removeListeners();
+                reject(err);
+            };
+            jsonStream.on('data', onRow);
+            jsonStream.on('done', onDone);
+            jsonStream.on('close', onDone);
+            jsonStream.on('error', onError);
+            jsonStream.resume();
+        });
+    }
+    return readableJsonStream;
 }

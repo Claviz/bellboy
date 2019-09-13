@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 
 import { Job, TailProcessor } from '../src';
 import { CustomDestination } from './helpers';
@@ -10,18 +10,16 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
-    fs.appendFileSync(filePath, 'First line\n');
-    fs.appendFileSync(filePath, 'Second line\n');
-    interval = setInterval(function () {
-        fs.appendFileSync(filePath, 'Hello, world!\n');
+    await fs.appendFile(filePath, 'First line\n');
+    await fs.appendFile(filePath, 'Second line\n');
+    interval = setInterval(async function () {
+        await fs.appendFile(filePath, 'Hello, world!\n');
     }, 1000);
 });
 
 afterEach(async () => {
     clearInterval(interval);
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
+    await fs.unlink(filePath);
 });
 
 afterAll(async () => {

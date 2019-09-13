@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 import { IJsonProcessorConfig, processStream } from '../types';
+import { getReadableJsonStream } from '../utils';
 import { DirectoryProcessor } from './base/directory-processor';
 
 const JSONStream = require('JSONStream');
@@ -21,9 +22,10 @@ export class JsonProcessor extends DirectoryProcessor {
     async process(processStream: processStream) {
         for (const file of this.files) {
             const filePath = path.join(this.path, file);
-            const readStream = fs.createReadStream(filePath).pipe(JSONStream.parse(this.jsonPath));
-            readStream.pause();
-            await processStream(readStream, file, filePath);
+            const fileReadStream = fs.createReadStream(filePath);
+            const readableJsonStream = getReadableJsonStream(fileReadStream.pipe(JSONStream.parse(this.jsonPath)));
+            await processStream(readableJsonStream, file, filePath);
+            fileReadStream.destroy();
         };
     }
 }

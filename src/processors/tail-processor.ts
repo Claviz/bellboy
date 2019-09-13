@@ -1,5 +1,5 @@
 import path from 'path';
-import { Stream } from 'stream';
+import { Readable } from 'stream';
 
 import { ITailProcessorConfig, processStream } from '../types';
 import { DirectoryProcessor } from './base/directory-processor';
@@ -16,10 +16,10 @@ export class TailProcessor extends DirectoryProcessor {
     }
 
     async process(processStream: processStream) {
-        const readStream = new Stream.Readable({
+        const readStream = new Readable({
             objectMode: true,
             read() { },
-        }).pause();
+        });
         const tails = [];
         for (const file of this.files) {
             const filePath = path.join(this.path, file);

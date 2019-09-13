@@ -1,7 +1,7 @@
-import { CoreOptions, UrlOptions, UriOptions } from 'request';
+import { CoreOptions, UriOptions, UrlOptions } from 'request';
+import { RequestPromiseOptions } from 'request-promise';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
-import { RequestPromiseOptions } from 'request-promise';
 
 export interface IDbConnection {
     user?: string;
@@ -136,4 +136,4 @@ export type sheetGetter = (sheetNames: string[]) => Promise<string[]>;
 
 export type emit = (event: string, ...args: any) => Promise<any>;
 
-export type processStream = (readStream: ReadStream | Readable, ...args: any) => Promise<any>;
+export type processStream = (readStream: Readable, ...args: any) => Promise<any>;

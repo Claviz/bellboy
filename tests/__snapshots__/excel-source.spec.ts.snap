@@ -216,3 +216,65 @@ Array [
   },
 ]
 `;
+
+exports[`respects rowLimit 1`] = `
+Array [
+  Object {
+    "formatted": Object {
+      "arr": Array [
+        1,
+      ],
+      "obj": Object {
+        "A": 1,
+      },
+    },
+    "header": Array [],
+    "raw": Object {
+      "arr": Array [
+        1,
+      ],
+      "obj": Object {
+        "A": 1,
+      },
+    },
+  },
+  Object {
+    "formatted": Object {
+      "arr": Array [
+        2,
+      ],
+      "obj": Object {
+        "A": 2,
+      },
+    },
+    "header": Array [],
+    "raw": Object {
+      "arr": Array [
+        2,
+      ],
+      "obj": Object {
+        "A": 2,
+      },
+    },
+  },
+  Object {
+    "formatted": Object {
+      "arr": Array [
+        3,
+      ],
+      "obj": Object {
+        "A": 3,
+      },
+    },
+    "header": Array [],
+    "raw": Object {
+      "arr": Array [
+        3,
+      ],
+      "obj": Object {
+        "A": 3,
+      },
+    },
+  },
+]
+`;
