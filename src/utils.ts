@@ -46,14 +46,14 @@ export function getReadableJsonStream(jsonStream: Readable): Readable {
     const readableJsonStream = new Readable({
         objectMode: true,
         async read() {
-            const data = await magic();
-            if (!data) {
+            const row = await getRow();
+            if (!row) {
                 return this.push(null);
             }
-            this.push(data);
+            this.push(row);
         },
     });
-    const magic = async () => {
+    const getRow = async () => {
         return new Promise<any>(async (resolve, reject) => {
             function removeListeners() {
                 jsonStream.removeListener('data', onRow);

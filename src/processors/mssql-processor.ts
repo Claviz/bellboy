@@ -17,7 +17,7 @@ export class MssqlProcessor extends DatabaseProcessor {
             async read() {
                 if (data.length === 0) {
                     if (!done) {
-                        await magic();
+                        await processRows();
                     } else {
                         return this.push(null);
                     }
@@ -31,7 +31,7 @@ export class MssqlProcessor extends DatabaseProcessor {
         const dbRequest = db.request();
         dbRequest.stream = true;
         dbRequest.query(this.query);
-        const magic = async () => {
+        const processRows = async () => {
             return new Promise<any>(async (resolve, reject) => {
                 function removeListeners() {
                     dbRequest.removeListener('row', onRow);
