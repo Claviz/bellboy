@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`reporter should report 1`] = `
+Array [
+  "startProcessing",
+  "startProcessingStream",
+  "startProcessingRow",
+  "endProcessingRow",
+  "loadingBatch",
+  "loadedBatch",
+  "endLoadingBatch",
+  "endProcessingStream",
+  "endProcessing",
+]
+`;

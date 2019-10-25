@@ -16,17 +16,6 @@ export class DynamicProcessor extends Processor {
     }
 
     async process(processStream: processStream) {
-        const iterator = this.generator();
-        const readStream = new Readable({
-            objectMode: true,
-            async read() {
-                const result = await iterator.next();
-                if (result.done) {
-                    return this.push(null);
-                }
-                this.push(result.value);
-            },
-        });
-        await processStream(readStream);
+        await processStream(Readable.from(this.generator()));
     }
 }

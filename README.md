@@ -15,7 +15,7 @@ npm install bellboy
 
 ## Example
 
-This example shows how `bellboy` can extract rows from the [Excel file](#excel-processor), modify it on the fly, load to the [Postgres database](#postgres-destination), [move processed file](#moving-file) to the other folder and process remaining files.
+This example shows how `bellboy` can extract rows from the [Excel file](#excel-processor), modify it on the fly, load to the [Postgres database](#postgres-destination), move processed file to the other folder and process remaining files.
 
 Just in five simple steps.
 
@@ -83,42 +83,119 @@ Array of [reporters](#reporters).
 
 * **run** `async function()`\
 Starts processing data.
-* **on** `function(event, async function listener)` <div id="job-on"/> 
-Intercepts specified `event` and pauses processing until `listener` function will be executed.\
-If `on` returns some `truthy` value, processing will be stopped.
+* **on** `function(event, async function listener)`\
+Add specific [event listener](#events).
+* **onAny** `function(async function listener)`\
+Add [any event listener](#any-event).
+* **stop** `function(errorMessage?)`\
+Stops job execution. If `errorMessage` is passed, job will throw an error with this message.
 
-<div id="moving-file"/>
+#### Events and event listeners <div id='events'/>
 
-```javascript
-// move file to the new location when endProcessingStream event is fired
-job.on('endProcessingStream', async (file) => {
-    const filePath = path.join(srcPath, file);
-    const newFilePath = path.join(`./destination`, file);
-    await rename(filePath, newFilePath);
+Event listeners, which can be registered with `job.on` or `job.onAny` method, allow you to listen to specific events in the job lifecycle and interact with it.
+
+* Multiple listeners for one event will be executed in the order they were registered.
+* Job always waits code inside listener to complete.
+* Any error thrown inside listener will be ignored and warning message will be printed out.
+* `job.stop()` method can be used inside listener to stop job execution and throw an error if needed.
+
+```ts
+job.on('startProcessing', async (processor: IProcessor, destinations: IDestination[]) => {
+    // Job has started execution.
+});
+```
+```ts
+job.on('startProcessingStream', async (...args: any) => {
+    // Stream processing has been started.
+    // Passed parameters may vary based on specific processor.
+});
+```
+```ts
+job.on('startProcessingRow', async (row: any)) => {
+    // Row has been received and is about to be processed inside `recordGenerator` method.
+});
+```
+```ts
+job.on('rowGenerated', async (destinationIndex: number, generatedRow: any)) => {
+    // Row has been generated using `recordGenerator` method.
+});
+```
+```ts
+job.on('rowGenerationError', async (destinationIndex: number, row: any, error: any)) => {
+    // Record generation (`recordGenerator` method) has thrown an error.
+});
+```
+```ts
+job.on('endProcessingRow', async ()) => {
+    // Row has been processed.
+});
+```
+```ts
+job.on('transformingBatch', async (destinationIndex: number, rows: any[]) => {
+    // Batch is about to be transformed inside `batchTransformer` method.   
+});
+```
+```ts
+job.on('transformedBatch', async (destinationIndex: number, transformedRows: any) => {
+    // Batch has been transformed using`batchTransformer` method.
+});
+```
+```ts
+job.on('transformingBatchError', async (destinationIndex: number, rows: any[], error: any) => {
+    // Batch transformation (`batchTransformer` method) has thrown an error.
+});
+```
+```ts
+job.on('endTransformingBatch', async (destinationIndex: number) => {
+    // Batch has been transformed.
+});
+```
+```ts
+job.on('loadingBatch', async (destinationIndex: number, data: any[]) => {
+    // Batch is about to be loaded in destination.
+});
+```
+```ts
+job.on('loadedBatch', async (destinationIndex: number, data: any[]) => {
+    // Batch has been loaded in destination.
+});
+```
+```ts
+job.on('loadingBatchError', async (destinationIndex: number, data: any[], error: any) => {
+    // Batch load has failed.
+});
+```
+```ts
+job.on('endLoadingBatch', async (destinationIndex: number) => {
+    // Batch load has been finished .
+});
+```
+```ts
+job.on('endProcessingStream', async (...args: any) => {
+    // Stream processing has been finished.
+    // Passed parameters may vary based on specific processor.
+});
+```
+```ts
+job.on('processingError', async (error: any) => {
+    // Unexpected error has been occured.
+});
+```
+```ts
+job.on('endProcessing', async () => {
+    // Job has finished execution.
 });
 ```
 
-#### Events
+##### Listening for any event <div id='any-event'/>
 
-The following table lists the job life-cycle events and parameters they emit.
+Special listener can be registered using `job.onAny` method which will listen for any previously mentioned event.
 
-| Event                  | Parameters                    | Description                                                                                                                                   |
-| ---------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| startProcessing        |                               | Job has started execution.                                                                                                                    |
-| endProcessing          |                               | Job has finished execution.                                                                                                                   |
-| startProcessingStream  | ...args                       | Stream processing has been started (before calling `processStream` inside processor). Passed parameters may vary based on specific processor. |
-| endProcessingStream    | ...args                       | Stream processing has been finished (after calling `processStream` inside processor). Passed parameters may vary based on specific processor. |
-| processingError        | error                         | Job has failed.                                                                                                                               |
-| startProcessingRow     | data                          | Received row is about to be processed.                                                                                                        |
-| endProcessingRow       |                               | Received row has been processed.                                                                                                              |
-| rowGenerated           | destinationIndex, data        | Row has been generated using `recordGenerator` function.                                                                                      |
-| rowGenerationError     | destinationIndex, data, error | Record generation function `recordGenerator` has been failed.                                                                                 |
-| transformingBatch      | destinationIndex, data        | Batch is about to be transformed (before calling `batchTransformer` function).                                                                |
-| transformedBatch       | destinationIndex, data        | Batch has been successfully transformed (after calling `batchTransformer` function).                                                          |
-| transformingBatchError | destinationIndex, data, error | Batch transformation has been failed (`batchTransformer` function has thrown an error).                                                       |
-| loadingBatch           | destinationIndex, data        | Batch is about to be loaded in destination.                                                                                                   |
-| loadedBatch            | destinationIndex              | Batch load has been finished.                                                                                                                 |
-| loadingBatchError      | destinationIndex, data, error | Batch load has failed.                                                                                                                        |
+```ts
+job.onAny(async (eventName: string, ...args: any) => {
+    // Some event has been fired. 
+});
+```
 
 ## Processors <div id='processors'/>
 

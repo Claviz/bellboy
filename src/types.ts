@@ -23,6 +23,8 @@ export interface IJobConfig {
 export interface IJob {
     on(eventName: string, cb: event): void;
     run(): Promise<void>;
+    stop(message?: string): void;
+    onAny(cb: event): void;
 }
 
 export interface IProcessorConfig {

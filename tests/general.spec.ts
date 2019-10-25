@@ -1,5 +1,5 @@
 import { DynamicProcessor, Job } from '../src';
-import { CustomDestination } from './helpers';
+import { CustomDestination, CustomReporter } from './helpers';
 
 beforeAll(async () => {
 });
@@ -120,4 +120,17 @@ it(`destination should load if destination load isn't disabled`, async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData().length).toEqual(10);
+});
+
+it(`reporter should report`, async () => {
+    const destination = new CustomDestination();
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            yield `test`;
+        }
+    });
+    const reporter = new CustomReporter();
+    const job = new Job(processor, [destination], { reporters: [reporter] });
+    await job.run();
+    expect(reporter.getEvents()).toMatchSnapshot();
 });
