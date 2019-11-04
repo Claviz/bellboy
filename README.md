@@ -152,12 +152,12 @@ job.on('endTransformingBatch', async (destinationIndex: number) => {
 ```
 ```ts
 job.on('loadingBatch', async (destinationIndex: number, data: any[]) => {
-    // Batch is about to be loaded in destination.
+    // Batch is about to be loaded into destination.
 });
 ```
 ```ts
 job.on('loadedBatch', async (destinationIndex: number, data: any[]) => {
-    // Batch has been loaded in destination.
+    // Batch has been loaded into destination.
 });
 ```
 ```ts
@@ -167,18 +167,18 @@ job.on('loadingBatchError', async (destinationIndex: number, data: any[], error:
 ```
 ```ts
 job.on('endLoadingBatch', async (destinationIndex: number) => {
-    // Batch load has been finished .
+    // Batch load has finished .
 });
 ```
 ```ts
 job.on('endProcessingStream', async (...args: any) => {
-    // Stream processing has been finished.
+    // Stream processing has finished.
     // Passed parameters may vary based on specific processor.
 });
 ```
 ```ts
 job.on('processingError', async (error: any) => {
-    // Unexpected error has been occured.
+    // Unexpected error has occured.
 });
 ```
 ```ts
@@ -193,7 +193,7 @@ Special listener can be registered using `job.onAny` method which will listen fo
 
 ```ts
 job.onAny(async (eventName: string, ...args: any) => {
-    // Some event has been fired. 
+    // An event has been fired. 
 });
 ```
 
