@@ -286,6 +286,9 @@ Processes `XLSX` files in the directory.
 * [Directory processor options](#directory-processor-options)
 * **hasHeader** `boolean`\
 Wether worksheet has header or not, `false` by default.
+* **fillMergedCells** `boolean`\
+If `true`, merged cells wil have the same value (by default, only the first cell of merged cells is filled with value). \
+**Warning!** Enabling this feature may increase streaming time because file must be processed to detect merged cells before actual stream. `false` by default.
 * **ignoreEmpty** `boolean`\
 Wether ignore empty rows or not, `true` by default.
 * **sheets** `(string | number)[] | async function(sheets)`\

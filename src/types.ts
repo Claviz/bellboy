@@ -45,6 +45,7 @@ export interface IExcelProcessorConfig extends IDirectoryProcessorConfig {
     hasHeader?: boolean;
     ignoreEmpty?: boolean;
     sheets?: ((number | string)[] | sheetGetter);
+    fillMergedCells?: boolean;
 }
 
 export interface IProcessor {
