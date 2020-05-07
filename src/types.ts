@@ -36,7 +36,7 @@ export interface IDynamicProcessorConfig extends IProcessorConfig {
 }
 
 export interface IDirectoryProcessorConfig extends IProcessorConfig {
-    path: string;
+    path?: string;
     filePattern?: string;
     files?: string[];
 }

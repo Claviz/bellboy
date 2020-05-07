@@ -269,8 +269,8 @@ File name (`file`) and full file path (`filePath`) parameters will be passed to 
 
 #### Options <div id='directory-processor-options'/>
 * [Processor options](#processor-options)
-* **path** `string` `required`\
-Path to the directory where files are located. 
+* **path** `string`\
+Path to the directory where files are located. Current directory by default.
 * **filePattern** `string`\
 Regex pattern for the files to be processed. If not specified, all files in the directory will be matched.
 * **files** `string[]`\

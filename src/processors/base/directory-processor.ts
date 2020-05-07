@@ -10,11 +10,10 @@ export abstract class DirectoryProcessor extends Processor {
 
     constructor(config: IDirectoryProcessorConfig) {
         super(config);
-        if (!config.path) {
-            throw new Error(`No path specified.`);
-        } else {
-            this.path = config.path;
+        if (!config.path && (!config.files || config.files.length === 0)) {
+            throw new Error(`No path or files specified.`);
         }
+        this.path = config.path || '';
         let filePattern = `(.*?)`;
         if (config.filePattern) {
             filePattern = config.filePattern;
