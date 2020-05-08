@@ -13,7 +13,7 @@ export interface IDbConnection {
 }
 
 export interface IReporter {
-    report(job: IJob): void;
+    report(job: IJob): Promise<void> | void;
 }
 
 export interface IJobConfig {

@@ -16,14 +16,14 @@ export class Job implements IJob {
     constructor(protected processor: IProcessor, protected destinations: IDestination[], config: IJobConfig = {}) {
         this.jobName = config?.jobName;
         this.reporters = config.reporters || [];
-        for (let i = 0; i < this.reporters.length; i++) {
-            this.reporters[i].report(this);
-        }
     }
 
     stop(message?: string) { }
 
     async run() {
+        for (let i = 0; i < this.reporters.length; i++) {
+            await this.reporters[i].report(this);
+        }
         let readStream: Readable;
         let errorMessage: string | undefined;
         this.stop = (message?: string) => {
