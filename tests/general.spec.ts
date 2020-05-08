@@ -1,5 +1,11 @@
+import { performance } from 'perf_hooks';
+import shortid from 'shortid';
+
 import { DynamicProcessor, Job } from '../src';
 import { CustomDestination, CustomReporter } from './helpers';
+
+jest.mock('shortid');
+jest.mock('perf_hooks');
 
 beforeAll(async () => {
 });
@@ -123,6 +129,10 @@ it(`destination should load if destination load isn't disabled`, async () => {
 });
 
 it(`reporter should report`, async () => {
+    let time = 0;
+    (performance as any).timeOrigin = 0;
+    performance.now = () => time++;
+    shortid.generate = () => `generated-id-${time}`;
     const destination = new CustomDestination();
     const processor = new DynamicProcessor({
         generator: async function* () {
@@ -130,7 +140,8 @@ it(`reporter should report`, async () => {
         }
     });
     const reporter = new CustomReporter();
-    const job = new Job(processor, [destination], { reporters: [reporter] });
+    const job = new Job(processor, [destination], { reporters: [reporter], jobName: 'report-test-job' });
     await job.run();
     expect(reporter.getEvents()).toMatchSnapshot();
+    expect(reporter.getExtendedEvents()).toMatchSnapshot();
 });

@@ -13,3 +13,118 @@ Array [
   "endProcessing",
 ]
 `;
+
+exports[`reporter should report 2`] = `
+Array [
+  Object {
+    "eventArguments": Array [
+      DynamicProcessor {
+        "generator": [Function],
+        "rowLimit": 0,
+      },
+      Array [
+        CustomDestination {
+          "batchCount": 1,
+          "batchSize": 0,
+          "data": Array [
+            "test",
+          ],
+          "disableLoad": false,
+        },
+      ],
+    ],
+    "eventId": "generated-id-1",
+    "eventName": "startProcessing",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 0,
+  },
+  Object {
+    "eventArguments": Array [],
+    "eventId": "generated-id-2",
+    "eventName": "startProcessingStream",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 1,
+  },
+  Object {
+    "eventArguments": Array [
+      "test",
+    ],
+    "eventId": "generated-id-3",
+    "eventName": "startProcessingRow",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 2,
+  },
+  Object {
+    "eventArguments": Array [],
+    "eventId": "generated-id-4",
+    "eventName": "endProcessingRow",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 3,
+  },
+  Object {
+    "eventArguments": Array [
+      0,
+      Array [
+        "test",
+      ],
+    ],
+    "eventId": "generated-id-5",
+    "eventName": "loadingBatch",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 4,
+  },
+  Object {
+    "eventArguments": Array [
+      0,
+      Array [
+        "test",
+      ],
+    ],
+    "eventId": "generated-id-6",
+    "eventName": "loadedBatch",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 5,
+  },
+  Object {
+    "eventArguments": Array [
+      0,
+    ],
+    "eventId": "generated-id-7",
+    "eventName": "endLoadingBatch",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 6,
+  },
+  Object {
+    "eventArguments": Array [],
+    "eventId": "generated-id-8",
+    "eventName": "endProcessingStream",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 7,
+  },
+  Object {
+    "eventArguments": Array [],
+    "eventId": "generated-id-9",
+    "eventName": "endProcessing",
+    "jobId": "generated-id-0",
+    "jobName": "report-test-job",
+    "jobStopped": false,
+    "timestamp": 8,
+  },
+]
+`;

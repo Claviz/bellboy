@@ -1,15 +1,20 @@
+import { performance } from 'perf_hooks';
+import { generate } from 'shortid';
 import { Readable } from 'stream';
 
-import { emit, event, IDestination, IJob, IJobConfig, IProcessor, IReporter } from './types';
+import { event, extendedEvent, IBellboyEvent, IDestination, IJob, IJobConfig, IProcessor, IReporter } from './types';
 
 export class Job implements IJob {
 
-    protected events: { [fn: string]: emit[] } = {};
+    protected events: { [fn: string]: { event?: event, extendedEvent?: extendedEvent }[] } = {};
     protected reporters: IReporter[];
-    protected anyEvent: emit[] = [];
+    protected anyEvent: ({ event?: event, extendedEvent?: extendedEvent })[] = [];
     protected stopped = false;
+    protected jobId = generate();
+    protected jobName?: string;
 
     constructor(protected processor: IProcessor, protected destinations: IDestination[], config: IJobConfig = {}) {
+        this.jobName = config?.jobName;
         this.reporters = config.reporters || [];
         for (let i = 0; i < this.reporters.length; i++) {
             this.reporters[i].report(this);
@@ -89,34 +94,34 @@ export class Job implements IJob {
         }
     }
 
-    on(eventName: 'endProcessing', fn: (() => Promise<any>)): any
-    on(eventName: 'loadedBatch', fn: ((destinationIndex: number, data: any[]) => Promise<any>)): any
-    on(eventName: 'processingError', fn: ((error: any) => Promise<any>)): any
-    on(eventName: 'loadingBatchError', fn: ((destinationIndex: number, data: any[], error: any) => Promise<any>)): any
-    on(eventName: 'loadingBatch', fn: ((destinationIndex: number, data: any[]) => Promise<any>)): any
-    on(eventName: 'endLoadingBatch', fn: ((destinationIndex: number) => Promise<any>)): any
-    on(eventName: 'transformedBatch', fn: ((destinationIndex: number, transformedRows: any) => Promise<any>)): any
-    on(eventName: 'transformingBatchError', fn: ((destinationIndex: number, rows: any[], error: any) => Promise<any>)): any
-    on(eventName: 'transformingBatch', fn: ((destinationIndex: number, rows: any[]) => Promise<any>)): any
-    on(eventName: 'endTransformingBatch', fn: ((destinationIndex: number) => Promise<any>)): any
-    on(eventName: 'endProcessingRow', fn: (() => Promise<any>)): any
-    on(eventName: 'rowGenerationError', fn: ((destinationIndex: number, row: any, error: any) => Promise<any>)): any
-    on(eventName: 'rowGenerated', fn: ((destinationIndex: number, generatedRow: any) => Promise<any>)): any
-    on(eventName: 'startProcessingRow', fn: ((row: any) => Promise<any>)): any
-    on(eventName: 'startProcessing', fn: ((processor: IProcessor, destinations: IDestination[]) => Promise<any>)): any
-    on(eventName: 'endProcessingStream', fn: ((...args: any) => Promise<any>)): any
-    on(eventName: 'startProcessingStream', fn: ((...args: any) => Promise<any>)): any
-    on(eventName: string, fn: event) {
-        const event = this.events[eventName];
-        if (!event) {
-            this.events[eventName] = [fn];
+    on(eventName: 'endProcessing', event?: (() => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'loadedBatch', event?: ((destinationIndex: number, data: any[]) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'processingError', event?: ((error: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'loadingBatchError', event?: ((destinationIndex: number, data: any[], error: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'loadingBatch', event?: ((destinationIndex: number, data: any[]) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'endLoadingBatch', event?: ((destinationIndex: number) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'transformedBatch', event?: ((destinationIndex: number, transformedRows: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'transformingBatchError', event?: ((destinationIndex: number, rows: any[], error: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'transformingBatch', event?: ((destinationIndex: number, rows: any[]) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'endTransformingBatch', event?: ((destinationIndex: number) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'endProcessingRow', event?: (() => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'rowGenerationError', event?: ((destinationIndex: number, row: any, error: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'rowGenerated', event?: ((destinationIndex: number, generatedRow: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'startProcessingRow', event?: ((row: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'startProcessing', event?: ((processor: IProcessor, destinations: IDestination[]) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'endProcessingStream', event?: ((...args: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'startProcessingStream', event?: ((...args: any) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: string, event?: event, extendedEvent?: extendedEvent) {
+        const existingEvent = this.events[eventName];
+        if (!existingEvent) {
+            this.events[eventName] = [{ event, extendedEvent, }];
         } else {
-            this.events[eventName].push(fn);
+            this.events[eventName].push({ event, extendedEvent, });
         }
     }
 
-    onAny(fn: event) {
-        this.anyEvent.push(fn);
+    onAny(event?: event, extendedEvent?: extendedEvent) {
+        this.anyEvent.push({ event, extendedEvent, });
     }
 
     protected async flushRows(rows: any[][]) {
@@ -159,13 +164,24 @@ export class Job implements IJob {
     protected async emit(eventName: string, ...args: any) {
         try {
             const fn = this.events[eventName];
+            const bellboyEvent: IBellboyEvent = {
+                eventName,
+                eventArguments: args,
+                timestamp: performance.now() + performance.timeOrigin,
+                jobStopped: this.stopped,
+                eventId: generate(),
+                jobId: this.jobId,
+                jobName: this.jobName,
+            }
             if (fn) {
                 for (let i = 0; i < fn.length; i++) {
-                    await fn[i].apply(this, args);
+                    await fn[i].event?.apply(this, args);
+                    await fn[i].extendedEvent?.apply(this, [bellboyEvent]);
                 }
             }
             for (let i = 0; i < this.anyEvent.length; i++) {
-                await this.anyEvent[i].apply(this, [eventName, ...args]);
+                await this.anyEvent[i].event?.apply(this, [eventName, ...args]);
+                await this.anyEvent[i].extendedEvent?.apply(this, [bellboyEvent]);
             }
         } catch (err) {
             console.error(`Warning. Exception was thrown inside ${eventName} event.`, err);

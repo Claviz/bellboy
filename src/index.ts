@@ -25,3 +25,5 @@ export { StdoutDestination } from './destinations/stdout-destination';
 export { getDb } from './utils';
 
 export { Reporter } from './reporters/base/reporter'
+
+export { IBellboyEvent } from './types'

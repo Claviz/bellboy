@@ -78,6 +78,8 @@ const job = new bellboy.Job(processor_instance, [destination_instance], job_opti
 #### Options
 * **reporters** `Reporter[]`\
 Array of [reporters](#reporters).
+* **jobName** `string`\
+Optional user-defined name of the job. Can become handy if used in combination with [extended events](#extended-event) to distinguish events from different jobs.
 
 #### Instance methods
 
@@ -196,6 +198,43 @@ job.onAny(async (eventName: string, ...args: any) => {
     // An event has been fired. 
 });
 ```
+
+##### Extended information from event <div id='extended-event'/>
+
+Sometimes more information about event is needed, especially if you are building custom [reporter](#reporters) to log or trace fired events.
+
+This information can be obtained by registering an async function as a third parameter with `job.on` method or as a second parameter with `job.onAny` method.
+
+For example,
+
+```ts
+job.on('rowGenerated', undefined, async (event: IBellboyEvent) => {
+    // Row has been generated using `recordGenerator` method.
+    console.log(`${event.jobName} has generated row for #${event.eventArguments.destinationIndex} destination`);
+});
+```
+or
+```ts
+job.onAny(undefined, async (event: IBellboyEvent) => {
+    console.log(`${event.jobName} has fired ${event.jobEvent}`);
+});
+```
+
+#### Extended event (IBellboyEvent) fields
+* **eventName** `string`\
+Name of the event.
+* **eventArguments** `any`\
+Arguments of the event.
+* **jobName** `string?`\
+User-defined name of the job.
+* **jobId** `string`\
+Unique ID of the job.
+* **eventId** `string`\
+Unique ID of the event.
+* **timestamp** `number`\
+High resolution timestamp of the event.
+* **jobStopped** `boolean`\
+Wether job is stopped or not.
 
 ## Processors <div id='processors'/>
 
@@ -520,8 +559,8 @@ Reporter is a job wrapper which can operate with [job instance](#job) (for examp
 ```javascript
 class CustomReporter extends bellboy.Reporter {
     report(job) {
-        job.on('startProcessing', async () => {
-            console.log('Job has been started.');
+        job.on('startProcessing', undefined, async ({ jobName }) => {
+            console.log(`Job ${jobName} has been started.`);
         });
     }
 }

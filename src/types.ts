@@ -18,6 +18,7 @@ export interface IReporter {
 
 export interface IJobConfig {
     reporters?: IReporter[];
+    jobName?: string;
 }
 
 export interface IJob {
@@ -131,12 +132,21 @@ export interface IMqttProcessorConfig extends IProcessorConfig {
     topics: string[];
 }
 
+export interface IBellboyEvent {
+    eventName: string;
+    eventArguments: any;
+    jobName?: string;
+    jobId: string;
+    eventId: string;
+    timestamp: number;
+    jobStopped: boolean;
+}
+
 export type DbTypes = 'postgres' | 'mssql';
 
 export type event = (...args: any) => Promise<any>;
+export type extendedEvent = (bellboyEvent: IBellboyEvent) => Promise<any>;
 
 export type sheetGetter = (sheetNames: string[]) => Promise<string[]>;
-
-export type emit = (event: string, ...args: any) => Promise<any>;
 
 export type processStream = (readStream: Readable, ...args: any) => Promise<any>;
