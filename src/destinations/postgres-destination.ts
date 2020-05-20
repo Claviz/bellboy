@@ -14,19 +14,26 @@ export class PostgresDestination extends DatabaseDestination {
     }
 
     async loadBatch(data: any[]) {
-        const columns: string[] = [];
+        const dataToUpload: any[] = []
+        const columnDict: { [key: string]: string } = {};
         const upsertConstraints = this.upsertConstraints;
+        let columnIndex = 0;
         for (let i = 0; i < data.length; i++) {
+            const transformed: { [key: string]: any } = {};
             for (const key of Object.keys(data[i])) {
-                if (!columns.includes(key)) {
-                    columns.push(key);
+                if (!columnDict[key]) {
+                    columnDict[key] = `column_${columnIndex}`;
+                    columnIndex += 1;
                 }
+                transformed[columnDict[key]] = data[i][key];
             }
+            dataToUpload.push(transformed);
         }
+        const columns = Object.keys(columnDict).map(x => ({ name: x, prop: columnDict[x] }))
         const cs = new pgp.helpers.ColumnSet(columns, { table: this.table });
         const db = await getDb(this.connection, 'postgres');
         await db.tx(async (t: any) => {
-            let query = pgp.helpers.insert(data, cs);
+            let query = pgp.helpers.insert(dataToUpload, cs);
             if (upsertConstraints && upsertConstraints.length) {
                 const columnsString = upsertConstraints.map(x => `"${x}"`).join(',');
                 query += ` on conflict(${columnsString}) do update set ` +

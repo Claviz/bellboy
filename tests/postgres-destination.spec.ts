@@ -177,3 +177,32 @@ it('inserts generated data to postgres by batches', async () => {
     expect(res.length).toEqual(3614);
 
 });
+
+it('inserts generated data to postgres table with column name that does not adhere to js syntax for variable names', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id integer PRIMARY KEY,
+        "Rēķina datums" text
+    )`);
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            yield {
+                id: 1,
+                'Rēķina datums': 'something',
+            }
+        },
+    });
+    const destination = new PostgresDestination({
+        connection,
+        table: 'test',
+        batchSize: 1,
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    const res = await db.query(`select * from test`);
+    expect(res).toEqual([{
+        id: 1,
+        'Rēķina datums': 'something',
+    }]);
+
+});
