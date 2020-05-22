@@ -2,6 +2,7 @@ import { CoreOptions, UriOptions, UrlOptions } from 'request';
 import { RequestPromiseOptions } from 'request-promise';
 import { ReadStream } from 'fs';
 import { Readable } from 'stream';
+import { IWorksheet } from 'xlstream/lib/types';
 
 export interface IDbConnection {
     user?: string;
@@ -147,6 +148,6 @@ export type DbTypes = 'postgres' | 'mssql';
 export type event = (...args: any) => Promise<any>;
 export type extendedEvent = (bellboyEvent: IBellboyEvent) => Promise<any>;
 
-export type sheetGetter = (sheetNames: string[]) => Promise<string[]>;
+export type sheetGetter = (sheets: IWorksheet[]) => Promise<string[]>;
 
 export type processStream = (readStream: Readable, ...args: any) => Promise<any>;

@@ -155,7 +155,8 @@ it('parses specific sheet by function', async () => {
         path: './',
         files: [filePath],
         sheets: async function (sheets) {
-            return [sheets[sheets.length - 1]];
+            const sheet = sheets[sheets.length - 1];
+            return [sheet.name];
         },
     });
     const job = new Job(processor, [destination]);
