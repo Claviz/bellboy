@@ -323,8 +323,8 @@ Processes `XLSX` files in the directory.
 
 #### Options
 * [Directory processor options](#directory-processor-options)
-* **hasHeader** `boolean`\
-Whether the worksheet has a header or not, `false` by default.
+* **hasHeader** `boolean` | `number`\
+Whether the worksheet has a header or not, `false` by default. 0-based row location can be passed to this option if header is not located on the first row.
 * **fillMergedCells** `boolean`\
 If `true`, merged cells wil have the same value (by default, only the first cell of merged cells is filled with value). \
 **Warning!** Enabling this feature may increase streaming time because file must be processed to detect merged cells before actual stream. `false` by default.

@@ -6,14 +6,14 @@ import { DirectoryProcessor } from './base/directory-processor';
 
 export class ExcelProcessor extends DirectoryProcessor {
 
-    protected hasHeader: boolean;
+    protected hasHeader: boolean | number | undefined;
     protected ignoreEmpty: boolean;
     protected fillMergedCells: boolean;
     protected sheets: (string | number)[] | sheetGetter;
 
     constructor(config: IExcelProcessorConfig) {
         super(config);
-        this.hasHeader = !!config.hasHeader;
+        this.hasHeader = config.hasHeader;
         this.ignoreEmpty = config.ignoreEmpty === false ? false : true;
         this.fillMergedCells = !!config.fillMergedCells;
         if (config.sheets) {
