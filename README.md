@@ -302,7 +302,7 @@ const processor = new bellboy.HttpProcessor({
 ```
 
 ### Directory processors <div id='directory-processors'/>
-Used for streaming text data from files in directory. There are currently three types of directory processors - `ExcelProcessor`, `JsonProcessor` and `TailProcessor`. Such processors search for the files in the source directory and process them one by one.
+Used for streaming text data from files in directory. There are currently four types of directory processors - `ExcelProcessor`, `JsonProcessor`, `DelimitedProcessor` and `TailProcessor`. Such processors search for the files in the source directory and process them one by one.
 
 File name (`file`) and full file path (`filePath`) parameters will be passed to `startProcessingStream` event.
 
