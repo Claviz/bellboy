@@ -277,7 +277,7 @@ Processes data received from a HTTP call. Can process `JSON` as well as `delimit
 * **connection** `object` `required`\
 Options from [request](https://github.com/request/request#requestoptions-callback) library.
 * **dataFormat** `delimited | json` `required`
-* **delimiter** `string` `required for delimited`
+* **rowSeparator** `string` `required for delimited`
 * **jsonPath** `string` `required for json`\
 Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
 * **nextRequest** `async function(header)`\
@@ -380,7 +380,23 @@ Processes files with delimited data in the directory.
 
 #### Options
 * [Directory processor options](#directory-processor-options)
-* **delimiter** `string` `required`
+* **rowSeparator** `string` `required`
+* **delimiter** `string`\
+A symbol separating fields of the row.
+* **hasHeader** `boolean`\
+If `true`, first row will be processed as a header.
+* **qualifier** `string` \
+Symbol placed around a field to signify that it is the same field.
+
+#### Produced row
+* **header** `string[]`\
+If `hasHeader` is `true`, first row will appear here.
+* **arr** `string`\
+Row split by `delimiter` and `qualifier`.
+* **obj** `string`\
+If `hasHeader` is `true`, object with header elements as keys will appear here.
+* **row** `string`\
+Received raw row.
 
 ### TailProcessor <div id='tail-processor'/>
 

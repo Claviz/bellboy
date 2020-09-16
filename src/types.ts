@@ -102,7 +102,7 @@ export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
 
 export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'delimited';
-    delimiter: string;
+    rowSeparator: string;
 }
 
 export interface IDatabaseProcessorConfig extends IProcessorConfig {
@@ -115,7 +115,10 @@ export interface IJsonProcessorConfig extends IDirectoryProcessorConfig {
 }
 
 export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
-    delimiter: string;
+    rowSeparator: string;
+    delimiter?: string;
+    hasHeader?: boolean;
+    qualifier?: string;
 }
 
 export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {
@@ -150,4 +153,4 @@ export type extendedEvent = (bellboyEvent: IBellboyEvent) => Promise<any>;
 
 export type sheetGetter = (sheets: IWorksheet[]) => Promise<string[]>;
 
-export type processStream = (readStream: Readable, ...args: any) => Promise<any>;
+export type processStream = (readStream: Readable | AsyncGenerator, ...args: any) => Promise<any>;

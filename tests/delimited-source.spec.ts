@@ -25,14 +25,14 @@ it('reads data from file delimited by new lines', async () => {
     const processor = new DelimitedProcessor({
         path: './',
         files: [filePath],
-        delimiter: '\n',
+        rowSeparator: '\n',
         rowLimit: 2,
     });
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        'First line',
-        'Second line',
+        { header: [], arr: ['First line'], obj: undefined, row: 'First line' },
+        { header: [], arr: ['Second line'], obj: undefined, row: 'Second line' },
     ]);
 });
 
@@ -42,14 +42,14 @@ it('reads data from file delimited by commas', async () => {
     const processor = new DelimitedProcessor({
         path: './',
         files: [filePath],
-        delimiter: ',',
+        rowSeparator: ',',
         rowLimit: 2,
     });
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        'Hello',
-        ' world!',
+        { header: [], arr: ['Hello'], obj: undefined, row: 'Hello' },
+        { header: [], arr: [' world!'], obj: undefined, row: ' world!' },
     ]);
 });
 
@@ -62,14 +62,72 @@ it('respects rowLimit', async () => {
     const processor = new DelimitedProcessor({
         path: './',
         files: [filePath],
-        delimiter: '\n',
+        rowSeparator: '\n',
         rowLimit: 3,
     });
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        '1',
-        '2',
-        '3',
+        { header: [], arr: ['1'], obj: undefined, row: '1' },
+        { header: [], arr: ['2'], obj: undefined, row: '2' },
+        { header: [], arr: ['3'], obj: undefined, row: '3' },
+    ]);
+});
+
+it('reads data from file with header', async () => {
+    await fs.appendFile(filePath, 'Name,Age\n');
+    await fs.appendFile(filePath, 'Bob,18\n');
+    await fs.appendFile(filePath, 'Alice,22\n');
+    const destination = new CustomDestination();
+    const processor = new DelimitedProcessor({
+        path: './',
+        files: [filePath],
+        rowSeparator: '\n',
+        hasHeader: true,
+        delimiter: ',',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: ['Name', 'Age'], arr: ['Bob', '18'], obj: { Name: 'Bob', Age: '18' }, row: 'Bob,18' },
+        { header: ['Name', 'Age'], arr: ['Alice', '22'], obj: { Name: 'Alice', Age: '22' }, row: 'Alice,22' },
+    ]);
+});
+
+it('reads data from file with header and without delimiter', async () => {
+    await fs.appendFile(filePath, 'Name\n');
+    await fs.appendFile(filePath, 'Bob\n');
+    await fs.appendFile(filePath, 'Alice\n');
+    const destination = new CustomDestination();
+    const processor = new DelimitedProcessor({
+        path: './',
+        files: [filePath],
+        rowSeparator: '\n',
+        hasHeader: true,
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: ['Name'], arr: ['Bob'], obj: { Name: 'Bob' }, row: 'Bob' },
+        { header: ['Name'], arr: ['Alice'], obj: { Name: 'Alice' }, row: 'Alice' },
+    ]);
+});
+
+it('reads data from file with qualifier', async () => {
+    await fs.appendFile(filePath, '"Bob, the "HaCk3r"",Riga\n');
+    await fs.appendFile(filePath, 'Alice,""Wonderland", Apt. 22"\n');
+    const destination = new CustomDestination();
+    const processor = new DelimitedProcessor({
+        path: './',
+        files: [filePath],
+        rowSeparator: '\n',
+        delimiter: ',',
+        qualifier: '"',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: [], arr: ['"Bob, the "HaCk3r""', 'Riga'], obj: undefined, row: '"Bob, the "HaCk3r"",Riga' },
+        { header: [], arr: ['Alice', '""Wonderland", Apt. 22"'], obj: undefined, row: 'Alice,""Wonderland", Apt. 22"' },
     ]);
 });

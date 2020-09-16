@@ -13,7 +13,7 @@ export class HttpProcessor extends Processor {
     protected connection: request.CoreOptions & request.UrlOptions;
     protected nextRequest: ((header: any) => Promise<any>) | undefined;
     protected jsonPath: string | undefined;
-    protected delimiter: string | undefined;
+    protected rowSeparator: string | undefined;
     protected header: string | undefined;
 
     constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
@@ -23,10 +23,10 @@ export class HttpProcessor extends Processor {
         }
         this.connection = config.connection;
         if (config.dataFormat === 'delimited') {
-            if (!config.delimiter) {
-                throw new Error('No delimiter specified.');
+            if (!config.rowSeparator) {
+                throw new Error('No rowSeparator specified.');
             }
-            this.delimiter = config.delimiter;
+            this.rowSeparator = config.rowSeparator;
         } else if (config.dataFormat === 'json') {
             if (!config.jsonPath) {
                 throw new Error('No JSON path specified.');
@@ -38,9 +38,9 @@ export class HttpProcessor extends Processor {
 
     protected async processHttpData(processStream: processStream, options: request.CoreOptions & request.UrlOptions) {
         this.header = undefined;
-        if (this.delimiter) {
+        if (this.rowSeparator) {
             const requestStream = request(options);
-            const delimitedStream = requestStream.pipe(split2(this.delimiter));
+            const delimitedStream = requestStream.pipe(split2(this.rowSeparator));
             await processStream(delimitedStream);
             requestStream.destroy();
         } else if (this.jsonPath) {

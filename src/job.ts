@@ -24,11 +24,11 @@ export class Job implements IJob {
         for (let i = 0; i < this.reporters.length; i++) {
             await this.reporters[i].report(this);
         }
-        let readStream: Readable;
+        let readStream: Readable | AsyncGenerator;
         let errorMessage: string | undefined;
         this.stop = (message?: string) => {
             this.stopped = true;
-            if (readStream) {
+            if (readStream && (readStream instanceof Readable)) {
                 readStream.destroy();
             }
             errorMessage = message;
@@ -36,7 +36,7 @@ export class Job implements IJob {
         await this.emit('startProcessing', this.processor, this.destinations);
         if (!this.stopped) {
             try {
-                await this.processor.process(async (_readStream: Readable, ...args: any[]) => {
+                await this.processor.process(async (_readStream: Readable | AsyncGenerator, ...args: any[]) => {
                     readStream = _readStream;
                     await this.emit('startProcessingStream', ...args);
                     if (!this.stopped) {

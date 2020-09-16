@@ -93,7 +93,7 @@ it('gets delimited data from HTTP', async () => {
     });
     const processor = new HttpProcessor({
         dataFormat: 'delimited',
-        delimiter: ';',
+        rowSeparator: ';',
         connection: {
             method: `GET`,
             url: `http://localhost:3000/delimited`,
