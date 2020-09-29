@@ -241,7 +241,7 @@ Wether job is stopped or not.
 Each processor in `bellboy` is a class which has a single responsibility of processing data of specific type -
 
 * [MqttProcessor](#mqtt-processor) processes **MQTT** protocol messages.
-* [HttpProcessor](#http-rocessor) processes data received from a **HTTP** call.
+* [HttpProcessor](#http-processor) processes data received from a **HTTP** call.
 * [ExcelProcessor](#excel-processor) processes **XLSX** file data from the file system.
 * [JsonProcessor](#json-processor) processes **JSON** file data from the file system. 
 * [DelimitedProcessor](#delimited-processor) processes files with **delimited data** from the file system. 
