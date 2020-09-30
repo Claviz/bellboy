@@ -234,7 +234,7 @@ Unique ID of the event.
 * **timestamp** `number`\
 High resolution timestamp of the event.
 * **jobStopped** `boolean`\
-Wether job is stopped or not.
+Whether the job is stopped or not.
 
 ## Processors <div id='processors'/>
 
@@ -329,7 +329,7 @@ Whether the worksheet has a header or not, `false` by default. 0-based row locat
 If `true`, merged cells wil have the same value (by default, only the first cell of merged cells is filled with value). \
 **Warning!** Enabling this feature may increase streaming time because file must be processed to detect merged cells before actual stream. `false` by default.
 * **ignoreEmpty** `boolean`\
-Wether ignore empty rows or not, `true` by default.
+Whether to ignore empty rows or not, `true` by default.
 * **sheets** `(string | number)[] | async function(sheets)`\
 Array of sheet names and/or sheet indexes or async function, which accepts array of all sheets and must return another array of sheet names that needs to be processed. If not specified, first sheet will be processed.
 ```javascript
