@@ -336,10 +336,8 @@ Array of sheet names and/or sheet indexes or async function, which accepts array
 const processor = new bellboy.ExcelProcessor({
     // process last sheet
     sheets: async (sheets) => {
-        sheets: async function (sheets) {
-            const sheet = sheets[sheets.length - 1];
-            return [sheet.name];
-        },
+        const sheet = sheets[sheets.length - 1];
+        return [sheet.name];
     },
     // ...
 });
