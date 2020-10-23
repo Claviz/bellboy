@@ -5,6 +5,7 @@ import { IJsonProcessorConfig, processStream } from '../types';
 import { getReadableJsonStream } from '../utils';
 import { DirectoryProcessor } from './base/directory-processor';
 
+const stripBomStream = require('strip-bom-stream');
 const JSONStream = require('JSONStream');
 
 export class JsonProcessor extends DirectoryProcessor {
@@ -22,7 +23,7 @@ export class JsonProcessor extends DirectoryProcessor {
     async process(processStream: processStream) {
         for (const file of this.files) {
             const filePath = path.join(this.path, file);
-            const fileReadStream = fs.createReadStream(filePath);
+            const fileReadStream = fs.createReadStream(filePath).pipe(stripBomStream());
             const readableJsonStream = getReadableJsonStream(fileReadStream.pipe(JSONStream.parse(this.jsonPath)));
             await processStream(readableJsonStream, file, filePath);
             fileReadStream.destroy();

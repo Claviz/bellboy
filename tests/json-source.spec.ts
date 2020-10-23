@@ -70,3 +70,20 @@ it('respects rowLimit', async () => {
         '3',
     ]);
 });
+
+it('reads JSON data encoded with BOM', async () => {
+    const json = ['hello', 'world'];
+    await fs.appendFile(filePath, '\uFEFF' + JSON.stringify(json), 'utf-8');
+    const destination = new CustomDestination();
+    const processor = new JsonProcessor({
+        path: './',
+        files: [filePath],
+        jsonPath: '*',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        'hello',
+        'world',
+    ]);
+});
