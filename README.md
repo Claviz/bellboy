@@ -281,7 +281,7 @@ Options from [request](https://github.com/request/request#requestoptions-callbac
 * **jsonPath** `RegExp`\
 Path to the array to be streamed. This option is desribed in detail inside [JsonProcessor](#json-processor) section.
 * **nextRequest** `async function(header)`\
-Function which must return `connection` for the next request or `null` if the next request is not needed. If data format is `json`, it will have `header` parameter which contains data before the first `jsonPath` match.
+Function which must return `connection` for the next request or `null` if the next request is not needed.
 ```javascript
 const processor = new bellboy.HttpProcessor({
     nextRequest: async function () {
