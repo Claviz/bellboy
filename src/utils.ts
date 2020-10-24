@@ -1,5 +1,5 @@
 import sql from 'mssql';
-import { Readable } from 'stream';
+import { Transform } from 'stream';
 
 import { DbTypes, IDbConnection } from './types';
 
@@ -42,44 +42,12 @@ export async function closeDbConnection(databaseConfig: IDbConnection) {
     }
 }
 
-export function getReadableJsonStream(jsonStream: Readable): Readable {
-    const readableJsonStream = new Readable({
+export function getValueFromJSONChunk() {
+    return new Transform({
         objectMode: true,
-        async read() {
-            const row = await getRow();
-            if (!row) {
-                return this.push(null);
-            }
-            this.push(row);
-        },
+        transform(chunk: { index: any; value: any }, encoding, callback) {
+            this.push(chunk.value);
+            callback();
+        }
     });
-    const getRow = async () => {
-        return new Promise<any>(async (resolve, reject) => {
-            function removeListeners() {
-                jsonStream.removeListener('data', onRow);
-                jsonStream.removeListener('done', onDone);
-                jsonStream.removeListener('close', onDone);
-                jsonStream.removeListener('error', onError);
-            };
-            async function onRow(row: any) {
-                jsonStream.pause();
-                removeListeners();
-                resolve(row);
-            };
-            async function onDone() {
-                removeListeners();
-                resolve();
-            };
-            async function onError(err: any) {
-                removeListeners();
-                reject(err);
-            };
-            jsonStream.on('data', onRow);
-            jsonStream.on('done', onDone);
-            jsonStream.on('close', onDone);
-            jsonStream.on('error', onError);
-            jsonStream.resume();
-        });
-    }
-    return readableJsonStream;
-}
+};

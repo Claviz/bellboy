@@ -23,9 +23,6 @@ app.get('/big-json', function (req: any, res: any) {
 });
 app.get('/paginated-json', function (req: any, res: any) {
     res.send({
-        pagination: {
-            nextUrl: 'http://localhost:3000/paginated-json-1',
-        },
         texts: [{
             text: 'hello1',
         }]
@@ -57,7 +54,7 @@ it('gets big JSON data from HTTP', async () => {
     });
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: 'arr.*',
+        jsonPath: /arr/,
         connection: {
             method: `GET`,
             url: `http://localhost:3000/big-json`,
@@ -74,7 +71,6 @@ it('gets JSON data from HTTP', async () => {
     });
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: '.',
         connection: {
             method: `GET`,
             url: `http://localhost:3000/json`,
@@ -113,15 +109,18 @@ it('gets paginated JSON data from HTTP', async () => {
     const destination = new CustomDestination({
         batchSize: 1,
     });
+    let pageCount = 2;
+    let currentPage = 0;
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: 'texts.*',
+        jsonPath: /texts/,
         connection,
-        nextRequest: async function (header) {
-            if (header && header.pagination) {
+        nextRequest: async function () {
+            currentPage++;
+            if (currentPage < pageCount) {
                 return {
                     ...connection,
-                    url: header.pagination.nextUrl,
+                    url: `http://localhost:3000/paginated-json-${currentPage}`,
                 };
             }
             return null;
@@ -140,7 +139,7 @@ it('respects rowLimit', async () => {
     const destination = new CustomDestination();
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: 'arr.*',
+        jsonPath: /arr/,
         connection: {
             method: `GET`,
             url: `http://localhost:3000/big-json`,

@@ -92,12 +92,12 @@ export interface IStdoutDestinationConfig extends IDestinationConfig {
 
 export interface IHttpProcessorConfig extends IProcessorConfig {
     connection: CoreOptions & UrlOptions;
-    nextRequest?: (header: any) => Promise<(CoreOptions & UrlOptions) | null | undefined>;
+    nextRequest?: () => Promise<(CoreOptions & UrlOptions) | null | undefined>;
 }
 
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'json';
-    jsonPath: string;
+    jsonPath?: RegExp;
 }
 
 export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
@@ -111,7 +111,7 @@ export interface IDatabaseProcessorConfig extends IProcessorConfig {
 }
 
 export interface IJsonProcessorConfig extends IDirectoryProcessorConfig {
-    jsonPath: string;
+    jsonPath?: RegExp;
 }
 
 export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {

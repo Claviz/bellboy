@@ -278,22 +278,16 @@ Processes data received from a HTTP call. Can process `JSON` as well as `delimit
 Options from [request](https://github.com/request/request#requestoptions-callback) library.
 * **dataFormat** `delimited | json` `required`
 * **rowSeparator** `string` `required for delimited`
-* **jsonPath** `string` `required for json`\
-Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
-* **nextRequest** `async function(header)`\
-Function which must return `connection` for the next request or `null` if the next request is not needed. If data format is `json`, it will have `header` parameter which contains data before the first `jsonPath` match.
+* **jsonPath** `RegExp`\
+Path to the array to be streamed. This option is desribed in detail inside [JsonProcessor](#json-processor) section.
 ```javascript
 const processor = new bellboy.HttpProcessor({
-    // gets next connection from the header until last page is reached
-    nextRequest: async function (header) {
-        if (header) {
-            const pagination = header.pagination;
-            if (pagination.total_pages > pagination.current_page) {
-                return {
-                    ...connection,
-                    url: `${url}&current_page=${pagination.current_page + 1}`
-                };
-            }
+    nextRequest: async function () {
+        if (currentPage < pageCount) {
+            return {
+                ...connection,
+                url: `${url}&current_page=${currentPage + 1}`,
+            };
         }
         return null;
     },
@@ -369,8 +363,11 @@ Processes `JSON` files in the directory.
 
 #### Options
 * [Directory processor options](#directory-processor-options)
-* **jsonPath** `string` `required`\
-Only values that match provided [JSONPath](https://goessner.net/articles/JsonPath/) will be processed.
+* **jsonPath** `RegExp`\
+Path to the array to be streamed. Internally when JSON is streamed, current path is joined together using `.` as separator and then tested against provided regular expression. If not specified, a root array will be streamed. As an example, if you have this JSON object:\
+`{ "animals": { "dogs": [ "pug", "bulldog", "poodle" ] } }`\
+And want to stream `dogs` array, path you will need to use is `/animals.dogs.(\d+)/`.\
+`(\d+)` is used here because each index of the array is a number.
 
 ### DelimitedProcessor <div id='delimited-processor'/>
 
