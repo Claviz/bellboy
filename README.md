@@ -516,13 +516,10 @@ Inserts data to MSSQL.
 * [General destination options](#destination-options)
 * **table** `string` `required`\
   Table name.
-* **upsertConstraints** `string[]`\
-  If specified, `UPSERT` command will be executed based on provided constraints.
 * **connection** `object` `required`
   * **user**
   * **password**
   * **server**
-  * **host**
   * **database**
 
 ## Extendability
