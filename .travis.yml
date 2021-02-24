@@ -11,6 +11,7 @@ before_script:
   - npm run build
 
 script:
+  - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
   - docker-compose up --abort-on-container-exit --exit-code-from test
 
 after_success:
