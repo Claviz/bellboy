@@ -64,10 +64,11 @@ const path = require('path');
     
     // 5. Log all error events
     job.onAny(async (eventName, ...args) => {
-    if (eventName.includes('Error')) {
-    console.log(args);
-    }
-});
+        if (eventName.includes('Error')) {
+            console.log(args);
+        }
+    });
+    
     // 6. run your job
     await job.run();
 })();
