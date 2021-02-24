@@ -26,14 +26,16 @@ const path = require('path');
 
 (async () => {
     const srcPath = `C:/source`;
+    
     // 1. create a processor which will process 
-    // Excel files one by one in the folder 
+    // Excel files in the folder one by one  
     const processor = new bellboy.ExcelProcessor({
         path: srcPath,
         hasHeader: true,
     });
+    
     // 2. create a destination which will add a new 'status' 
-    // field to each row and load processed data to Postgres database
+    // field to each row and load processed data into a Postgres database
     const destination = new bellboy.PostgresDestination({
         connection: {
             user: 'user',
@@ -49,15 +51,24 @@ const path = require('path');
             };
         }
     });
-    // 3. create a job which will glue processor and destination together
+    
+    // 3. create a job which will glue the processor and the destination together
     const job = new bellboy.Job(processor, [destination]);
-    // 4. tell bellboy to move file away as soon as it was processed
+    
+    // 4. tell bellboy to move the file away as soon as it was processed
     job.on('endProcessingStream', async (file) => {
         const filePath = path.join(srcPath, file);
         const newFilePath = path.join(`./destination`, file);
         await fs.renameSync(filePath, newFilePath);
     });
-    // 5. run your job
+    
+    // 5. Log all error events
+    job.onAny(async (eventName, ...args) => {
+    if (eventName.includes('Error')) {
+    console.log(args);
+    }
+});
+    // 6. run your job
     await job.run();
 })();
 ```
