@@ -38,7 +38,7 @@ const path = require('path');
         connection: {
             user: 'user',
             password: 'password',
-            server: 'localhost',
+            host: 'localhost',
             database: 'bellboy',
         },
         table: 'stats',
@@ -501,7 +501,6 @@ Inserts data to PostgreSQL.
 * **connection** `object` `required`
   * **user**
   * **password**
-  * **server**
   * **host**
   * **database**
   * **schema**
