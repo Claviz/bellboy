@@ -291,7 +291,7 @@ Options from [request](https://github.com/request/request#requestoptions-callbac
 * **dataFormat** `delimited | json` `required`
 * **rowSeparator** `string` `required for delimited`
 * **jsonPath** `RegExp`\
-Path to the array to be streamed. This option is desribed in detail inside [JsonProcessor](#json-processor) section.
+Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
 * **nextRequest** `async function(header)`\
 Function which must return `connection` for the next request or `null` if the next request is not needed.
 ```javascript
