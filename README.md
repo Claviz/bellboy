@@ -318,7 +318,7 @@ File name (`file`) and full file path (`filePath`) parameters will be passed to 
 * [Processor options](#processor-options)
 * **path** `string`\
 Path to the directory where files are located. Current directory by default.
-* **filePattern** `string`\
+* **filePattern** `RegExp`\
 Regex pattern for the files to be processed. If not specified, all files in the directory will be matched.
 * **files** `string[]`\
 Array of file names. If not specified, all files in the directory will be matched against `filePattern` regex and processed in alphabetical order.
