@@ -11,6 +11,7 @@ export interface IDbConnection {
     host?: string;
     database?: string;
     schema?: string;
+    driver?: 'tedious' | 'msnodesqlv8';
 }
 
 export interface IReporter {

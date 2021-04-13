@@ -2,16 +2,13 @@ version: '3'
 
 services:
   test:
-    image: node:latest
+    build: .
     depends_on:
       - postgres
       - mssql
     command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- npm test
     environment:
       NODE_ENV: development
-    volumes:
-      - ./:/app
-    working_dir: /app
 
   postgres:
     image: postgres

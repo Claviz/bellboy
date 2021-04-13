@@ -1,17 +1,19 @@
-import sql from 'mssql';
-
 import { IMssqlDestinationConfig } from '../types';
 import { getDb } from '../utils';
 import { DatabaseDestination } from './base/database-destination';
 
 export class MssqlDestination extends DatabaseDestination {
 
+    driver?: 'tedious' | 'msnodesqlv8';
+
     constructor(config: IMssqlDestinationConfig) {
         super(config);
+        this.driver = config.connection.driver;
     }
 
     async loadBatch(data: any[]) {
-        const db = await getDb(this.connection, 'mssql') as sql.ConnectionPool;
+        const sql = this.driver === 'msnodesqlv8' ? await import('mssql/msnodesqlv8') : await import('mssql');
+        const db = await getDb(this.connection, 'mssql');
         const query = await db.request().query(`SELECT TOP(0) * FROM ${this.table}`);
         let table = (query.recordset as any).toTable(this.table);
         const columns = table.columns.map((x: any) => x.name);

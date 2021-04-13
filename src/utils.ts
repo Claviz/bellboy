@@ -1,4 +1,3 @@
-import sql from 'mssql';
 import { Transform } from 'stream';
 
 import { DbTypes, IDbConnection } from './types';
@@ -13,7 +12,8 @@ export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
         }
     }
     if (dbType === 'mssql') {
-        const pool = new sql.ConnectionPool({ ...databaseConfig } as sql.config);
+        const sql = databaseConfig.driver === 'msnodesqlv8' ? await import('mssql/msnodesqlv8') : await import('mssql');
+        const pool = new sql.ConnectionPool({ ...databaseConfig } as any);
         const db = await pool.connect();
         cachedDbConnections.set(dbKey, {
             db,

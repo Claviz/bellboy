@@ -439,6 +439,8 @@ Query to execute.
   * **database**
   * **schema**\
     Currently available only for `PostgresProcessor`.
+  * **driver**\
+    Available only for `MssqlProcessor`. Defines which driver to use - `tedious` (used by default) or `msnodesqlv8`.
 
 ### DynamicProcessor <div id='dynamic-processor'/>
 Processor which generates records on the fly. Can be used to define custom data processors.
@@ -592,4 +594,4 @@ class CustomReporter extends bellboy.Reporter {
 
 ## Testing
 
-Tests can be run by using `docker-compose up --abort-on-container-exit --exit-code-from test` command.
+Tests can be run by using `docker-compose up --abort-on-container-exit --exit-code-from test --build test` command.

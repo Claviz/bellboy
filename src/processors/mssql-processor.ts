@@ -32,7 +32,7 @@ export class MssqlProcessor extends DatabaseProcessor {
         dbRequest.stream = true;
         dbRequest.query(this.query);
         const processRows = async () => {
-            return new Promise<any>(async (resolve, reject) => {
+            return new Promise<void>(async (resolve, reject) => {
                 function removeListeners() {
                     dbRequest.removeListener('row', onRow);
                     dbRequest.removeListener('done', onDone);
