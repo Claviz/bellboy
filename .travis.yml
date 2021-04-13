@@ -6,6 +6,8 @@ services:
 node_js:
   - node
 
+install: skip
+
 before_script:
   - chmod +x wait-for-it.sh
 
