@@ -16,7 +16,7 @@ script:
   - docker-compose up --abort-on-container-exit --exit-code-from test --build test
 
 after_success:
-  - npm run codecov
+  - npx codecov
 
 notifications:
   slack: client-line:ZAlBGkbmTEsy2z0piIwIZgIP
