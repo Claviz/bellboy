@@ -434,8 +434,11 @@ Query to execute.
 * **connection** `object` `required`
   * **user**
   * **password**
-  * **server**
+  * **server**\
+    Used with `MssqlProcessor`.
   * **host**
+    Used with `PostgresProcessor`.
+  * **port**
   * **database**
   * **schema**\
     Currently available only for `PostgresProcessor`.
