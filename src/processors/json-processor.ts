@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
-import { streamArray } from 'stream-json/streamers/StreamArray';
+import { streamValues } from 'stream-json/streamers/StreamValues';
 
 import { IJsonProcessorConfig, processStream } from '../types';
 import { getValueFromJSONChunk } from '../utils';
@@ -23,7 +23,7 @@ export class JsonProcessor extends DirectoryProcessor {
             const stream = fs.createReadStream(filePath)
                 .pipe(parser())
                 .pipe(pick({ filter: this.jsonPath || '' }))
-                .pipe(streamArray())
+                .pipe(streamValues())
                 .pipe(getValueFromJSONChunk());
 
             await processStream(stream, file, filePath);

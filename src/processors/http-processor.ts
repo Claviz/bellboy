@@ -1,7 +1,7 @@
 import request = require('request');
 import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
-import { streamArray } from 'stream-json/streamers/StreamArray';
+import { streamValues } from 'stream-json/streamers/StreamValues';
 
 import { IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
 import { getValueFromJSONChunk } from '../utils';
@@ -46,7 +46,7 @@ export class HttpProcessor extends Processor {
             const jsonStream = requestStream
                 .pipe(parser())
                 .pipe(pick({ filter: this.jsonPath || '' }))
-                .pipe(streamArray())
+                .pipe(streamValues())
                 .pipe(getValueFromJSONChunk());
             await processStream(jsonStream);
             requestStream.destroy();

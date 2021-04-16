@@ -25,6 +25,7 @@ it('reads root data from JSON file', async () => {
     const processor = new JsonProcessor({
         path: './',
         files: [filePath],
+        jsonPath: /(\d+)/,
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -41,7 +42,7 @@ it('reads nested data from JSON file', async () => {
     const processor = new JsonProcessor({
         path: './',
         files: [filePath],
-        jsonPath: /fields/,
+        jsonPath: /fields.(\d+)/,
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -59,6 +60,7 @@ it('respects rowLimit', async () => {
         path: './',
         files: [filePath],
         rowLimit: 3,
+        jsonPath: /(\d+)/,
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -76,6 +78,7 @@ it('reads JSON data encoded with BOM', async () => {
     const processor = new JsonProcessor({
         path: './',
         files: [filePath],
+        jsonPath: /(\d+)/,
     });
     const job = new Job(processor, [destination]);
     await job.run();

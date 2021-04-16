@@ -54,7 +54,7 @@ it('gets big JSON data from HTTP', async () => {
     });
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: /arr/,
+        jsonPath: /arr.(\d+)/,
         connection: {
             method: `GET`,
             url: `http://localhost:3000/big-json`,
@@ -75,6 +75,7 @@ it('gets JSON data from HTTP', async () => {
             method: `GET`,
             url: `http://localhost:3000/json`,
         },
+        jsonPath: /(\d+)/,
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -113,7 +114,7 @@ it('gets paginated JSON data from HTTP', async () => {
     let currentPage = 0;
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: /texts/,
+        jsonPath: /texts.(\d+)/,
         connection,
         nextRequest: async function () {
             currentPage++;
@@ -139,7 +140,7 @@ it('respects rowLimit', async () => {
     const destination = new CustomDestination();
     const processor = new HttpProcessor({
         dataFormat: 'json',
-        jsonPath: /arr/,
+        jsonPath: /arr.(\d+)/,
         connection: {
             method: `GET`,
             url: `http://localhost:3000/big-json`,
