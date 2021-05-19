@@ -1,6 +1,6 @@
 {
   "name": "bellboy",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",
@@ -23,6 +23,9 @@
     "url": "https://github.com/Claviz/bellboy/issues"
   },
   "homepage": "https://github.com/Claviz/bellboy#readme",
+  "optionalDependencies": {
+    "msnodesqlv8": "^2.1.0"
+  },
   "devDependencies": {
     "@types/jest": "^25.2.1",
     "@types/mssql": "^6.0.7",
@@ -42,7 +45,6 @@
   },
   "dependencies": {
     "async-mqtt": "^2.2.1",
-    "msnodesqlv8": "^2.0.13",
     "mssql": "^6.3.1",
     "pg": "8.0.3",
     "pg-promise": "10.5.3",
