@@ -1,6 +1,6 @@
 {
   "name": "bellboy",
-  "version": "4.1.3",
+  "version": "4.2.0",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",

@@ -16,9 +16,9 @@ export class HttpDestination extends Destination {
     async loadBatch(data: any[]) {
         for (let i = 0; i < data.length; i++) {
             await rp({
+                json: true,
                 ...this.request,
                 body: data[i],
-                json: true,
             });
         }
     }

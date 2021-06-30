@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   test:
@@ -20,5 +20,5 @@ services:
   mssql:
     image: microsoft/mssql-server-linux
     environment:
-      ACCEPT_EULA: Y
+      ACCEPT_EULA: "Y"
       SA_PASSWORD: Passw0rd*

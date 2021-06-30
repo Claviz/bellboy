@@ -5,11 +5,17 @@ const bodyParser = require('body-parser');
 
 let data: any[] = [];
 const app = express();
-app.use(bodyParser.json());
-app.post('/', function (req: any, res: any) {
+
+app.post('/', bodyParser.json(), function (req: any, res: any) {
     data.push(req.body);
     res.send();
 });
+
+app.post('/text', bodyParser.text(), function (req: any, res: any) {
+    data.push(req.body);
+    res.send();
+});
+
 const server = app.listen(3000);
 
 beforeAll(async () => {
@@ -86,4 +92,31 @@ it('posts transformed generated objects to http destination', async () => {
             text: 'something'
         }],
     }]);
+});
+
+it('posts text data to http destination', async () => {
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            for (let i = 0; i < 3; i++) {
+                yield `<h3>Hello, world ${i}!</h3>`;
+            }
+        },
+    });
+    const destination = new HttpDestination({
+        request: {
+            method: 'POST',
+            uri: 'http://localhost:3000/text',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            json: false,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(data).toEqual([
+        '<h3>Hello, world 0!</h3>',
+        '<h3>Hello, world 1!</h3>',
+        '<h3>Hello, world 2!</h3>',
+    ]);
 });
