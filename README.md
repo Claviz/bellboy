@@ -1,4 +1,4 @@
-# bellboy [![Build Status](https://travis-ci.org/Claviz/bellboy.svg?branch=master)](https://travis-ci.org/Claviz/bellboy) [![codecov](https://codecov.io/gh/Claviz/bellboy/branch/master/graph/badge.svg)](https://codecov.io/gh/Claviz/bellboy) ![npm](https://img.shields.io/npm/v/bellboy.svg)
+# bellboy [![Build Status](https://travis-ci.com/Claviz/bellboy.svg?branch=master)](https://travis-ci.com/Claviz/bellboy) [![codecov](https://codecov.io/gh/Claviz/bellboy/branch/master/graph/badge.svg)](https://codecov.io/gh/Claviz/bellboy) ![npm](https://img.shields.io/npm/v/bellboy.svg)
 
 Highly performant JavaScript data stream ETL engine.
 
