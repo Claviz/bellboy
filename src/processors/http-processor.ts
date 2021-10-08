@@ -1,4 +1,4 @@
-import request = require('request');
+import axios, { AxiosRequestConfig } from 'axios';
 import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
@@ -11,7 +11,7 @@ const split2 = require('split2');
 
 export class HttpProcessor extends Processor {
 
-    protected connection: request.CoreOptions & request.UrlOptions;
+    protected connection: AxiosRequestConfig;
     protected nextRequest: (() => Promise<any>) | undefined;
     protected jsonPath: RegExp | undefined;
     protected rowSeparator: string | undefined;
@@ -35,21 +35,19 @@ export class HttpProcessor extends Processor {
         this.nextRequest = config.nextRequest;
     }
 
-    protected async processHttpData(processStream: processStream, options: request.CoreOptions & request.UrlOptions) {
+    protected async processHttpData(processStream: processStream, options: AxiosRequestConfig) {
         if (this.dataFormat === 'delimited') {
-            const requestStream = request(options);
-            const delimitedStream = requestStream.pipe(split2(this.rowSeparator));
+            const requestStream = await axios({ ...options, responseType: 'stream' });
+            const delimitedStream = requestStream.data.pipe(split2(this.rowSeparator));
             await processStream(delimitedStream);
-            requestStream.destroy();
         } else if (this.dataFormat === 'json') {
-            const requestStream = request(options);
-            const jsonStream = requestStream
+            const requestStream = await axios({ ...options, responseType: 'stream' });
+            const jsonStream = requestStream.data
                 .pipe(parser())
                 .pipe(pick({ filter: this.jsonPath || '' }))
                 .pipe(streamValues())
                 .pipe(getValueFromJSONChunk());
             await processStream(jsonStream);
-            requestStream.destroy();
         }
         if (this.nextRequest) {
             const nextOptions = await this.nextRequest();

@@ -1,12 +1,11 @@
-import rp, { RequestPromiseOptions } from 'request-promise';
+import axios, { AxiosRequestConfig } from 'axios';
 
 import { IHttpDestinationConfig } from '../types';
 import { Destination } from './base/destination';
-import { UriOptions, UrlOptions } from 'request';
 
 export class HttpDestination extends Destination {
 
-    protected request: (UriOptions & RequestPromiseOptions) | (UrlOptions & RequestPromiseOptions);
+    protected request: AxiosRequestConfig;
 
     constructor(config: IHttpDestinationConfig) {
         super(config);
@@ -15,10 +14,9 @@ export class HttpDestination extends Destination {
 
     async loadBatch(data: any[]) {
         for (let i = 0; i < data.length; i++) {
-            await rp({
-                json: true,
+            await axios({
                 ...this.request,
-                body: data[i],
+                data: data[i],
             });
         }
     }

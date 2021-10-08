@@ -1,6 +1,4 @@
-import { CoreOptions, UriOptions, UrlOptions } from 'request';
-import { RequestPromiseOptions } from 'request-promise';
-import { ReadStream } from 'fs';
+import { AxiosRequestConfig } from 'axios';
 import { Readable } from 'stream';
 import { IWorksheet } from 'xlstream/lib/types';
 
@@ -84,7 +82,7 @@ export interface IPostgresDestinationConfig extends IDatabaseDestinationConfig {
 export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig { }
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
-    request: (UriOptions & RequestPromiseOptions) | (UrlOptions & RequestPromiseOptions);
+    request: AxiosRequestConfig;
 }
 
 export interface IStdoutDestinationConfig extends IDestinationConfig {
@@ -92,8 +90,8 @@ export interface IStdoutDestinationConfig extends IDestinationConfig {
 }
 
 export interface IHttpProcessorConfig extends IProcessorConfig {
-    connection: CoreOptions & UrlOptions;
-    nextRequest?: () => Promise<(CoreOptions & UrlOptions) | null | undefined>;
+    connection: AxiosRequestConfig;
+    nextRequest?: () => Promise<AxiosRequestConfig | null | undefined>;
 }
 
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {

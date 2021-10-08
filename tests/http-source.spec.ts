@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from 'axios';
 import { Job, HttpProcessor } from '../src';
 import { CustomDestination, CustomTimeoutDestination } from './helpers';
 
@@ -103,7 +104,7 @@ it('gets delimited data from HTTP', async () => {
 
 
 it('gets paginated JSON data from HTTP', async () => {
-    const connection = {
+    const connection: AxiosRequestConfig = {
         method: `GET`,
         url: `http://localhost:3000/paginated-json`,
     };
@@ -150,4 +151,36 @@ it('respects rowLimit', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData().length).toEqual(3);
+});
+
+it('correctly handles HTTP error with incorrect connection config', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `http://error:3000/json`,
+            proxy: {
+                protocol: 'https',
+                host: '127.0.0.1',
+                port: 9000,
+                auth: {
+                    username: 'bellboy',
+                    password: 'pass123'
+                }
+            }
+        },
+        jsonPath: /(\d+)/,
+    });
+    const job = new Job(processor, [destination]);
+    const events: string[] = [];
+    job.onAny(async (x, a) => events.push(x));
+    await job.run();
+    expect(events).toEqual([
+        'startProcessing',
+        'processingError',
+        'endProcessing'
+    ]);
 });

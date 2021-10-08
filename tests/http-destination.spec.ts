@@ -42,7 +42,7 @@ it('posts generated objects to http destination', async () => {
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            uri: 'http://localhost:3000',
+            url: 'http://localhost:3000',
         },
         batchSize: 2,
     });
@@ -70,7 +70,7 @@ it('posts transformed generated objects to http destination', async () => {
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            uri: 'http://localhost:3000',
+            url: 'http://localhost:3000',
         },
         batchSize: 2,
         batchTransformer: async (rows) => {
@@ -105,11 +105,10 @@ it('posts text data to http destination', async () => {
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            uri: 'http://localhost:3000/text',
+            url: 'http://localhost:3000/text',
             headers: {
                 'Content-Type': 'text/plain',
             },
-            json: false,
         },
     });
     const job = new Job(processor, [destination]);
