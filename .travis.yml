@@ -13,7 +13,6 @@ before_script:
 
 script:
   - echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
-  - docker-compose pull
   - docker-compose up --abort-on-container-exit --exit-code-from test --build test
 
 after_success:
