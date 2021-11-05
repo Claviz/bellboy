@@ -52,13 +52,22 @@ export function getValueFromJSONChunk() {
     });
 };
 
-export function getDelimitedGenerator({ readStream, delimiter, qualifier, hasHeader }: { readStream: any; delimiter?: string; qualifier?: string; hasHeader: boolean; }) {
+export function getDelimitedGenerator({
+    readStream,
+    delimiter,
+    qualifier,
+    hasHeader,
+    trimQualifier
+}: { readStream: any; delimiter?: string; qualifier?: string; hasHeader: boolean; trimQualifier: boolean; }) {
     let header: string[] = [];
     const splitRegExp = new RegExp(`${delimiter}(?=(?:(?:[^${qualifier}]*${qualifier}){2})*[^${qualifier}]*$)`);
     const processRow = (row: any) => {
         let arr: string[] = [];
         if (qualifier) {
             arr = row.split(splitRegExp);
+            if (trimQualifier) {
+                arr = arr.map(x => x[0] === qualifier && x[x.length - 1] === qualifier ? x.slice(1, -1) : x);
+            }
         } else {
             arr = row.split(delimiter);
         }

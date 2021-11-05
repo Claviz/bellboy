@@ -340,6 +340,8 @@ For delimited data produces rows described [here](#delimited-produced-row).
   If `true`, first row will be processed as a header.
 - **qualifier** `string` `only for delimited`\
   Symbol placed around a field to signify that it is the same field.
+- **trimQualifier** `boolean` `only for delimited`\
+  Trim qualifier from produced row item.
 - **jsonPath** `RegExp`\
   Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
 - **nextRequest** `async function(header)`\
@@ -455,6 +457,8 @@ Processes files with delimited data in the directory.
   If `true`, first row will be processed as a header.
 - **qualifier** `string` \
   Symbol placed around a field to signify that it is the same field.
+- **trimQualifier** `boolean` \
+  Trim qualifier from produced row item.
 
 #### Produced row <div id='delimited-produced-row'/>
 

@@ -104,6 +104,7 @@ export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
     rowSeparator: string;
     delimiter?: string;
     hasHeader?: boolean;
+    trimQualifier?: boolean;
     qualifier?: string;
 }
 
@@ -120,6 +121,7 @@ export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
     rowSeparator: string;
     delimiter?: string;
     hasHeader?: boolean;
+    trimQualifier?: boolean;
     qualifier?: string;
 }
 

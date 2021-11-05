@@ -19,6 +19,9 @@ app.get('/delimited-qualifier', function (req: any, res: any) {
 app.get('/delimited-with-header-without-delimiter', function (req: any, res: any) {
     res.send('Name\nBob\nAlice');
 });
+app.get('/delimited-qualifier-delimiter-header', function (req: any, res: any) {
+    res.send('Name;"Favourite color"\nBob;"Dark gray"\n"Elon Musk";orange');
+});
 app.get('/big-json', function (req: any, res: any) {
     let obj = {
         arr: [] as string[],
@@ -130,6 +133,53 @@ it('gets delimited data with qualifier from HTTP', async () => {
     expect(destination.getData()).toEqual([
         { header: [], arr: ['"Bob, the "HaCk3r""', 'Riga'], obj: undefined, row: '"Bob, the "HaCk3r"",Riga' },
         { header: [], arr: ['Alice', '""Wonderland", Apt. 22"'], obj: undefined, row: 'Alice,""Wonderland", Apt. 22"' },
+    ]);
+});
+
+it('gets delimited data with qualifier, delimiter and header', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n',
+        delimiter: ';',
+        qualifier: '"',
+        hasHeader: true,
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/delimited-qualifier-delimiter-header`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: ['Name', '"Favourite color"'], arr: ['Bob', '"Dark gray"'], obj: { Name: 'Bob', '"Favourite color"': '"Dark gray"' }, row: 'Bob;"Dark gray"' },
+        { header: ['Name', '"Favourite color"'], arr: ['"Elon Musk"', 'orange'], obj: { Name: '"Elon Musk"', '"Favourite color"': 'orange' }, row: '"Elon Musk";orange' },
+    ]);
+});
+
+it('gets delimited data with qualifier, delimiter, header and trimmed qualifier', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n',
+        delimiter: ';',
+        qualifier: '"',
+        trimQualifier: true,
+        hasHeader: true,
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/delimited-qualifier-delimiter-header`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: ['Name', 'Favourite color'], arr: ['Bob', 'Dark gray'], obj: { Name: 'Bob', 'Favourite color': 'Dark gray' }, row: 'Bob;"Dark gray"' },
+        { header: ['Name', 'Favourite color'], arr: ['Elon Musk', 'orange'], obj: { Name: 'Elon Musk', 'Favourite color': 'orange' }, row: '"Elon Musk";orange' },
     ]);
 });
 

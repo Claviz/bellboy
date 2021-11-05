@@ -19,6 +19,7 @@ export class HttpProcessor extends Processor {
     protected hasHeader: boolean = false;
     protected delimiter?: string;
     protected qualifier?: string;
+    protected trimQualifier: boolean = false;
 
     constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
         super(config);
@@ -33,6 +34,7 @@ export class HttpProcessor extends Processor {
             }
             this.rowSeparator = config.rowSeparator;
             this.hasHeader = !!config.hasHeader;
+            this.trimQualifier = !!config.trimQualifier;
             this.delimiter = config.delimiter;
             this.qualifier = config.qualifier;
         } else if (config.dataFormat === 'json') {
@@ -50,6 +52,7 @@ export class HttpProcessor extends Processor {
                 delimiter: this.delimiter,
                 hasHeader: this.hasHeader,
                 qualifier: this.qualifier,
+                trimQualifier: this.trimQualifier,
             });
             await processStream(generator());
         } else if (this.dataFormat === 'json') {

@@ -13,6 +13,7 @@ export class DelimitedProcessor extends DirectoryProcessor {
     protected hasHeader: boolean;
     protected delimiter?: string;
     protected qualifier?: string;
+    protected trimQualifier: boolean = false;
 
     constructor(config: IDelimitedProcessorConfig) {
         super(config);
@@ -21,6 +22,7 @@ export class DelimitedProcessor extends DirectoryProcessor {
         }
         this.rowSeparator = config.rowSeparator;
         this.hasHeader = !!config.hasHeader;
+        this.trimQualifier = !!config.trimQualifier;
         this.delimiter = config.delimiter;
         this.qualifier = config.qualifier;
     }
@@ -35,6 +37,7 @@ export class DelimitedProcessor extends DirectoryProcessor {
                 hasHeader: this.hasHeader,
                 qualifier: this.qualifier,
                 readStream,
+                trimQualifier: this.trimQualifier,
             });
             await processStream(generator(), file, filePath);
             fileReadStream.destroy();
