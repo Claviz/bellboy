@@ -4,7 +4,7 @@ import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
 
 import { IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
-import { getValueFromJSONChunk } from '../utils';
+import { getDelimitedGenerator, getValueFromJSONChunk } from '../utils';
 import { Processor } from './base/processor';
 
 const split2 = require('split2');
@@ -16,6 +16,9 @@ export class HttpProcessor extends Processor {
     protected jsonPath: RegExp | undefined;
     protected rowSeparator: string | undefined;
     protected dataFormat: 'json' | 'delimited';
+    protected hasHeader: boolean = false;
+    protected delimiter?: string;
+    protected qualifier?: string;
 
     constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
         super(config);
@@ -29,6 +32,9 @@ export class HttpProcessor extends Processor {
                 throw new Error('No rowSeparator specified.');
             }
             this.rowSeparator = config.rowSeparator;
+            this.hasHeader = !!config.hasHeader;
+            this.delimiter = config.delimiter;
+            this.qualifier = config.qualifier;
         } else if (config.dataFormat === 'json') {
             this.jsonPath = config.jsonPath;
         }
@@ -39,7 +45,13 @@ export class HttpProcessor extends Processor {
         if (this.dataFormat === 'delimited') {
             const requestStream = await axios({ ...options, responseType: 'stream' });
             const delimitedStream = requestStream.data.pipe(split2(this.rowSeparator));
-            await processStream(delimitedStream);
+            const generator = getDelimitedGenerator({
+                readStream: delimitedStream,
+                delimiter: this.delimiter,
+                hasHeader: this.hasHeader,
+                qualifier: this.qualifier,
+            });
+            await processStream(generator());
         } else if (this.dataFormat === 'json') {
             const requestStream = await axios({ ...options, responseType: 'stream' });
             const jsonStream = requestStream.data

@@ -51,3 +51,35 @@ export function getValueFromJSONChunk() {
         }
     });
 };
+
+export function getDelimitedGenerator({ readStream, delimiter, qualifier, hasHeader }: { readStream: any; delimiter?: string; qualifier?: string; hasHeader: boolean; }) {
+    let header: string[] = [];
+    const splitRegExp = new RegExp(`${delimiter}(?=(?:(?:[^${qualifier}]*${qualifier}){2})*[^${qualifier}]*$)`);
+    const processRow = (row: any) => {
+        let arr: string[] = [];
+        if (qualifier) {
+            arr = row.split(splitRegExp);
+        } else {
+            arr = row.split(delimiter);
+        }
+        if (hasHeader && !header.length) {
+            header = arr.map((x: string) => x.trim());
+        } else {
+            let obj;
+            if (header.length) {
+                obj = Object.fromEntries(header.map((x: any, i: any) => [x, arr[i]]));
+            }
+            return { header, arr, obj, row };
+        }
+    }
+    const generator = async function* () {
+        for await (const row of readStream) {
+            const result = processRow(row);
+            if (result) {
+                yield result;
+            }
+        }
+    }
+
+    return generator;
+}

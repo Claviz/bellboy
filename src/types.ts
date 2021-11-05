@@ -102,6 +102,9 @@ export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
 export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'delimited';
     rowSeparator: string;
+    delimiter?: string;
+    hasHeader?: boolean;
+    qualifier?: string;
 }
 
 export interface IDatabaseProcessorConfig extends IProcessorConfig {

@@ -13,6 +13,12 @@ app.get('/json', function (req: any, res: any) {
 app.get('/delimited', function (req: any, res: any) {
     res.send('{"text": "hello"};{"text": "world"}');
 });
+app.get('/delimited-qualifier', function (req: any, res: any) {
+    res.send('"Bob, the "HaCk3r"",Riga\nAlice,""Wonderland", Apt. 22"\n');
+});
+app.get('/delimited-with-header-without-delimiter', function (req: any, res: any) {
+    res.send('Name\nBob\nAlice');
+});
 app.get('/big-json', function (req: any, res: any) {
     let obj = {
         arr: [] as string[],
@@ -99,9 +105,54 @@ it('gets delimited data from HTTP', async () => {
     });
     const job = new Job(processor, [destination]);
     await job.run();
-    expect(destination.getData()).toEqual(['{"text": "hello"}', '{"text": "world"}']);
+    expect(destination.getData()).toEqual([
+        { header: [], arr: ['{"text": "hello"}'], obj: undefined, row: '{"text": "hello"}' },
+        { header: [], arr: ['{"text": "world"}'], obj: undefined, row: '{"text": "world"}' },
+    ]);
 });
 
+it('gets delimited data with qualifier from HTTP', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n',
+        delimiter: ',',
+        qualifier: '"',
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/delimited-qualifier`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: [], arr: ['"Bob, the "HaCk3r""', 'Riga'], obj: undefined, row: '"Bob, the "HaCk3r"",Riga' },
+        { header: [], arr: ['Alice', '""Wonderland", Apt. 22"'], obj: undefined, row: 'Alice,""Wonderland", Apt. 22"' },
+    ]);
+});
+
+it('gets delimited data with header and without delimiter from HTTP', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n',
+        hasHeader: true,
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/delimited-with-header-without-delimiter`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: ['Name'], arr: ['Bob'], obj: { Name: 'Bob' }, row: 'Bob' },
+        { header: ['Name'], arr: ['Alice'], obj: { Name: 'Alice' }, row: 'Alice' },
+    ]);
+});
 
 it('gets paginated JSON data from HTTP', async () => {
     const connection: AxiosRequestConfig = {

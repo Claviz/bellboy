@@ -325,6 +325,8 @@ Listens for messages and processes them one by one. It also handles backpressure
 
 Processes data received from a HTTP call. Can process `JSON` as well as `delimited` data. Can handle pagination by using `nextRequest` function.
 
+For delimited data produces rows described [here](#delimited-produced-row).
+
 #### Options
 
 - [Processor options](#processor-options)
@@ -332,6 +334,12 @@ Processes data received from a HTTP call. Can process `JSON` as well as `delimit
   Options from [axios](https://github.com/axios/axios) library.
 - **dataFormat** `delimited | json` `required`
 - **rowSeparator** `string` `required for delimited`
+- **delimiter** `string` `only for delimited`\
+  A symbol separating fields of the row.
+- **hasHeader** `boolean` `only for delimited`\
+  If `true`, first row will be processed as a header.
+- **qualifier** `string` `only for delimited`\
+  Symbol placed around a field to signify that it is the same field.
 - **jsonPath** `RegExp`\
   Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
 - **nextRequest** `async function(header)`\
@@ -448,7 +456,7 @@ Processes files with delimited data in the directory.
 - **qualifier** `string` \
   Symbol placed around a field to signify that it is the same field.
 
-#### Produced row
+#### Produced row <div id='delimited-produced-row'/>
 
 - **header** `string[]`\
   If `hasHeader` is `true`, first row will appear here.
