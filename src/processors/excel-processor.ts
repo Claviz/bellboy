@@ -8,11 +8,13 @@ export class ExcelProcessor extends DirectoryProcessor {
 
     protected hasHeader: boolean | number | undefined;
     protected ignoreEmpty: boolean;
+    protected encoding?: string;
     protected fillMergedCells: boolean;
     protected sheets: (string | number)[] | sheetGetter;
 
     constructor(config: IExcelProcessorConfig) {
         super(config);
+        this.encoding = config.encoding;
         this.hasHeader = config.hasHeader;
         this.ignoreEmpty = config.ignoreEmpty === false ? false : true;
         this.fillMergedCells = !!config.fillMergedCells;
@@ -40,6 +42,7 @@ export class ExcelProcessor extends DirectoryProcessor {
                     withHeader: this.hasHeader,
                     ignoreEmpty: this.ignoreEmpty,
                     fillMergedCells: this.fillMergedCells,
+                    encoding: this.encoding,
                 });
                 await processStream(readStream, file, filePath, sheets[i]);
             }

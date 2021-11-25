@@ -396,6 +396,8 @@ Processes `XLSX` files in the directory.
   Whether to ignore empty rows or not, `true` by default.
 - **sheets** `(string | number)[] | async function(sheets)`\
   Array of sheet names and/or sheet indexes or async function, which accepts array of all sheets and must return another array of sheet names that needs to be processed. If not specified, first sheet will be processed.
+- **encoding** `string`\
+  XLSX file encoding.
 
 ```javascript
 const processor = new bellboy.ExcelProcessor({
