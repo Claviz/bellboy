@@ -17,7 +17,11 @@ export class MssqlProcessor extends DatabaseProcessor {
             async read() {
                 if (data.length === 0) {
                     if (!done) {
-                        await processRows();
+                        try {
+                            await processRows();
+                        } catch (err) {
+                            this.emit('error', err);
+                        }
                     } else {
                         return this.push(null);
                     }
