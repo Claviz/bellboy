@@ -47,6 +47,7 @@
   "dependencies": {
     "async-mqtt": "^2.2.1",
     "axios": "^0.21.1",
+    "csv": "^6.0.5",
     "mssql": "^6.3.1",
     "pg": "8.0.3",
     "pg-promise": "10.5.3",

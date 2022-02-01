@@ -54,31 +54,18 @@ export function getValueFromJSONChunk() {
 
 export function getDelimitedGenerator({
     readStream,
-    delimiter,
-    qualifier,
     hasHeader,
-    trimQualifier
-}: { readStream: any; delimiter?: string; qualifier?: string; hasHeader: boolean; trimQualifier: boolean; }) {
+}: { readStream: any; hasHeader: boolean; }) {
     let header: string[] = [];
-    const splitRegExp = new RegExp(`${delimiter}(?=(?:(?:[^${qualifier}]*${qualifier}){2})*[^${qualifier}]*$)`);
-    const processRow = (row: any) => {
-        let arr: string[] = [];
-        if (qualifier) {
-            arr = row.split(splitRegExp);
-            if (trimQualifier) {
-                arr = arr.map(x => x[0] === qualifier && x[x.length - 1] === qualifier ? x.slice(1, -1) : x);
-            }
-        } else {
-            arr = row.split(delimiter);
-        }
+    const processRow = ({ raw, record }: { raw: string; record: string[] }) => {
         if (hasHeader && !header.length) {
-            header = arr.map((x: string) => x.trim());
+            header = record.map((x: string) => x.trim());
         } else {
             let obj;
             if (header.length) {
-                obj = Object.fromEntries(header.map((x: any, i: any) => [x, arr[i]]));
+                obj = Object.fromEntries(header.map((x: any, i: any) => [x, record[i]]));
             }
-            return { header, arr, obj, row };
+            return { header, arr: record, obj, row: raw };
         }
     }
     const generator = async function* () {

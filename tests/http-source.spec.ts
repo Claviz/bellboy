@@ -14,7 +14,7 @@ app.get('/delimited', function (req: any, res: any) {
     res.send('{"text": "hello"};{"text": "world"}');
 });
 app.get('/delimited-qualifier', function (req: any, res: any) {
-    res.send('"Bob, the "HaCk3r"",Riga\nAlice,""Wonderland", Apt. 22"\n');
+    res.send('"Bob, the ""HaCk3r""",Riga\nAlice,"""Wonderland"", Apt. 22"\n');
 });
 app.get('/delimited-with-header-without-delimiter', function (req: any, res: any) {
     res.send('Name\nBob\nAlice');
@@ -109,7 +109,7 @@ it('gets delimited data from HTTP', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: [], arr: ['{"text": "hello"}'], obj: undefined, row: '{"text": "hello"}' },
+        { header: [], arr: ['{"text": "hello"}'], obj: undefined, row: '{"text": "hello"};' },
         { header: [], arr: ['{"text": "world"}'], obj: undefined, row: '{"text": "world"}' },
     ]);
 });
@@ -131,8 +131,8 @@ it('gets delimited data with qualifier from HTTP', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: [], arr: ['"Bob, the "HaCk3r""', 'Riga'], obj: undefined, row: '"Bob, the "HaCk3r"",Riga' },
-        { header: [], arr: ['Alice', '""Wonderland", Apt. 22"'], obj: undefined, row: 'Alice,""Wonderland", Apt. 22"' },
+        { header: [], arr: ['Bob, the "HaCk3r"', 'Riga'], obj: undefined, row: '"Bob, the ""HaCk3r""",Riga\n' },
+        { header: [], arr: ['Alice', '"Wonderland", Apt. 22'], obj: undefined, row: 'Alice,"""Wonderland"", Apt. 22"\n' },
     ]);
 });
 
@@ -154,31 +154,7 @@ it('gets delimited data with qualifier, delimiter and header', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: ['Name', '"Favourite color"'], arr: ['Bob', '"Dark gray"'], obj: { Name: 'Bob', '"Favourite color"': '"Dark gray"' }, row: 'Bob;"Dark gray"' },
-        { header: ['Name', '"Favourite color"'], arr: ['"Elon Musk"', 'orange'], obj: { Name: '"Elon Musk"', '"Favourite color"': 'orange' }, row: '"Elon Musk";orange' },
-    ]);
-});
-
-it('gets delimited data with qualifier, delimiter, header and trimmed qualifier', async () => {
-    const destination = new CustomDestination({
-        batchSize: 1,
-    });
-    const processor = new HttpProcessor({
-        dataFormat: 'delimited',
-        rowSeparator: '\n',
-        delimiter: ';',
-        qualifier: '"',
-        trimQualifier: true,
-        hasHeader: true,
-        connection: {
-            method: `GET`,
-            url: `http://localhost:3000/delimited-qualifier-delimiter-header`,
-        },
-    });
-    const job = new Job(processor, [destination]);
-    await job.run();
-    expect(destination.getData()).toEqual([
-        { header: ['Name', 'Favourite color'], arr: ['Bob', 'Dark gray'], obj: { Name: 'Bob', 'Favourite color': 'Dark gray' }, row: 'Bob;"Dark gray"' },
+        { header: ['Name', 'Favourite color'], arr: ['Bob', 'Dark gray'], obj: { Name: 'Bob', 'Favourite color': 'Dark gray' }, row: 'Bob;"Dark gray"\n' },
         { header: ['Name', 'Favourite color'], arr: ['Elon Musk', 'orange'], obj: { Name: 'Elon Musk', 'Favourite color': 'orange' }, row: '"Elon Musk";orange' },
     ]);
 });
@@ -199,7 +175,7 @@ it('gets delimited data with header and without delimiter from HTTP', async () =
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: ['Name'], arr: ['Bob'], obj: { Name: 'Bob' }, row: 'Bob' },
+        { header: ['Name'], arr: ['Bob'], obj: { Name: 'Bob' }, row: 'Bob\n' },
         { header: ['Name'], arr: ['Alice'], obj: { Name: 'Alice' }, row: 'Alice' },
     ]);
 });

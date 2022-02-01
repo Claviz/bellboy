@@ -31,8 +31,8 @@ it('reads data from file delimited by new lines', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: [], arr: ['First line'], obj: undefined, row: 'First line' },
-        { header: [], arr: ['Second line'], obj: undefined, row: 'Second line' },
+        { header: [], arr: ['First line'], obj: undefined, row: 'First line\n' },
+        { header: [], arr: ['Second line'], obj: undefined, row: 'Second line\n' },
     ]);
 });
 
@@ -48,7 +48,7 @@ it('reads data from file delimited by commas', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: [], arr: ['Hello'], obj: undefined, row: 'Hello' },
+        { header: [], arr: ['Hello'], obj: undefined, row: 'Hello,' },
         { header: [], arr: [' world!'], obj: undefined, row: ' world!' },
     ]);
 });
@@ -68,9 +68,9 @@ it('respects rowLimit', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: [], arr: ['1'], obj: undefined, row: '1' },
-        { header: [], arr: ['2'], obj: undefined, row: '2' },
-        { header: [], arr: ['3'], obj: undefined, row: '3' },
+        { header: [], arr: ['1'], obj: undefined, row: '1\n' },
+        { header: [], arr: ['2'], obj: undefined, row: '2\n' },
+        { header: [], arr: ['3'], obj: undefined, row: '3\n' },
     ]);
 });
 
@@ -89,8 +89,8 @@ it('reads data from file with header', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: ['Name', 'Age'], arr: ['Bob', '18'], obj: { Name: 'Bob', Age: '18' }, row: 'Bob,18' },
-        { header: ['Name', 'Age'], arr: ['Alice', '22'], obj: { Name: 'Alice', Age: '22' }, row: 'Alice,22' },
+        { header: ['Name', 'Age'], arr: ['Bob', '18'], obj: { Name: 'Bob', Age: '18' }, row: 'Bob,18\n' },
+        { header: ['Name', 'Age'], arr: ['Alice', '22'], obj: { Name: 'Alice', Age: '22' }, row: 'Alice,22\n' },
     ]);
 });
 
@@ -108,14 +108,14 @@ it('reads data from file with header and without delimiter', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: ['Name'], arr: ['Bob'], obj: { Name: 'Bob' }, row: 'Bob' },
-        { header: ['Name'], arr: ['Alice'], obj: { Name: 'Alice' }, row: 'Alice' },
+        { header: ['Name'], arr: ['Bob'], obj: { Name: 'Bob' }, row: 'Bob\n' },
+        { header: ['Name'], arr: ['Alice'], obj: { Name: 'Alice' }, row: 'Alice\n' },
     ]);
 });
 
 it('reads data from file with qualifier', async () => {
-    await fs.appendFile(filePath, '"Bob, the "HaCk3r"",Riga\n');
-    await fs.appendFile(filePath, 'Alice,""Wonderland", Apt. 22"\n');
+    await fs.appendFile(filePath, '"Bob, the ""HaCk3r""",Riga\n');
+    await fs.appendFile(filePath, 'Alice,"""Wonderland"", Apt. 22"\n');
     const destination = new CustomDestination();
     const processor = new DelimitedProcessor({
         path: './',
@@ -127,7 +127,7 @@ it('reads data from file with qualifier', async () => {
     const job = new Job(processor, [destination]);
     await job.run();
     expect(destination.getData()).toEqual([
-        { header: [], arr: ['"Bob, the "HaCk3r""', 'Riga'], obj: undefined, row: '"Bob, the "HaCk3r"",Riga' },
-        { header: [], arr: ['Alice', '""Wonderland", Apt. 22"'], obj: undefined, row: 'Alice,""Wonderland", Apt. 22"' },
+        { header: [], arr: ['Bob, the "HaCk3r"', 'Riga'], obj: undefined, row: '"Bob, the ""HaCk3r""",Riga\n' },
+        { header: [], arr: ['Alice', '"Wonderland", Apt. 22'], obj: undefined, row: 'Alice,"""Wonderland"", Apt. 22"\n' },
     ]);
 });

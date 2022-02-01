@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import { parse } from 'csv-parse';
 import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
@@ -19,7 +20,6 @@ export class HttpProcessor extends Processor {
     protected hasHeader: boolean = false;
     protected delimiter?: string;
     protected qualifier?: string;
-    protected trimQualifier: boolean = false;
 
     constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
         super(config);
@@ -34,7 +34,6 @@ export class HttpProcessor extends Processor {
             }
             this.rowSeparator = config.rowSeparator;
             this.hasHeader = !!config.hasHeader;
-            this.trimQualifier = !!config.trimQualifier;
             this.delimiter = config.delimiter;
             this.qualifier = config.qualifier;
         } else if (config.dataFormat === 'json') {
@@ -46,13 +45,17 @@ export class HttpProcessor extends Processor {
     protected async processHttpData(processStream: processStream, options: AxiosRequestConfig) {
         if (this.dataFormat === 'delimited') {
             const requestStream = await axios({ ...options, responseType: 'stream' });
-            const delimitedStream = requestStream.data.pipe(split2(this.rowSeparator));
+            const parser = parse({
+                quote: this.qualifier,
+                delimiter: this.delimiter,
+                record_delimiter: this.rowSeparator,
+                raw: true,
+                relax_quotes: true,
+            });
+            const delimitedStream = requestStream.data.pipe(parser);
             const generator = getDelimitedGenerator({
                 readStream: delimitedStream,
-                delimiter: this.delimiter,
                 hasHeader: this.hasHeader,
-                qualifier: this.qualifier,
-                trimQualifier: this.trimQualifier,
             });
             await processStream(generator());
         } else if (this.dataFormat === 'json') {
