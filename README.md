@@ -113,12 +113,12 @@ const job = new bellboy.Job(
 
 #### Events and event listeners <div id='events'/>
 
-Event listeners, which can be registered with `job.on` or `job.onAny` method, allow you to listen to specific events in the job lifecycle and interact with it.
+Event listeners, which can be registered with `job.on` or `job.onAny` methods, allow you to listen to specific events in the job lifecycle and to interact with them.
 
 - Multiple listeners for one event will be executed in the order they were registered.
-- Job always waits code inside listener to complete.
-- Any error thrown inside listener will be ignored and warning message will be printed out.
-- `job.stop()` method can be used inside listener to stop job execution and throw an error if needed.
+- Job always waits for the code inside a listener to complete.
+- Any error thrown inside a listener will be ignored and warning message will be printed out.
+- `job.stop()` method can be used inside a listener to stop job execution and throw an error if needed.
 
 ```ts
 job.on(
