@@ -1,5 +1,4 @@
 import { IMssqlDestinationConfig } from '../types';
-import { getDb } from '../utils';
 import { DatabaseDestination } from './base/database-destination';
 
 export class MssqlDestination extends DatabaseDestination {
@@ -13,12 +12,11 @@ export class MssqlDestination extends DatabaseDestination {
 
     async loadBatch(data: any[]) {
         const sql = this.driver === 'msnodesqlv8' ? await import('mssql/msnodesqlv8') : await import('mssql');
-        const db = await getDb(this.connection, 'mssql');
+        const pool = new sql.ConnectionPool({ ...this.connection } as any);
+        const db = await pool.connect();
         const query = await db.request().query(`SELECT TOP(0) * FROM ${this.table}`);
         let table = (query.recordset as any).toTable(this.table);
         const columns = table.columns.map((x: any) => x.name);
-        const transaction = new sql.Transaction(db);
-        await transaction.begin();
         for (let x of data) {
             let args = [];
             for (let ii = 0; ii < columns.length; ii++) {
@@ -26,7 +24,16 @@ export class MssqlDestination extends DatabaseDestination {
             }
             table.rows.add(...args);
         }
-        await transaction.request().bulk(table);
-        await transaction.commit();
+        const transaction = new sql.Transaction(db);
+        try {
+            await transaction.begin();
+            await transaction.request().bulk(table);
+            await transaction.commit();
+        } catch (err) {
+            await transaction.rollback();
+            await pool.close();
+            throw err;
+        }
+        await pool.close();
     }
 }

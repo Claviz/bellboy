@@ -18,7 +18,7 @@ services:
       POSTGRES_PASSWORD: password
 
   mssql:
-    image: mcr.microsoft.com/mssql/server:2019-CU13-ubuntu-20.04
+    image: mcr.microsoft.com/azure-sql-edge
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: Passw0rd*
+      MSSQL_SA_PASSWORD: Passw0rd*
