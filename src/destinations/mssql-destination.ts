@@ -30,7 +30,9 @@ export class MssqlDestination extends DatabaseDestination {
             await transaction.request().bulk(table);
             await transaction.commit();
         } catch (err) {
-            await transaction.rollback();
+            if (!(transaction as any)._aborted) {
+                await transaction.rollback();
+            }
             await pool.close();
             throw err;
         }
