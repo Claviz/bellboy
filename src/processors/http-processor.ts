@@ -4,8 +4,8 @@ import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
 
-import { IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
-import { getDelimitedGenerator, getValueFromJSONChunk } from '../utils';
+import { AuthorizationRequest, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
+import { applyHttpAuthorization, getDelimitedGenerator, getValueFromJSONChunk } from '../utils';
 import { Processor } from './base/processor';
 
 const split2 = require('split2');
@@ -20,6 +20,7 @@ export class HttpProcessor extends Processor {
     protected hasHeader: boolean = false;
     protected delimiter?: string;
     protected qualifier?: string;
+    protected authorizationRequest?: AuthorizationRequest;
 
     constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
         super(config);
@@ -40,6 +41,7 @@ export class HttpProcessor extends Processor {
             this.jsonPath = config.jsonPath;
         }
         this.nextRequest = config.nextRequest;
+        this.authorizationRequest = config.authorizationRequest;
     }
 
     protected async processHttpData(processStream: processStream, options: AxiosRequestConfig) {
@@ -76,6 +78,7 @@ export class HttpProcessor extends Processor {
     }
 
     async process(processStream: processStream) {
+        await applyHttpAuthorization(this.connection, this.authorizationRequest);
         await this.processHttpData(processStream, this.connection);
     }
 }

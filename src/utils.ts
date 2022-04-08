@@ -1,6 +1,7 @@
+import axios, { AxiosRequestConfig } from 'axios';
 import { Transform } from 'stream';
 
-import { DbTypes, IDbConnection } from './types';
+import { AuthorizationRequest, DbTypes, IDbConnection } from './types';
 
 const cachedDbConnections = new Map<string, { db: any, close: any }>();
 export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
@@ -78,4 +79,17 @@ export function getDelimitedGenerator({
     }
 
     return generator;
+}
+
+export async function applyHttpAuthorization(connection: AxiosRequestConfig, authorizationRequest?: AuthorizationRequest) {
+    if (authorizationRequest) {
+        const authorizationResponse = await axios(authorizationRequest.connection);
+        const authorizationToken = authorizationResponse.data[authorizationRequest.sourceField];
+
+        const applyTo = authorizationRequest.applyTo === 'header' ? 'headers' : 'params';
+        connection[applyTo] = {
+            ...connection[applyTo],
+            [authorizationRequest.destinationField]: authorizationRequest.prefix ? `${authorizationRequest.prefix}${authorizationToken}` : authorizationToken,
+        };
+    }
 }

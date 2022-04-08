@@ -342,6 +342,17 @@ For delimited data produces rows described [here](#delimited-produced-row).
   Symbol placed around a field to signify that it is the same field.
 - **jsonPath** `RegExp`\
   Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
+- **authorizationRequest** `object`
+  - **connection**\
+    Options from [axios](https://github.com/axios/axios) library.
+  - **applyTo**\
+    Where extracted field should be applied. Whether `header` or `query`.
+  - **sourceField**\
+    Name of the field from which value of authorization token will be extracted.
+  - **destinationField**\
+    Name of the field which will be applied to `header` or `query` using `applyTo` option.
+  - **prefix**\
+    Custom prefix to apply to the token.
 - **nextRequest** `async function(header)`\
   Function which must return `connection` for the next request or `null` if the next request is not needed.
 
@@ -572,6 +583,17 @@ Puts processed data one by one in `body` and executes specified HTTP request.
 - [General destination options](#destination-options)
 - **request** `required`\
   Options from [axios](https://github.com/axios/axios) library.
+- **authorizationRequest** `object`
+  - **connection**\
+    Options from [axios](https://github.com/axios/axios) library.
+  - **applyTo**\
+    Where extracted field should be applied. Whether `header` or `query`.
+  - **sourceField**\
+    Name of the field from which value of authorization token will be extracted.
+  - **destinationField**\
+    Name of the field which will be applied to `header` or `query` using `applyTo` option.
+  - **prefix**\
+    Custom prefix to apply to the token.
 
 ### PostgresDestination <div id='postgres-destination'/>
 

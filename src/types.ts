@@ -2,6 +2,14 @@ import { AxiosRequestConfig } from 'axios';
 import { Readable } from 'stream';
 import { IWorksheet } from 'xlstream/lib/types';
 
+export interface AuthorizationRequest {
+    connection: AxiosRequestConfig;
+    applyTo: 'header' | 'query';
+    sourceField: string;
+    destinationField: string;
+    prefix?: string;
+}
+
 export interface IDbConnection {
     user?: string;
     password?: string;
@@ -84,6 +92,7 @@ export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig { }
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
     request: AxiosRequestConfig;
+    authorizationRequest?: AuthorizationRequest;
 }
 
 export interface IStdoutDestinationConfig extends IDestinationConfig {
@@ -93,6 +102,7 @@ export interface IStdoutDestinationConfig extends IDestinationConfig {
 export interface IHttpProcessorConfig extends IProcessorConfig {
     connection: AxiosRequestConfig;
     nextRequest?: () => Promise<AxiosRequestConfig | null | undefined>;
+    authorizationRequest?: AuthorizationRequest;
 }
 
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {

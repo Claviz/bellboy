@@ -5,6 +5,29 @@ import { CustomDestination, CustomTimeoutDestination } from './helpers';
 const express = require('express');
 
 const app = express();
+app.post('/token', function (req: any, res: any) {
+    res.send({
+        auth_token: 'secret',
+    });
+});
+app.get('/secured-by-param', function (req: any, res: any) {
+    if (req.query.Authorization === 'Bearer secret') {
+        res.send([{
+            text: 'hello!',
+        }]);
+    } else {
+        res.sendStatus(401);
+    }
+});
+app.get('/secured-by-header', function (req: any, res: any) {
+    if (req.header('Authorization') === 'Bearer secret') {
+        res.send([{
+            text: 'hello!',
+        }]);
+    } else {
+        res.sendStatus(401);
+    }
+});
 app.get('/json', function (req: any, res: any) {
     res.send([{
         text: 'hello!',
@@ -260,4 +283,62 @@ it('correctly handles HTTP error with incorrect connection config', async () => 
         'processingError',
         'endProcessing'
     ]);
+});
+
+it('applies authorization to header', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/secured-by-header`,
+        },
+        jsonPath: /(\d+)/,
+        authorizationRequest: {
+            connection: {
+                method: 'POST',
+                url: `http://localhost:3000/token`,
+            },
+            applyTo: 'header',
+            destinationField: 'Authorization',
+            sourceField: 'auth_token',
+            prefix: 'Bearer ',
+        }
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
+        text: 'hello!',
+    }]);
+});
+
+it('applies authorization to query param', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/secured-by-param`,
+        },
+        jsonPath: /(\d+)/,
+        authorizationRequest: {
+            connection: {
+                method: 'POST',
+                url: `http://localhost:3000/token`,
+            },
+            applyTo: 'query',
+            destinationField: 'Authorization',
+            sourceField: 'auth_token',
+            prefix: 'Bearer ',
+        }
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
+        text: 'hello!',
+    }]);
 });
