@@ -76,6 +76,7 @@ export class Job implements IJob {
                             if (this.processor.rowLimit === processedRowCount) {
                                 await this.flushRows(results);
                                 this.stop();
+                                break;
                             }
                         }
                         if (!this.stopped) {
