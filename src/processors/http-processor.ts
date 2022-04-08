@@ -37,8 +37,12 @@ export class HttpProcessor extends Processor {
             this.hasHeader = !!config.hasHeader;
             this.delimiter = config.delimiter;
             this.qualifier = config.qualifier;
-        } else if (config.dataFormat === 'json') {
-            this.jsonPath = config.jsonPath;
+        } else if (config.dataFormat === 'json' && config.jsonPath) {
+            if (config.jsonPath instanceof RegExp) {
+                this.jsonPath = config.jsonPath;
+            } else {
+                this.jsonPath = new RegExp(config.jsonPath);
+            }
         }
         this.nextRequest = config.nextRequest;
         this.authorizationRequest = config.authorizationRequest;

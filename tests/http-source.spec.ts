@@ -342,3 +342,22 @@ it('applies authorization to query param', async () => {
         text: 'hello!',
     }]);
 });
+
+it('gets JSON data from HTTP by using jsonPath as string', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/json`,
+        },
+        jsonPath: '(\\d+)',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
+        text: 'hello!',
+    }]);
+});

@@ -107,7 +107,7 @@ export interface IHttpProcessorConfig extends IProcessorConfig {
 
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'json';
-    jsonPath?: RegExp;
+    jsonPath?: RegExp | string;
 }
 
 export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
@@ -124,7 +124,7 @@ export interface IDatabaseProcessorConfig extends IProcessorConfig {
 }
 
 export interface IJsonProcessorConfig extends IDirectoryProcessorConfig {
-    jsonPath?: RegExp;
+    jsonPath?: RegExp | string;
 }
 
 export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {

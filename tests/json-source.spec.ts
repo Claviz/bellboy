@@ -87,3 +87,20 @@ it('reads JSON data encoded with BOM', async () => {
         'world',
     ]);
 });
+
+it('reads root data from JSON file using jsonPath as string', async () => {
+    const json = ['hello', 'world'];
+    await fs.appendFile(filePath, JSON.stringify(json));
+    const destination = new CustomDestination();
+    const processor = new JsonProcessor({
+        path: './',
+        files: [filePath],
+        jsonPath: '(\\d+)',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        'hello',
+        'world',
+    ]);
+});

@@ -14,7 +14,13 @@ export class JsonProcessor extends DirectoryProcessor {
 
     constructor(config: IJsonProcessorConfig) {
         super(config);
-        this.jsonPath = config.jsonPath;
+        if (config.jsonPath) {
+            if (config.jsonPath instanceof RegExp) {
+                this.jsonPath = config.jsonPath;
+            } else {
+                this.jsonPath = new RegExp(config.jsonPath);
+            }
+        }
     }
 
     async process(processStream: processStream) {

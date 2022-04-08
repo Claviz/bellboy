@@ -340,7 +340,7 @@ For delimited data produces rows described [here](#delimited-produced-row).
   If `true`, first row will be processed as a header.
 - **qualifier** `string` `only for delimited`\
   Symbol placed around a field to signify that it is the same field.
-- **jsonPath** `RegExp`\
+- **jsonPath** `RegExp | string`\
   Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
 - **authorizationRequest** `object`
   - **connection**\
@@ -446,10 +446,10 @@ Processes `JSON` files in the directory.
 #### Options
 
 - [Directory processor options](#directory-processor-options)
-- **jsonPath** `RegExp`\
+- **jsonPath** `RegExp | string`\
   Path to the array to be streamed. Internally when JSON is streamed, current path is joined together using `.` as separator and then tested against provided regular expression. If not specified, a root array will be streamed. As an example, if you have this JSON object:\
   `{ "animals": { "dogs": [ "pug", "bulldog", "poodle" ] } }`\
-  And want to stream `dogs` array, path you will need to use is `/animals.dogs.(\d+)/`.\
+  And want to stream `dogs` array, path you will need to use is `/animals.dogs.(\d+)/` if using RegExp as `jsonPath` and `animals.dogs.(\\d+)` if a string is used.\
   `(\d+)` is used here because each index of the array is a number.
 
 ### DelimitedProcessor <div id='delimited-processor'/>
