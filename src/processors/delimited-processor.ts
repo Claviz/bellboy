@@ -34,6 +34,7 @@ export class DelimitedProcessor extends DirectoryProcessor {
                 record_delimiter: this.rowSeparator,
                 raw: true,
                 relax_quotes: true,
+                relax_column_count: true,
             });
             const readStream = fileReadStream.pipe(parser);
             const generator = getDelimitedGenerator({
