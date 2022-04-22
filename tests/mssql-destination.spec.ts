@@ -8,6 +8,9 @@ const connection: any = {
     server: 'mssql',
     database: 'tempdb',
     driver: null,
+    options: {
+        trustServerCertificate: true,
+    }
 };
 describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
 
