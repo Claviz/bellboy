@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 
 import { IMssqlProcessorConfig, processStream } from '../types';
-import { getDb } from '../utils';
+import { closeDbConnection, getDb } from '../utils';
 import { DatabaseProcessor } from './base/database-processor';
 
 export class MssqlProcessor extends DatabaseProcessor {
@@ -75,6 +75,6 @@ export class MssqlProcessor extends DatabaseProcessor {
         }
         dbRequest.pause();
         await processStream(readStream);
-        await db.close();
+        await closeDbConnection(this.connection);
     }
 }
