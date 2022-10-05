@@ -36,55 +36,63 @@ export class Job implements IJob {
         await this.emit('startProcessing', this.processor, this.destinations);
         if (!this.stopped) {
             try {
+                let e;
                 await this.processor.process(async (_readStream: Readable | AsyncGenerator, ...args: any[]) => {
                     readStream = _readStream;
                     await this.emit('startProcessingStream', ...args);
-                    if (!this.stopped) {
-                        const results: any[][] = [];
-                        for (let j = 0; j < this.destinations.length; j++) {
-                            results[j] = [];
-                        }
-                        let processedRowCount = 0;
-                        for await (const row of readStream) {
-                            await this.emit('startProcessingRow', row);
-                            if (!this.stopped) {
-                                for (let i = 0; i < this.destinations.length; i++) {
-                                    const recordGeneratorFn = this.destinations[i].recordGenerator;
-                                    if (!recordGeneratorFn) {
-                                        results[i].push(row);
-                                    } else {
-                                        try {
-                                            for await (const record of recordGeneratorFn(row)) {
-                                                results[i].push(record);
-                                                await this.emit('rowGenerated', i, record);
+                    try {
+                        if (!this.stopped) {
+                            const results: any[][] = [];
+                            for (let j = 0; j < this.destinations.length; j++) {
+                                results[j] = [];
+                            }
+                            let processedRowCount = 0;
+                            for await (const row of readStream) {
+                                await this.emit('startProcessingRow', row);
+                                if (!this.stopped) {
+                                    for (let i = 0; i < this.destinations.length; i++) {
+                                        const recordGeneratorFn = this.destinations[i].recordGenerator;
+                                        if (!recordGeneratorFn) {
+                                            results[i].push(row);
+                                        } else {
+                                            try {
+                                                for await (const record of recordGeneratorFn(row)) {
+                                                    results[i].push(record);
+                                                    await this.emit('rowGenerated', i, record);
+                                                }
+                                            } catch (err) {
+                                                await this.emit('rowGenerationError', i, row, err);
                                             }
-                                        } catch (err) {
-                                            await this.emit('rowGenerationError', i, row, err);
                                         }
                                     }
                                 }
-                            }
-                            await this.emit('endProcessingRow');
-                            for (let i = 0; i < this.destinations.length; i++) {
-                                while (this.destinations[i].batchSize && results[i].length >= this.destinations[i].batchSize) {
-                                    const destination = this.destinations[i];
-                                    const toSend = results[i].splice(0, destination.batchSize);
-                                    await this.loadBatch(i, destination, toSend);
+                                await this.emit('endProcessingRow');
+                                for (let i = 0; i < this.destinations.length; i++) {
+                                    while (this.destinations[i].batchSize && results[i].length >= this.destinations[i].batchSize) {
+                                        const destination = this.destinations[i];
+                                        const toSend = results[i].splice(0, destination.batchSize);
+                                        await this.loadBatch(i, destination, toSend);
+                                    }
+                                }
+                                processedRowCount++;
+                                if (this.processor.rowLimit === processedRowCount) {
+                                    await this.flushRows(results);
+                                    this.stop();
+                                    break;
                                 }
                             }
-                            processedRowCount++;
-                            if (this.processor.rowLimit === processedRowCount) {
+                            if (!this.stopped) {
                                 await this.flushRows(results);
-                                this.stop();
-                                break;
                             }
                         }
-                        if (!this.stopped) {
-                            await this.flushRows(results);
-                        }
+                    } catch (err) {
+                        e = err;
                     }
                     await this.emit('endProcessingStream', ...args);
                 });
+                if (e) {
+                    throw e;
+                }
             } catch (err) {
                 await this.emit('processingError', err);
             }
