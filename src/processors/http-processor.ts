@@ -4,11 +4,11 @@ import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
 
-import { AuthorizationRequest, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, processStream } from '../types';
+import { AuthorizationRequest, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, IXmlHttpProcessorConfig, processStream } from '../types';
 import { applyHttpAuthorization, getDelimitedGenerator, getValueFromJSONChunk } from '../utils';
 import { Processor } from './base/processor';
 
-const split2 = require('split2');
+const saxStream = require('sax-stream');
 
 export class HttpProcessor extends Processor {
 
@@ -16,13 +16,14 @@ export class HttpProcessor extends Processor {
     protected nextRequest: (() => Promise<any>) | undefined;
     protected jsonPath: RegExp | undefined;
     protected rowSeparator: string | undefined;
-    protected dataFormat: 'json' | 'delimited';
+    protected dataFormat: 'json' | 'delimited' | 'xml';
     protected hasHeader: boolean = false;
     protected delimiter?: string;
     protected qualifier?: string;
     protected authorizationRequest?: AuthorizationRequest;
+    protected saxOptions?: any;
 
-    constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig) {
+    constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig | IXmlHttpProcessorConfig) {
         super(config);
         if (!config.connection) {
             throw new Error(`No connection specified.`);
@@ -43,6 +44,8 @@ export class HttpProcessor extends Processor {
             } else {
                 this.jsonPath = new RegExp(config.jsonPath);
             }
+        } else if (config.dataFormat === 'xml' && config.saxOptions) {
+            this.saxOptions = config.saxOptions;
         }
         this.nextRequest = config.nextRequest;
         this.authorizationRequest = config.authorizationRequest;
@@ -72,6 +75,10 @@ export class HttpProcessor extends Processor {
                 .pipe(streamValues())
                 .pipe(getValueFromJSONChunk());
             await processStream(jsonStream);
+        } else if (this.dataFormat === 'xml') {
+            const requestStream = await axios({ ...options, responseType: 'stream' });
+            const xmlStream = requestStream.data.pipe(saxStream(this.saxOptions));
+            await processStream(xmlStream);
         }
         if (this.nextRequest) {
             const nextOptions = await this.nextRequest();

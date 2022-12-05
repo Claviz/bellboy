@@ -68,6 +68,30 @@ app.get('/paginated-json-1', function (req: any, res: any) {
         }]
     });
 });
+app.get('/xml', function (req: any, res: any) {
+    res.send(`
+        <?xml version="1.0" encoding="utf-8"?>
+        <six>
+            <item>
+                <sample>
+                    <c>0</c>
+                </sample>
+                <a>abc</a>
+                <b>15</b>
+            </item>
+            <item>
+                <sample>
+                    <c>8</c>
+                </sample>
+                <a>def</a>
+                <b>15</b>
+            </item>
+            <sample>
+                <c>12</c>
+            </sample>
+        </six>
+    `);
+});
 const server = app.listen(3000);
 
 beforeAll(async () => {
@@ -360,4 +384,29 @@ it('gets JSON data from HTTP by using jsonPath as string', async () => {
     expect(destination.getData()).toEqual([{
         text: 'hello!',
     }]);
+});
+
+it.only('gets XML data from HTTP', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+        recordGenerator: async function* (row) {
+            yield row.record.value;
+        }
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'xml',
+        connection: {
+            method: `GET`,
+            url: `http://localhost:3000/xml`,
+        },
+        saxOptions: {
+            tag: ['A']
+        }
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        'abc',
+        'def',
+    ]);
 });

@@ -105,6 +105,11 @@ export interface IHttpProcessorConfig extends IProcessorConfig {
     authorizationRequest?: AuthorizationRequest;
 }
 
+export interface IXmlHttpProcessorConfig extends IHttpProcessorConfig {
+    dataFormat: 'xml';
+    saxOptions?: any;
+}
+
 export interface IJsonHttpProcessorConfig extends IHttpProcessorConfig {
     dataFormat: 'json';
     jsonPath?: RegExp | string;

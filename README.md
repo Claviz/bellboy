@@ -323,7 +323,7 @@ Listens for messages and processes them one by one. It also handles backpressure
 
 [Usage examples](tests/http-source.spec.ts)
 
-Processes data received from a HTTP call. Can process `JSON` as well as `delimited` data. Can handle pagination by using `nextRequest` function.
+Processes data received from a HTTP call. Can process `json`, `xml` as well as `delimited` data. Can handle pagination by using `nextRequest` function.
 
 For delimited data produces rows described [here](#delimited-produced-row).
 
@@ -332,7 +332,7 @@ For delimited data produces rows described [here](#delimited-produced-row).
 - [Processor options](#processor-options)
 - **connection** `object` `required`\
   Options from [axios](https://github.com/axios/axios) library.
-- **dataFormat** `delimited | json` `required`
+- **dataFormat** `delimited | json | xml` `required`
 - **rowSeparator** `string` `required for delimited`
 - **delimiter** `string` `only for delimited`\
   A symbol separating fields of the row.
@@ -342,6 +342,8 @@ For delimited data produces rows described [here](#delimited-produced-row).
   Symbol placed around a field to signify that it is the same field.
 - **jsonPath** `RegExp | string`\
   Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
+- **saxOptions** `object` `only for xml`\
+  Options for XML streaming as described in [sax-stream](https://github.com/melitele/sax-stream#api) library.
 - **authorizationRequest** `object`
   - **connection**\
     Options from [axios](https://github.com/axios/axios) library.
