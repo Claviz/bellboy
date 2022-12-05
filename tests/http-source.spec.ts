@@ -386,7 +386,7 @@ it('gets JSON data from HTTP by using jsonPath as string', async () => {
     }]);
 });
 
-it.only('gets XML data from HTTP', async () => {
+it('gets XML data from HTTP', async () => {
     const destination = new CustomDestination({
         batchSize: 1,
         recordGenerator: async function* (row) {
