@@ -5,7 +5,7 @@ import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
 
 import { AuthorizationRequest, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, IXmlHttpProcessorConfig, processStream } from '../types';
-import { applyHttpAuthorization, getDelimitedGenerator, getValueFromJSONChunk } from '../utils';
+import { applyHttpAuthorization, getDelimitedGenerator, getValueFromJSONChunk, removeCircularReferencesFromChunk } from '../utils';
 import { Processor } from './base/processor';
 
 const saxStream = require('sax-stream');
@@ -77,7 +77,9 @@ export class HttpProcessor extends Processor {
             await processStream(jsonStream);
         } else if (this.dataFormat === 'xml') {
             const requestStream = await axios({ ...options, responseType: 'stream' });
-            const xmlStream = requestStream.data.pipe(saxStream(this.saxOptions));
+            const xmlStream = requestStream.data
+                .pipe(saxStream(this.saxOptions))
+                .pipe(removeCircularReferencesFromChunk());
             await processStream(xmlStream);
         }
         if (this.nextRequest) {

@@ -53,6 +53,29 @@ export function getValueFromJSONChunk() {
     });
 };
 
+export function removeCircularReferencesFromChunk() {
+    return new Transform({
+        objectMode: true,
+        transform(chunk: any, encoding, callback) {
+            function getCircularReplacer() {
+                const seen = new WeakSet();
+                return (key: any, value: any) => {
+                    if (typeof value === "object" && value !== null) {
+                        if (seen.has(value)) {
+                            return;
+                        }
+                        seen.add(value);
+                    }
+                    return value;
+                };
+            }
+            this.push(JSON.parse(JSON.stringify(chunk, getCircularReplacer())));
+
+            callback();
+        }
+    });
+};
+
 export function getDelimitedGenerator({
     readStream,
     hasHeader,
