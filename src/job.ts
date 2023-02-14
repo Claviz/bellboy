@@ -29,6 +29,7 @@ export class Job implements IJob {
         this.stop = (message?: string) => {
             this.stopped = true;
             if (readStream && (readStream instanceof Readable)) {
+                readStream.emit('end');
                 readStream.destroy();
             }
             errorMessage = message;
