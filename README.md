@@ -137,19 +137,19 @@ job.on("startProcessingStream", async (...args: any) => {
 ```
 
 ```ts
-job.on('startProcessingRow', async (row: any)) => {
+job.on('startProcessingRow', async (row: any) => {
     // Row has been received and is about to be processed inside `recordGenerator` method.
 });
 ```
 
 ```ts
-job.on('rowGenerated', async (destinationIndex: number, generatedRow: any)) => {
+job.on('rowGenerated', async (destinationIndex: number, generatedRow: any) => {
     // Row has been generated using `recordGenerator` method.
 });
 ```
 
 ```ts
-job.on('rowGenerationError', async (destinationIndex: number, row: any, error: any)) => {
+job.on('rowGenerationError', async (destinationIndex: number, row: any, error: any) => {
     // Record generation (`recordGenerator` method) has thrown an error.
 });
 ```
