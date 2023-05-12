@@ -47,7 +47,9 @@ export function getValueFromJSONChunk() {
     return new Transform({
         objectMode: true,
         transform(chunk: { index: any; value: any }, encoding, callback) {
-            this.push(chunk.value);
+            if (chunk.value) {
+                this.push(chunk.value);
+            }
             callback();
         }
     });
