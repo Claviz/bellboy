@@ -115,7 +115,7 @@ const job = new bellboy.Job(
 
 Event listeners, which can be registered with `job.on` or `job.onAny` methods, allow you to listen to specific events in the job lifecycle and to interact with them.
 
-- Multiple listeners for one event will be executed in the order they were registered.
+- When multiple listeners are registered for a single event, those added by [reporters](#reporters) will be executed first, followed by the order of registration for the remaining listeners.
 - Job always waits for the code inside a listener to complete.
 - Any error thrown inside a listener will be ignored and warning message will be printed out.
 - `job.stop()` method can be used inside a listener to stop job execution and throw an error if needed.
@@ -137,21 +137,24 @@ job.on("startProcessingStream", async (...args: any) => {
 ```
 
 ```ts
-job.on('startProcessingRow', async (row: any) => {
-    // Row has been received and is about to be processed inside `recordGenerator` method.
+job.on("startProcessingRow", async (row: any) => {
+  // Row has been received and is about to be processed inside `recordGenerator` method.
 });
 ```
 
 ```ts
-job.on('rowGenerated', async (destinationIndex: number, generatedRow: any) => {
-    // Row has been generated using `recordGenerator` method.
+job.on("rowGenerated", async (destinationIndex: number, generatedRow: any) => {
+  // Row has been generated using `recordGenerator` method.
 });
 ```
 
 ```ts
-job.on('rowGenerationError', async (destinationIndex: number, row: any, error: any) => {
+job.on(
+  "rowGenerationError",
+  async (destinationIndex: number, row: any, error: any) => {
     // Record generation (`recordGenerator` method) has thrown an error.
-});
+  }
+);
 ```
 
 ```ts
@@ -676,7 +679,9 @@ class CustomDestination extends bellboy.Destination {
 
 [Official stdout reporter](https://github.com/claviz/bellboy-stdout-reporter)
 
-Reporter is a job wrapper which can operate with [job instance](#job) (for example, listen to events using job `on` method). To create a new reporter, you must extend `Reporter` class and implement `report` function, which will be executed during job instance initialization. This function accepts one parameter:
+Reporter is a job wrapper which can operate with [job instance](#job) (for example, listen to events using job `on` method). To create a new reporter, you must extend `Reporter` class and implement `report` function, which will be executed during job instance initialization.
+Reporter event listeners (`on`, `onAny`) are added before any other user-defined listeners.
+This function accepts one parameter:
 
 - **job** `Job` `required`\
   [Job](#job) instance

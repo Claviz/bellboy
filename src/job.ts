@@ -12,6 +12,7 @@ export class Job implements IJob {
     protected stopped = false;
     protected jobId = generate();
     protected jobName?: string;
+    private settingReporterEvents = false;
 
     constructor(protected processor: IProcessor, protected destinations: IDestination[], config: IJobConfig = {}) {
         this.jobName = config?.jobName;
@@ -21,9 +22,11 @@ export class Job implements IJob {
     stop(message?: string) { }
 
     async run() {
+        this.settingReporterEvents = true;
         for (let i = 0; i < this.reporters.length; i++) {
             await this.reporters[i].report(this);
         }
+        this.settingReporterEvents = false;
         let readStream: Readable | AsyncGenerator;
         let errorMessage: string | undefined;
         this.stop = (message?: string) => {
@@ -122,16 +125,21 @@ export class Job implements IJob {
     on(eventName: 'endProcessingStream', event?: ((...args: any) => Promise<any>), extendedEvent?: extendedEvent): any
     on(eventName: 'startProcessingStream', event?: ((...args: any) => Promise<any>), extendedEvent?: extendedEvent): any
     on(eventName: string, event?: event, extendedEvent?: extendedEvent) {
-        const existingEvent = this.events[eventName];
-        if (!existingEvent) {
-            this.events[eventName] = [{ event, extendedEvent, }];
-        } else {
-            this.events[eventName].push({ event, extendedEvent, });
+        const eventEntry = { event, extendedEvent };
+        if (!this.events[eventName]) {
+            this.events[eventName] = [];
         }
+        this.settingReporterEvents
+            ? this.events[eventName].unshift(eventEntry)
+            : this.events[eventName].push(eventEntry);
     }
 
     onAny(event?: event, extendedEvent?: extendedEvent) {
-        this.anyEvent.push({ event, extendedEvent, });
+        const eventEntry = { event, extendedEvent };
+
+        this.settingReporterEvents
+            ? this.anyEvent.unshift(eventEntry)
+            : this.anyEvent.push(eventEntry);
     }
 
     protected async flushRows(rows: any[][]) {
