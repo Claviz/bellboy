@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2.1.5
+      with:
+        node-version: 16
+
+    - name: Setup wait script
+      run: |
+        chmod +x wait-for-it.sh
+
+    - name: Run Docker Compose
+      run: docker-compose up --abort-on-container-exit --exit-code-from test --build test
+
+    - name: Upload coverage to Codecov
+      if: ${{ success() }}
+      run: npx codecov
