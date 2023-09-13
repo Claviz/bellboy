@@ -543,8 +543,8 @@ Processes a MSSQL `SELECT` query row by row.
 Here is an example of how to configure `MssqlProcessor` with a native TDS driver instead of the default pure JavasScript Tedious driver.
 
 ```javascript
-const nativeDriver = await import('mssql/msnodesqlV8');
-const connection: any = {
+const nativeDriver: ITdsDriver = await import('mssql/msnodesqlV8');
+const connection: IMssqlDbConnection = {
   user: 'user',
   password: 'password',
   server: 'server',
@@ -677,8 +677,8 @@ Inserts data to MSSQL.
 Here is an example of how to configure `MssqlDestination` with a native TDS driver instead of the default pure JavasScript Tedious driver.
 
 ```javascript
-const nativeDriver = await import('mssql/msnodesqlV8');
-const connection: any = {
+const nativeDriver: ITdsDriver = await import('mssql/msnodesqlV8');
+const connection: IMssqlDbConnection = {
   user: 'user',
   password: 'password',
   server: 'server',
