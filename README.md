@@ -538,7 +538,7 @@ Processes a MSSQL `SELECT` query row by row.
   - **driver**\
       Optional [mssql][mssql-url] TDS driver such as the native [msnodesqlv8][msnodesqlv8-url] driver; defaults to the pure JavaScript [Tedious][tedious-url] driver .
 
-#### Usage examples
+#### Usage
 
 Here is an example of how to configure `MssqlProcessor` with a native TDS driver instead of the default pure JavasScript Tedious driver.
 
@@ -672,7 +672,7 @@ Inserts data to MSSQL.
   - **database**
   - **driver**
 
-#### Usage examples
+#### Usage
 
 Here is an example of how to configure `MssqlDestination` with a native TDS driver instead of the default pure JavasScript Tedious driver.
 
