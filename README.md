@@ -556,7 +556,7 @@ const source = new MssqlProcessor({ connection, query: 'select * from orders' })
 
 In previous versions of `bellboy`, `connection.driver` was a `string` parameter.
 
-Note that `msnodesqlv8` is an optional peer dependency: To use that package, configure an explicit dependency.
+Note that `msnodesqlv8` is an optional peer dependency: To use that driver, configure an explicit dependency on the `msnodesqlv8` package.
 
 [More usage examples](tests/mssql-source.spec.ts)
 
