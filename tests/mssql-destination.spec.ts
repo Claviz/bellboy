@@ -1,4 +1,5 @@
 import { Job, DynamicProcessor, MssqlDestination } from '../src';
+import { ITdsDriver, IMssqlDestinationConfig } from '../src/types';
 import * as utils from '../src/utils';
 
 let db: any = null;
@@ -12,13 +13,21 @@ const connection: any = {
         trustServerCertificate: true,
     }
 };
-describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
+
+
+describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
+
+    let nativeDriver: ITdsDriver | undefined;
+    beforeAll(async () => {
+        if (driverName === 'msnodesqlv8') {
+            nativeDriver = await import('mssql/msnodesqlv8');
+        }
+    });
 
     beforeEach(async () => {
-        connection.driver = driver;
-        db = await utils.getDb(connection, 'mssql');
-        await db.query(`DROP TABLE IF EXISTS test`);
-        await db.query(`CREATE TABLE test
+        db = await utils.getDb(connection, 'mssql', nativeDriver);
+        await db.query(`DROP TABLE IF EXISTS test_sources`);
+        await db.query(`CREATE TABLE test_sources
         (
             id integer
         )`);
@@ -28,7 +37,7 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
         await utils.closeDbConnection(connection);
     })
 
-    it(`inserts generated data to mssql using ${driver} driver`, async () => {
+    it(`inserts generated data to mssql using ${driverName} driver`, async () => {
         const processor = new DynamicProcessor({
             generator: async function* () {
                 yield {
@@ -36,14 +45,18 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
                 }
             },
         });
-        const destination = new MssqlDestination({
+        const destinationConfig: IMssqlDestinationConfig = {
             connection,
-            table: 'test',
+            table: 'test_sources',
             batchSize: 1,
-        });
+        };
+        if (nativeDriver) {
+            destinationConfig.driver = nativeDriver;
+        }
+        const destination = new MssqlDestination(destinationConfig);
         const job = new Job(processor, [destination]);
         await job.run();
-        const res = await db.query(`select * from test`);
+        const res = await db.query(`select * from test_sources`);
         expect(res.recordset).toEqual([{
             id: 1,
         }]);

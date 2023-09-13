@@ -10,6 +10,8 @@ export interface AuthorizationRequest {
     prefix?: string;
 }
 
+export type TdsDriverName = 'tedious' | 'msnodesqlv8';
+
 export interface IDbConnection {
     user?: string;
     password?: string;
@@ -17,7 +19,12 @@ export interface IDbConnection {
     host?: string;
     database?: string;
     schema?: string;
-    driver?: 'tedious' | 'msnodesqlv8';
+    driver?: TdsDriverName; // this field is deprecated; pass imported driver to getDb, etc
+}
+
+export interface ITdsDriver {
+    ConnectionPool: any;
+    Transaction: any;
 }
 
 export interface IReporter {
@@ -88,7 +95,9 @@ export interface IPostgresDestinationConfig extends IDatabaseDestinationConfig {
     upsertConstraints?: string[];
 }
 
-export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig { }
+export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig {
+    driver?: ITdsDriver;
+}
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
     request: AxiosRequestConfig;
@@ -140,6 +149,7 @@ export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
 }
 
 export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {
+    driver?: ITdsDriver;
 }
 
 export interface IPostgresProcessorConfig extends IDatabaseProcessorConfig {

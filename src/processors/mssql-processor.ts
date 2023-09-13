@@ -1,13 +1,18 @@
 import { Readable } from 'stream';
 
-import { IMssqlProcessorConfig, processStream } from '../types';
+import { IMssqlProcessorConfig, ITdsDriver, processStream } from '../types';
 import { closeDbConnection, getDb } from '../utils';
 import { DatabaseProcessor } from './base/database-processor';
 
 export class MssqlProcessor extends DatabaseProcessor {
 
+    driver?: ITdsDriver;
+
     constructor(config: IMssqlProcessorConfig) {
         super(config);
+        if (config.driver) {
+            this.driver = config.driver;
+        }
     }
 
     async process(processStream: processStream) {
@@ -31,7 +36,7 @@ export class MssqlProcessor extends DatabaseProcessor {
             },
         });
         const data: any[] = [];
-        const db = await getDb(this.connection, 'mssql');
+        const db = this.driver ? await getDb(this.connection, 'mssql', this.driver) : await getDb(this.connection, 'mssql');
         const dbRequest = db.request();
         dbRequest.on('error', (err: any) => {
             if (err.code !== 'ECANCEL') {

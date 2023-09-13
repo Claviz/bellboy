@@ -13,5 +13,7 @@ COPY package.json ./
 COPY package-lock.json ./
 
 RUN npm install
+# install optional native TDS driver
+RUN npm install msnodesqlv8
 
 COPY . .

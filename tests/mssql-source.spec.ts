@@ -13,11 +13,15 @@ const connection: any = {
     }
 };
 
-describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
+describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
 
     beforeEach(async () => {
-        connection.driver = driver;
-        db = await utils.getDb(connection, 'mssql');
+        let nativeDriver;
+        if (driverName === 'msnodesqlv8') {
+            nativeDriver = await import('mssql/msnodesqlv8');
+        }
+
+        db = await utils.getDb(connection, 'mssql', nativeDriver);
         await db.query(`DROP TABLE IF EXISTS test`);
         await db.query(`CREATE TABLE test
         (
@@ -29,7 +33,7 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
         await utils.closeDbConnection(connection);
     })
 
-    it(`gets data from mssql using ${driver} driver`, async () => {
+    it(`gets data from mssql using ${driverName} driver`, async () => {
         await db.query(`INSERT INTO test (id) values (123)`);
         const destination = new CustomDestination({
             batchSize: 1,
@@ -45,7 +49,7 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
         }]);
     });
 
-    it(`respects rowLimit using ${driver} driver`, async () => {
+    it(`respects rowLimit using ${driverName} driver`, async () => {
         await db.query(`INSERT INTO test (id) values (1), (2), (3), (4)`);
         const destination = new CustomDestination();
         const processor = new MssqlProcessor({

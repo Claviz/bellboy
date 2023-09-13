@@ -1,10 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { Transform } from 'stream';
 
-import { AuthorizationRequest, DbTypes, IDbConnection } from './types';
+import { AuthorizationRequest, DbTypes, IDbConnection, ITdsDriver } from './types';
 
 const cachedDbConnections = new Map<string, { db: any, close: any }>();
-export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
+export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes, tdsDriver?: ITdsDriver) {
     const dbKey = JSON.stringify(databaseConfig);
     if (cachedDbConnections.has(dbKey)) {
         const dbConnection = cachedDbConnections.get(dbKey);
@@ -13,7 +13,10 @@ export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
         }
     }
     if (dbType === 'mssql') {
-        const sql = databaseConfig.driver === 'msnodesqlv8' ? await import('mssql/msnodesqlv8') : await import('mssql');
+        if (!tdsDriver && databaseConfig.driver === 'msnodesqlv8') {
+            console.warn('Falling back to Tedious driver. Pass mssql/msnodesqlv8 driver as a third argument to getDb function.');
+        }
+        const sql = tdsDriver ?? await import('mssql');
         const pool = new sql.ConnectionPool({ ...databaseConfig } as any);
         const db = await pool.connect();
         cachedDbConnections.set(dbKey, {

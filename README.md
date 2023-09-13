@@ -300,8 +300,8 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 - [ExcelProcessor](#excel-processor) processes **XLSX** file data from the file system.
 - [JsonProcessor](#json-processor) processes **JSON** file data from the file system.
 - [DelimitedProcessor](#delimited-processor) processes files with **delimited data** from the file system.
-- [PostgresProcessor](#database-processors) processes data received from a **PostgreSQL** SELECT.
-- [MssqlProcessor](#database-processors) processes data received from a **MSSQL** SELECT.
+- [PostgresProcessor](#postgres-processor) processes data received from a **PostgreSQL** SELECT.
+- [MssqlProcessor](#mssql-processor) processes data received from a **MSSQL** SELECT.
 - [DynamicProcessor](#dynamic-processor) processes **dynamically generated** data.
 - [TailProcessor](#tail-processor) processes **new lines** added to the file.
 
@@ -503,9 +503,9 @@ Watches for file changes and outputs last part of file as soon as new lines are 
   Name of the file the data came from.
 - **data** `string`
 
-### Database processors <div id='database-processors'/>
+### PostgresProcessor <div id='postgres-processor'/>
 
-Processes `SELECT` query row by row. There are two database processors - `PostgresProcessor` ([usage examples](tests/postgres-source.spec.ts)) and `MssqlProcessor` ([usage examples](tests/mssql-source.spec.ts)). Both of them are having the same options.
+Processes a PostgreSQL `SELECT` query row by row.
 
 #### Options
 
@@ -515,16 +515,32 @@ Processes `SELECT` query row by row. There are two database processors - `Postgr
 - **connection** `object` `required`
   - **user**
   - **password**
-  - **server**\
-    Used with `MssqlProcessor`.
   - **host**
-    Used with `PostgresProcessor`.
   - **port**
   - **database**
-  - **schema**\
-    Currently available only for `PostgresProcessor`.
-  - **driver**\
-    Available only for `MssqlProcessor`. Defines which driver to use - `tedious` (used by default) or `msnodesqlv8`.
+  - **schema**
+
+### MssqlProcessor <div id='mssql-processor'/>
+
+Processes a MSSQL `SELECT` query row by row.
+
+#### Options
+
+- [Processor options](#processor-options)
+- **query** `string` `required`\
+  Query to execute.
+- **connection** `object` `required`
+  - **user**
+  - **password**
+  - **server**
+  - **port**
+  - **database**
+- **driver**\
+    Optional [mssql][mssql-url] TDS driver such as the native [msnodesqlv8][msnodesqlv8-url] driver; defaults to the pure JavaScript [Tedious][tedious-url] driver .
+
+[Usage examples](tests/mssql-source.spec.ts)
+
+Note that `msnodesqlv8` is an optional peer dependency. In previous versions of `bellboy`, a `connection.driver` `string` parameter enabled choosing between the pure Javascript Tedious driver and the native mssqlnodev8  diver. This parameter is ignored in `bellboy` >= v8.0.0.
 
 ### DynamicProcessor <div id='dynamic-processor'/>
 
@@ -636,6 +652,11 @@ Inserts data to MSSQL.
   - **password**
   - **server**
   - **database**
+- **driver**
+
+[Usage examples](tests/mssql-destination.spec.ts)
+
+See [MssqlProcessor](#mssql-processor) for the usage of the `driver` parameter and notes about the optional `msnodesqlv8` dependency.
 
 ## Extendability
 
@@ -699,3 +720,7 @@ class CustomReporter extends bellboy.Reporter {
 ## Testing
 
 Tests can be run by using `docker-compose up --abort-on-container-exit --exit-code-from test --build test` command.
+
+[mssql-url]: https://github.com/tediousjs/node-mssql
+[tedious-url]: https://www.npmjs.com/package/tedious
+[msnodesqlv8-url]: https://www.npmjs.com/package/msnodesqlv8
