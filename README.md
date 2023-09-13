@@ -14,6 +14,12 @@ Before install, make sure you are using [latest](https://nodejs.org/en/download/
 npm install bellboy
 ```
 
+If you will be using `bellboy` with the native [msnodesqlv8][msnodesqlv8-url] driver, add it as a dependency.
+
+```
+npm install msnodesqlv8
+```
+
 ## Example
 
 This example shows how `bellboy` can extract rows from the [Excel file](#excel-processor), modify it on the fly, load to the [Postgres database](#postgres-destination), move processed file to the other folder and process remaining files.
@@ -536,7 +542,7 @@ Processes a MSSQL `SELECT` query row by row.
   - **port**
   - **database**
   - **driver**\
-      Optional [mssql][mssql-url] TDS driver such as the native [msnodesqlv8][msnodesqlv8-url] driver; defaults to the pure JavaScript [Tedious][tedious-url] driver .
+      Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
 
 #### Usage
 
@@ -555,8 +561,6 @@ const source = new MssqlProcessor({ connection, query: 'select * from orders' })
 ```
 
 In previous versions of `bellboy`, `connection.driver` was a `string` parameter.
-
-Note that `msnodesqlv8` is an optional peer dependency: To use that driver, configure an explicit dependency on the `msnodesqlv8` package.
 
 [More usage examples](tests/mssql-source.spec.ts)
 
@@ -670,7 +674,8 @@ Inserts data to MSSQL.
   - **password**
   - **server**
   - **database**
-  - **driver**
+  - **driver** \
+      Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
 
 #### Usage
 
@@ -687,8 +692,6 @@ const connection: IMssqlDbConnection = {
 };
 const sink = new MssqlDestination({ connection, table: 'orders', batchSize: 1000 });
 ```
-
-See [MssqlProcessor](#mssql-processor) for additional notes about the optional `driver` parameter and the `msnodesqlv8` dependency.
 
 [More usage examples](tests/mssql-destination.spec.ts)
 
