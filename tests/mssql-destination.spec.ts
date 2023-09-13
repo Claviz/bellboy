@@ -1,9 +1,9 @@
 import { Job, DynamicProcessor, MssqlDestination } from '../src';
-import { ITdsDriver, IMssqlDestinationConfig } from '../src/types';
+import { IMssqlDbConnection } from '../src/types';
 import * as utils from '../src/utils';
 
 let db: any = null;
-const connection: any = {
+const connection: IMssqlDbConnection = {
     user: 'sa',
     password: 'Passw0rd*',
     server: 'mssql',
@@ -43,12 +43,11 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
                 }
             },
         });
-        const destinationConfig: IMssqlDestinationConfig = {
+        const destination = new MssqlDestination({
             connection,
             table: 'test_sources',
             batchSize: 1,
-        };
-        const destination = new MssqlDestination(destinationConfig);
+        });
         const job = new Job(processor, [destination]);
         await job.run();
         const res = await db.query(`select * from test_sources`);

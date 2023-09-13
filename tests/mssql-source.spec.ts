@@ -1,9 +1,10 @@
 import { Job, MssqlProcessor } from '../src';
+import { IMssqlDbConnection } from '../src/types';
 import * as utils from '../src/utils';
 import { CustomDestination } from './helpers';
 
 let db: any = null;
-const connection: any = {
+const connection: IMssqlDbConnection = {
     user: 'sa',
     password: 'Passw0rd*',
     server: 'mssql',

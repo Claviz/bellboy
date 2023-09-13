@@ -29,6 +29,7 @@ export interface IMssqlDbConnection {
     server?: string;
     database?: string;
     driver?: ITdsDriver;
+    options?: any
 }
 
 export type IDbConnection = IPostgresDbConnection | IMssqlDbConnection;
