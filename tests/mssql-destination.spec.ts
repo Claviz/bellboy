@@ -8,7 +8,6 @@ const connection: any = {
     password: 'Passw0rd*',
     server: 'mssql',
     database: 'tempdb',
-    driver: null,
     options: {
         trustServerCertificate: true,
     }
@@ -17,15 +16,14 @@ const connection: any = {
 
 describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
 
-    let nativeDriver: ITdsDriver | undefined;
     beforeAll(async () => {
         if (driverName === 'msnodesqlv8') {
-            nativeDriver = await import('mssql/msnodesqlv8');
+            connection.driver = await import('mssql/msnodesqlv8');
         }
     });
 
     beforeEach(async () => {
-        db = await utils.getDb(connection, 'mssql', nativeDriver);
+        db = await utils.getDb(connection, 'mssql');
         await db.query(`DROP TABLE IF EXISTS test_sources`);
         await db.query(`CREATE TABLE test_sources
         (
@@ -50,9 +48,6 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
             table: 'test_sources',
             batchSize: 1,
         };
-        if (nativeDriver) {
-            destinationConfig.driver = nativeDriver;
-        }
         const destination = new MssqlDestination(destinationConfig);
         const job = new Job(processor, [destination]);
         await job.run();

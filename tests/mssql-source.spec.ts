@@ -16,12 +16,11 @@ const connection: any = {
 describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
 
     beforeEach(async () => {
-        let nativeDriver;
         if (driverName === 'msnodesqlv8') {
-            nativeDriver = await import('mssql/msnodesqlv8');
+            connection.driver = await import('mssql/msnodesqlv8');
         }
 
-        db = await utils.getDb(connection, 'mssql', nativeDriver);
+        db = await utils.getDb(connection, 'mssql');
         await db.query(`DROP TABLE IF EXISTS test`);
         await db.query(`CREATE TABLE test
         (

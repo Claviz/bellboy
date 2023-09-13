@@ -8,6 +8,8 @@
         "member-access": false,
         "no-console": false,
         "object-literal-sort-keys": false,
-        "quotemark": false
+        "ordered-imports": false,
+        "quotemark": false,
+        "trailing-comma": false
     }
 }

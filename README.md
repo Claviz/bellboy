@@ -535,12 +535,30 @@ Processes a MSSQL `SELECT` query row by row.
   - **server**
   - **port**
   - **database**
-- **driver**\
-    Optional [mssql][mssql-url] TDS driver such as the native [msnodesqlv8][msnodesqlv8-url] driver; defaults to the pure JavaScript [Tedious][tedious-url] driver .
+  - **driver**\
+      Optional [mssql][mssql-url] TDS driver such as the native [msnodesqlv8][msnodesqlv8-url] driver; defaults to the pure JavaScript [Tedious][tedious-url] driver .
 
-[Usage examples](tests/mssql-source.spec.ts)
+#### Usage examples
 
-Note that `msnodesqlv8` is an optional peer dependency. In previous versions of `bellboy`, a `connection.driver` `string` parameter enabled choosing between the pure Javascript Tedious driver and the native mssqlnodev8  diver. This parameter is ignored in `bellboy` >= v8.0.0.
+Here is an example of how to configure `MssqlProcessor` with a native TDS driver instead of the default pure JavasScript Tedious driver.
+
+```javascript
+const nativeDriver = await import('mssql/msnodesqlV8');
+const connection: any = {
+  user: 'user',
+  password: 'password',
+  server: 'server',
+  database: 'database',
+  driver: nativeDriver
+};
+const source = new MssqlProcessor({ connection, query: 'select * from orders' });
+```
+
+In previous versions of `bellboy`, `connection.driver` was a `string` parameter.
+
+Note that `msnodesqlv8` is an optional peer dependency: To use that package, configure an explicit dependency.
+
+[More usage examples](tests/mssql-source.spec.ts)
 
 ### DynamicProcessor <div id='dynamic-processor'/>
 
@@ -652,11 +670,27 @@ Inserts data to MSSQL.
   - **password**
   - **server**
   - **database**
-- **driver**
+  - **driver**
 
-[Usage examples](tests/mssql-destination.spec.ts)
+#### Usage examples
 
-See [MssqlProcessor](#mssql-processor) for the usage of the `driver` parameter and notes about the optional `msnodesqlv8` dependency.
+Here is an example of how to configure `MssqlDestination` with a native TDS driver instead of the default pure JavasScript Tedious driver.
+
+```javascript
+const nativeDriver = await import('mssql/msnodesqlV8');
+const connection: any = {
+  user: 'user',
+  password: 'password',
+  server: 'server',
+  database: 'database',
+  driver: nativeDriver
+};
+const sink = new MssqlDestination({ connection, table: 'orders', batchSize: 1000 });
+```
+
+See [MssqlProcessor](#mssql-processor) for additional notes about the optional `driver` parameter and the `msnodesqlv8` dependency.
+
+[More usage examples](tests/mssql-destination.spec.ts)
 
 ## Extendability
 

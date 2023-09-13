@@ -10,22 +10,28 @@ export interface AuthorizationRequest {
     prefix?: string;
 }
 
-export type TdsDriverName = 'tedious' | 'msnodesqlv8';
-
-export interface IDbConnection {
+export interface IPostgresDbConnection {
     user?: string;
     password?: string;
-    server?: string;
     host?: string;
     database?: string;
     schema?: string;
-    driver?: TdsDriverName; // this field is deprecated; pass imported driver to getDb, etc
 }
 
 export interface ITdsDriver {
     ConnectionPool: any;
     Transaction: any;
 }
+
+export interface IMssqlDbConnection {
+    user?: string;
+    password?: string;
+    server?: string;
+    database?: string;
+    driver?: ITdsDriver;
+}
+
+export type IDbConnection = IPostgresDbConnection | IMssqlDbConnection;
 
 export interface IReporter {
     report(job: IJob): Promise<void> | void;
@@ -88,15 +94,15 @@ export interface IDestinationConfig {
 
 export interface IDatabaseDestinationConfig extends IDestinationConfig {
     table: string;
-    connection: IDbConnection;
 }
 
 export interface IPostgresDestinationConfig extends IDatabaseDestinationConfig {
+    connection: IPostgresDbConnection;
     upsertConstraints?: string[];
 }
 
 export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig {
-    driver?: ITdsDriver;
+    connection: IMssqlDbConnection;
 }
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
@@ -133,7 +139,6 @@ export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
 }
 
 export interface IDatabaseProcessorConfig extends IProcessorConfig {
-    connection: any;
     query: string;
 }
 
@@ -149,10 +154,11 @@ export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
 }
 
 export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {
-    driver?: ITdsDriver;
+    connection: IMssqlDbConnection;
 }
 
 export interface IPostgresProcessorConfig extends IDatabaseProcessorConfig {
+    connection: IPostgresDbConnection;
 }
 
 export interface ITailProcessorConfig extends IDirectoryProcessorConfig {
