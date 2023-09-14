@@ -1,12 +1,13 @@
 {
   "name": "bellboy",
-  "version": "7.0.0",
+  "version": "8.0.0",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",
   "scripts": {
     "build": "tsc -p .",
     "test": "jest --coverage",
+    "lint": "tslint -c tslint.json -p tsconfig.json",
     "codecov": "codecov"
   },
   "repository": {
@@ -23,8 +24,13 @@
     "url": "https://github.com/Claviz/bellboy/issues"
   },
   "homepage": "https://github.com/Claviz/bellboy#readme",
-  "optionalDependencies": {
+  "peerDependencies": {
     "msnodesqlv8": "^2.1.0"
+  },
+  "peerDependenciesMeta": {
+    "msnodesqlv8": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

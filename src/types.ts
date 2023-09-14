@@ -10,15 +10,29 @@ export interface AuthorizationRequest {
     prefix?: string;
 }
 
-export interface IDbConnection {
+export interface IPostgresDbConnection {
     user?: string;
     password?: string;
-    server?: string;
     host?: string;
     database?: string;
     schema?: string;
-    driver?: 'tedious' | 'msnodesqlv8';
 }
+
+export interface ITdsDriver {
+    ConnectionPool: any;
+    Transaction: any;
+}
+
+export interface IMssqlDbConnection {
+    user?: string;
+    password?: string;
+    server?: string;
+    database?: string;
+    driver?: ITdsDriver;
+    options?: any
+}
+
+export type IDbConnection = IPostgresDbConnection | IMssqlDbConnection;
 
 export interface IReporter {
     report(job: IJob): Promise<void> | void;
@@ -81,14 +95,16 @@ export interface IDestinationConfig {
 
 export interface IDatabaseDestinationConfig extends IDestinationConfig {
     table: string;
-    connection: IDbConnection;
 }
 
 export interface IPostgresDestinationConfig extends IDatabaseDestinationConfig {
+    connection: IPostgresDbConnection;
     upsertConstraints?: string[];
 }
 
-export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig { }
+export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig {
+    connection: IMssqlDbConnection;
+}
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
     request: AxiosRequestConfig;
@@ -124,7 +140,6 @@ export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
 }
 
 export interface IDatabaseProcessorConfig extends IProcessorConfig {
-    connection: any;
     query: string;
 }
 
@@ -140,9 +155,11 @@ export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
 }
 
 export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {
+    connection: IMssqlDbConnection;
 }
 
 export interface IPostgresProcessorConfig extends IDatabaseProcessorConfig {
+    connection: IPostgresDbConnection;
 }
 
 export interface ITailProcessorConfig extends IDirectoryProcessorConfig {

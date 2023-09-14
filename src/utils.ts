@@ -1,45 +1,72 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { Transform } from 'stream';
 
-import { AuthorizationRequest, DbTypes, IDbConnection } from './types';
+import { AuthorizationRequest, DbTypes, IDbConnection, IPostgresDbConnection, IMssqlDbConnection, ITdsDriver } from './types';
 
 const cachedDbConnections = new Map<string, { db: any, close: any }>();
+
+function getCachedDbConnection(databaseConfig: IDbConnection) {
+    const dbKey = getDbKey(databaseConfig);
+    return cachedDbConnections.get(dbKey);
+}
+
+function getDbKey(databaseConfig: IPostgresDbConnection | IMssqlDbConnection) {
+    if ('driver' in databaseConfig) {
+        const configWithoutDriver = { ...databaseConfig };
+        delete configWithoutDriver.driver;
+        return JSON.stringify(configWithoutDriver);
+    }
+    return JSON.stringify(databaseConfig);
+}
+
+function setCachedDbConnection(databaseConfig: IDbConnection, db: any, close: any) {
+    const dbKey = getDbKey(databaseConfig);
+    cachedDbConnections.set(dbKey, { db, close });
+}
+
+function unsetCachedDbConnection(databaseConfig: IDbConnection) {
+    const dbKey = getDbKey(databaseConfig);
+    cachedDbConnections.delete(dbKey);
+}
+
 export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
-    const dbKey = JSON.stringify(databaseConfig);
-    if (cachedDbConnections.has(dbKey)) {
-        const dbConnection = cachedDbConnections.get(dbKey);
-        if (dbConnection) {
-            return dbConnection.db;
-        }
+    const dbConnection = getCachedDbConnection(databaseConfig);
+    if (dbConnection) {
+        return dbConnection.db;
     }
     if (dbType === 'mssql') {
-        const sql = databaseConfig.driver === 'msnodesqlv8' ? await import('mssql/msnodesqlv8') : await import('mssql');
-        const pool = new sql.ConnectionPool({ ...databaseConfig } as any);
-        const db = await pool.connect();
-        cachedDbConnections.set(dbKey, {
-            db,
-            close: pool.close.bind(pool),
-        });
-        return db;
+        return await getMssqlDb(databaseConfig);
     } else {
-        const pgp = require('pg-promise')({ schema: databaseConfig.schema || 'public', });
-        const db = pgp(databaseConfig);
-        cachedDbConnections.set(dbKey, {
-            db,
-            close: pgp.end,
-        });
-        return db;
+        return getPostgresDb(databaseConfig);
     }
-};
+}
+
+async function getMssqlDb(databaseConfig: IMssqlDbConnection) {
+    const driver = databaseConfig.driver ?? await import('mssql');
+    const pool = getMssqlDbPool(driver, databaseConfig);
+    const db = await pool.connect();
+    setCachedDbConnection(databaseConfig, db, pool.close.bind(pool));
+    return db;
+}
+
+function getMssqlDbPool(driver: ITdsDriver, databaseConfig: IMssqlDbConnection) {
+    const poolConfig = { ...databaseConfig };
+    delete poolConfig.driver;
+    return new driver.ConnectionPool({ ...databaseConfig } as any);
+}
+
+function getPostgresDb(databaseConfig: IPostgresDbConnection) {
+    const pgp = require('pg-promise')({ schema: databaseConfig.schema || 'public' });
+    const db = pgp(databaseConfig);
+    setCachedDbConnection(databaseConfig, db, pgp.end);
+    return db;
+}
 
 export async function closeDbConnection(databaseConfig: IDbConnection) {
-    const dbKey = JSON.stringify(databaseConfig);
-    if (cachedDbConnections.has(dbKey)) {
-        const dbConnection = cachedDbConnections.get(dbKey);
-        if (dbConnection) {
-            await dbConnection.close();
-            cachedDbConnections.delete(dbKey);
-        }
+    const dbConnection = getCachedDbConnection(databaseConfig);
+    if (dbConnection) {
+        await dbConnection.close();
+        unsetCachedDbConnection(databaseConfig);
     }
 }
 
@@ -53,7 +80,7 @@ export function getValueFromJSONChunk() {
             callback();
         }
     });
-};
+}
 
 export function removeCircularReferencesFromChunk() {
     return new Transform({
@@ -76,7 +103,7 @@ export function removeCircularReferencesFromChunk() {
             callback();
         }
     });
-};
+}
 
 export function getDelimitedGenerator({
     readStream,
@@ -93,7 +120,7 @@ export function getDelimitedGenerator({
             }
             return { header, arr: record, obj, row: raw };
         }
-    }
+    };
     const generator = async function* () {
         for await (const row of readStream) {
             const result = processRow(row);
@@ -101,7 +128,7 @@ export function getDelimitedGenerator({
                 yield result;
             }
         }
-    }
+    };
 
     return generator;
 }

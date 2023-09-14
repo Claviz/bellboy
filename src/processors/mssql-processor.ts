@@ -1,13 +1,16 @@
 import { Readable } from 'stream';
 
-import { IMssqlProcessorConfig, processStream } from '../types';
+import { IMssqlProcessorConfig, IMssqlDbConnection, processStream } from '../types';
 import { closeDbConnection, getDb } from '../utils';
 import { DatabaseProcessor } from './base/database-processor';
 
 export class MssqlProcessor extends DatabaseProcessor {
 
+    protected connection: IMssqlDbConnection;
+
     constructor(config: IMssqlProcessorConfig) {
         super(config);
+        this.connection = config.connection;
     }
 
     async process(processStream: processStream) {
@@ -37,7 +40,7 @@ export class MssqlProcessor extends DatabaseProcessor {
             if (err.code !== 'ECANCEL') {
                 readStream.emit('error', err);
             }
-        })
+        });
         readStream.on('close', () => {
             dbRequest.cancel();
         });
@@ -72,7 +75,7 @@ export class MssqlProcessor extends DatabaseProcessor {
                 dbRequest.on('error', onError);
                 dbRequest.resume();
             });
-        }
+        };
         dbRequest.pause();
         await processStream(readStream);
         await closeDbConnection(this.connection);

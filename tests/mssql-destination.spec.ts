@@ -1,24 +1,31 @@
 import { Job, DynamicProcessor, MssqlDestination } from '../src';
+import { IMssqlDbConnection } from '../src/types';
 import * as utils from '../src/utils';
 
 let db: any = null;
-const connection: any = {
+const connection: IMssqlDbConnection = {
     user: 'sa',
     password: 'Passw0rd*',
     server: 'mssql',
     database: 'tempdb',
-    driver: null,
     options: {
         trustServerCertificate: true,
     }
 };
-describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
+
+
+describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
+
+    beforeAll(async () => {
+        if (driverName === 'msnodesqlv8') {
+            connection.driver = await import('mssql/msnodesqlv8');
+        }
+    });
 
     beforeEach(async () => {
-        connection.driver = driver;
         db = await utils.getDb(connection, 'mssql');
-        await db.query(`DROP TABLE IF EXISTS test`);
-        await db.query(`CREATE TABLE test
+        await db.query(`DROP TABLE IF EXISTS test_sources`);
+        await db.query(`CREATE TABLE test_sources
         (
             id integer
         )`);
@@ -28,7 +35,7 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
         await utils.closeDbConnection(connection);
     })
 
-    it(`inserts generated data to mssql using ${driver} driver`, async () => {
+    it(`inserts generated data to mssql using ${driverName} driver`, async () => {
         const processor = new DynamicProcessor({
             generator: async function* () {
                 yield {
@@ -38,12 +45,12 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driver) => {
         });
         const destination = new MssqlDestination({
             connection,
-            table: 'test',
+            table: 'test_sources',
             batchSize: 1,
         });
         const job = new Job(processor, [destination]);
         await job.run();
-        const res = await db.query(`select * from test`);
+        const res = await db.query(`select * from test_sources`);
         expect(res.recordset).toEqual([{
             id: 1,
         }]);

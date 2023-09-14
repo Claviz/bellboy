@@ -1,17 +1,17 @@
-import { IMssqlDestinationConfig } from '../types';
+import { IMssqlDestinationConfig, IMssqlDbConnection } from '../types';
 import { DatabaseDestination } from './base/database-destination';
 
 export class MssqlDestination extends DatabaseDestination {
 
-    driver?: 'tedious' | 'msnodesqlv8';
+    protected connection: IMssqlDbConnection;
 
     constructor(config: IMssqlDestinationConfig) {
         super(config);
-        this.driver = config.connection.driver;
+        this.connection = config.connection;
     }
 
     async loadBatch(data: any[]) {
-        const sql = this.driver === 'msnodesqlv8' ? await import('mssql/msnodesqlv8') : await import('mssql');
+        const sql = this.connection.driver ?? await import('mssql');
         const pool = new sql.ConnectionPool({ ...this.connection } as any);
         const db = await pool.connect();
         const query = await db.request().query(`SELECT TOP(0) * FROM ${this.table}`);

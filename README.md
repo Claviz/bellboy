@@ -14,6 +14,12 @@ Before install, make sure you are using [latest](https://nodejs.org/en/download/
 npm install bellboy
 ```
 
+If you will be using `bellboy` with the native [msnodesqlv8][msnodesqlv8-url] driver, add it as a dependency.
+
+```
+npm install msnodesqlv8
+```
+
 ## Example
 
 This example shows how `bellboy` can extract rows from the [Excel file](#excel-processor), modify it on the fly, load to the [Postgres database](#postgres-destination), move processed file to the other folder and process remaining files.
@@ -300,8 +306,8 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 - [ExcelProcessor](#excel-processor) processes **XLSX** file data from the file system.
 - [JsonProcessor](#json-processor) processes **JSON** file data from the file system.
 - [DelimitedProcessor](#delimited-processor) processes files with **delimited data** from the file system.
-- [PostgresProcessor](#database-processors) processes data received from a **PostgreSQL** SELECT.
-- [MssqlProcessor](#database-processors) processes data received from a **MSSQL** SELECT.
+- [PostgresProcessor](#postgres-processor) processes data received from a **PostgreSQL** SELECT.
+- [MssqlProcessor](#mssql-processor) processes data received from a **MSSQL** SELECT.
 - [DynamicProcessor](#dynamic-processor) processes **dynamically generated** data.
 - [TailProcessor](#tail-processor) processes **new lines** added to the file.
 
@@ -503,9 +509,9 @@ Watches for file changes and outputs last part of file as soon as new lines are 
   Name of the file the data came from.
 - **data** `string`
 
-### Database processors <div id='database-processors'/>
+### PostgresProcessor <div id='postgres-processor'/>
 
-Processes `SELECT` query row by row. There are two database processors - `PostgresProcessor` ([usage examples](tests/postgres-source.spec.ts)) and `MssqlProcessor` ([usage examples](tests/mssql-source.spec.ts)). Both of them are having the same options.
+Processes a PostgreSQL `SELECT` query row by row.
 
 #### Options
 
@@ -515,16 +521,48 @@ Processes `SELECT` query row by row. There are two database processors - `Postgr
 - **connection** `object` `required`
   - **user**
   - **password**
-  - **server**\
-    Used with `MssqlProcessor`.
   - **host**
-    Used with `PostgresProcessor`.
   - **port**
   - **database**
-  - **schema**\
-    Currently available only for `PostgresProcessor`.
+  - **schema**
+
+### MssqlProcessor <div id='mssql-processor'/>
+
+Processes a MSSQL `SELECT` query row by row.
+
+#### Options
+
+- [Processor options](#processor-options)
+- **query** `string` `required`\
+  Query to execute.
+- **connection** `object` `required`
+  - **user**
+  - **password**
+  - **server**
+  - **port**
+  - **database**
   - **driver**\
-    Available only for `MssqlProcessor`. Defines which driver to use - `tedious` (used by default) or `msnodesqlv8`.
+      Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
+
+#### Usage
+
+Here is an example of how to configure `MssqlProcessor` with a native TDS driver instead of the default pure JavasScript Tedious driver.
+
+```javascript
+const nativeDriver: ITdsDriver = await import('mssql/msnodesqlV8');
+const connection: IMssqlDbConnection = {
+  user: 'user',
+  password: 'password',
+  server: 'server',
+  database: 'database',
+  driver: nativeDriver
+};
+const source = new MssqlProcessor({ connection, query: 'select * from orders' });
+```
+
+In previous versions of `bellboy`, `connection.driver` was a `string` parameter.
+
+[More usage examples](tests/mssql-source.spec.ts)
 
 ### DynamicProcessor <div id='dynamic-processor'/>
 
@@ -636,6 +674,26 @@ Inserts data to MSSQL.
   - **password**
   - **server**
   - **database**
+  - **driver** \
+      Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
+
+#### Usage
+
+Here is an example of how to configure `MssqlDestination` with a native TDS driver instead of the default pure JavasScript Tedious driver.
+
+```javascript
+const nativeDriver: ITdsDriver = await import('mssql/msnodesqlV8');
+const connection: IMssqlDbConnection = {
+  user: 'user',
+  password: 'password',
+  server: 'server',
+  database: 'database',
+  driver: nativeDriver
+};
+const sink = new MssqlDestination({ connection, table: 'orders', batchSize: 1000 });
+```
+
+[More usage examples](tests/mssql-destination.spec.ts)
 
 ## Extendability
 
@@ -699,3 +757,7 @@ class CustomReporter extends bellboy.Reporter {
 ## Testing
 
 Tests can be run by using `docker-compose up --abort-on-container-exit --exit-code-from test --build test` command.
+
+[mssql-url]: https://github.com/tediousjs/node-mssql
+[tedious-url]: https://www.npmjs.com/package/tedious
+[msnodesqlv8-url]: https://www.npmjs.com/package/msnodesqlv8

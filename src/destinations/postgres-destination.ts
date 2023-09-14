@@ -1,4 +1,4 @@
-import { IPostgresDestinationConfig } from '../types';
+import { IPostgresDestinationConfig, IPostgresDbConnection } from '../types';
 import { getDb } from '../utils';
 import { DatabaseDestination } from './base/database-destination';
 
@@ -6,15 +6,17 @@ const pgp = require('pg-promise')();
 
 export class PostgresDestination extends DatabaseDestination {
 
+    protected connection: IPostgresDbConnection;
     protected upsertConstraints: string[] | undefined;
 
     constructor(config: IPostgresDestinationConfig) {
         super(config);
+        this.connection = config.connection;
         this.upsertConstraints = config.upsertConstraints;
     }
 
     async loadBatch(data: any[]) {
-        const dataToUpload: any[] = []
+        const dataToUpload: any[] = [];
         const columnDict: { [key: string]: string } = {};
         const upsertConstraints = this.upsertConstraints;
         let columnIndex = 0;
@@ -29,7 +31,7 @@ export class PostgresDestination extends DatabaseDestination {
             }
             dataToUpload.push(transformed);
         }
-        const columns = Object.keys(columnDict).map(x => ({ name: x, prop: columnDict[x] }))
+        const columns = Object.keys(columnDict).map(x => ({ name: x, prop: columnDict[x] }));
         const cs = new pgp.helpers.ColumnSet(columns, { table: this.table });
         const db = await getDb(this.connection, 'postgres');
         await db.tx(async (t: any) => {
