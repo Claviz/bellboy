@@ -6,6 +6,7 @@ export { DirectoryProcessor } from './processors/base/directory-processor';
 
 export { ExcelProcessor } from './processors/excel-processor';
 export { PostgresProcessor } from './processors/postgres-processor';
+export { MySqlProcessor } from './processors/mysql-processor';
 export { MssqlProcessor } from './processors/mssql-processor';
 export { HttpProcessor } from './processors/http-processor';
 export { DynamicProcessor } from './processors/dynamic-processor';
@@ -21,6 +22,7 @@ export { HttpDestination } from './destinations/http-destination';
 export { MssqlDestination } from './destinations/mssql-destination';
 export { PostgresDestination } from './destinations/postgres-destination';
 export { StdoutDestination } from './destinations/stdout-destination';
+export { MySqlDestination } from './destinations/mysql-destination';
 
 export { getDb } from './utils';
 

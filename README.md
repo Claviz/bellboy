@@ -307,6 +307,7 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 - [JsonProcessor](#json-processor) processes **JSON** file data from the file system.
 - [DelimitedProcessor](#delimited-processor) processes files with **delimited data** from the file system.
 - [PostgresProcessor](#postgres-processor) processes data received from a **PostgreSQL** SELECT.
+- [MySqlProcessor](#mysql-processor) processes data received from a **MySQL** SELECT.
 - [MssqlProcessor](#mssql-processor) processes data received from a **MSSQL** SELECT.
 - [DynamicProcessor](#dynamic-processor) processes **dynamically generated** data.
 - [TailProcessor](#tail-processor) processes **new lines** added to the file.
@@ -526,6 +527,22 @@ Processes a PostgreSQL `SELECT` query row by row.
   - **database**
   - **schema**
 
+### MySqlProcessor <div id='mysql-processor'/>
+
+Processes a MySQL `SELECT` query row by row.
+
+#### Options
+
+- [Processor options](#processor-options)
+- **query** `string` `required`\
+  Query to execute.
+- **connection** `object` `required`
+  - **user**
+  - **password**
+  - **host**
+  - **port**
+  - **database**
+
 ### MssqlProcessor <div id='mssql-processor'/>
 
 Processes a MSSQL `SELECT` query row by row.
@@ -542,22 +559,25 @@ Processes a MSSQL `SELECT` query row by row.
   - **port**
   - **database**
   - **driver**\
-      Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
+     Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
 
 #### Usage
 
 Here is an example of how to configure `MssqlProcessor` with a native TDS driver instead of the default pure JavasScript Tedious driver.
 
 ```javascript
-const nativeDriver: ITdsDriver = await import('mssql/msnodesqlV8');
+const nativeDriver: ITdsDriver = await import("mssql/msnodesqlV8");
 const connection: IMssqlDbConnection = {
-  user: 'user',
-  password: 'password',
-  server: 'server',
-  database: 'database',
-  driver: nativeDriver
+  user: "user",
+  password: "password",
+  server: "server",
+  database: "database",
+  driver: nativeDriver,
 };
-const source = new MssqlProcessor({ connection, query: 'select * from orders' });
+const source = new MssqlProcessor({
+  connection,
+  query: "select * from orders",
+});
 ```
 
 In previous versions of `bellboy`, `connection.driver` was a `string` parameter.
@@ -592,6 +612,7 @@ Every [job](#job) can have as many destinations (outputs) as needed. For example
 - [StdoutDestination](#stdout-destination) logs data to **console**.
 - [HttpDestination](#http-destination) executes **HTTP** request calls.
 - [PostgresDestination](#postgres-destination) inserts/upserts data to **PostgreSQL** database.
+- [MySqlDestination](#mysql-destination) inserts/upserts data to **MySQL** database.
 - [MssqlDestination](#mssql-destination) inserts data to **MSSQL** database.
 
 ### Options <div id='destination-options'/>
@@ -658,6 +679,23 @@ Inserts data to PostgreSQL.
   - **database**
   - **schema**
 
+### MySqlDestination <div id='mysql-destination'/>
+
+[Usage examples](tests/mysql-destination.spec.ts)
+
+Inserts data to MySQL.
+
+#### Options
+
+- [General destination options](#destination-options)
+- **table** `string` `required`\
+  Table name.
+- **connection** `object` `required`
+  - **user**
+  - **password**
+  - **host**
+  - **database**
+
 ### MssqlDestination <div id='mssql-destination'/>
 
 [Usage examples](tests/mssql-destination.spec.ts)
@@ -675,22 +713,26 @@ Inserts data to MSSQL.
   - **server**
   - **database**
   - **driver** \
-      Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
+     Optional [mssql][mssql-url] TDS driver; defaults to the pure JavaScript [Tedious][tedious-url] driver.
 
 #### Usage
 
 Here is an example of how to configure `MssqlDestination` with a native TDS driver instead of the default pure JavasScript Tedious driver.
 
 ```javascript
-const nativeDriver: ITdsDriver = await import('mssql/msnodesqlV8');
+const nativeDriver: ITdsDriver = await import("mssql/msnodesqlV8");
 const connection: IMssqlDbConnection = {
-  user: 'user',
-  password: 'password',
-  server: 'server',
-  database: 'database',
-  driver: nativeDriver
+  user: "user",
+  password: "password",
+  server: "server",
+  database: "database",
+  driver: nativeDriver,
 };
-const sink = new MssqlDestination({ connection, table: 'orders', batchSize: 1000 });
+const sink = new MssqlDestination({
+  connection,
+  table: "orders",
+  batchSize: 1000,
+});
 ```
 
 [More usage examples](tests/mssql-destination.spec.ts)

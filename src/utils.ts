@@ -1,7 +1,16 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import mysql from 'mysql2/promise';
 import { Transform } from 'stream';
 
-import { AuthorizationRequest, DbTypes, IDbConnection, IPostgresDbConnection, IMssqlDbConnection, ITdsDriver } from './types';
+import {
+    AuthorizationRequest,
+    DbTypes,
+    IDbConnection,
+    IMssqlDbConnection,
+    IMySqlDbConnection,
+    IPostgresDbConnection,
+    ITdsDriver,
+} from './types';
 
 const cachedDbConnections = new Map<string, { db: any, close: any }>();
 
@@ -34,11 +43,22 @@ export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
     if (dbConnection) {
         return dbConnection.db;
     }
-    if (dbType === 'mssql') {
-        return await getMssqlDb(databaseConfig);
-    } else {
-        return getPostgresDb(databaseConfig);
+
+    switch (dbType) {
+        case 'mssql':
+            return await getMssqlDb(databaseConfig);
+        case 'mysql':
+            return getMySqlDb(databaseConfig);
+        case 'postgres':
+        default:
+            return getPostgresDb(databaseConfig);
     }
+}
+
+async function getMySqlDb(databaseConfig: IMySqlDbConnection) {
+    const dbConnection = mysql.createPool(databaseConfig);
+    setCachedDbConnection(databaseConfig, dbConnection, dbConnection.end.bind(dbConnection));
+    return dbConnection;
 }
 
 async function getMssqlDb(databaseConfig: IMssqlDbConnection) {

@@ -6,7 +6,8 @@ services:
     depends_on:
       - postgres
       - mssql
-    command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- npm test
+      - mysql
+    command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- ./wait-for-it.sh mysql:3306 -- npm test
     environment:
       NODE_ENV: development
     volumes:
@@ -16,6 +17,12 @@ services:
     image: postgres
     environment:
       POSTGRES_PASSWORD: password
+
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: test
 
   mssql:
     image: mcr.microsoft.com/azure-sql-edge

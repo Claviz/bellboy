@@ -32,7 +32,14 @@ export interface IMssqlDbConnection {
     options?: any
 }
 
-export type IDbConnection = IPostgresDbConnection | IMssqlDbConnection;
+export interface IMySqlDbConnection {
+    user?: string;
+    password?: string;
+    host?: string;
+    database?: string;
+}
+
+export type IDbConnection = IPostgresDbConnection | IMssqlDbConnection | IMySqlDbConnection;
 
 export interface IReporter {
     report(job: IJob): Promise<void> | void;
@@ -106,6 +113,10 @@ export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig {
     connection: IMssqlDbConnection;
 }
 
+export interface IMySqlDestinationConfig extends IDatabaseDestinationConfig {
+    connection: IMssqlDbConnection;
+}
+
 export interface IHttpDestinationConfig extends IDestinationConfig {
     request: AxiosRequestConfig;
     authorizationRequest?: AuthorizationRequest;
@@ -162,6 +173,10 @@ export interface IPostgresProcessorConfig extends IDatabaseProcessorConfig {
     connection: IPostgresDbConnection;
 }
 
+export interface IMySqlProcessorConfig extends IDatabaseProcessorConfig {
+    connection: IMySqlDbConnection;
+}
+
 export interface ITailProcessorConfig extends IDirectoryProcessorConfig {
     fromBeginning?: boolean;
 }
@@ -181,7 +196,7 @@ export interface IBellboyEvent {
     jobStopped: boolean;
 }
 
-export type DbTypes = 'postgres' | 'mssql';
+export type DbTypes = 'postgres' | 'mssql' | 'mysql';
 
 export type event = (...args: any) => Promise<any>;
 export type extendedEvent = (bellboyEvent: IBellboyEvent) => Promise<any>;
