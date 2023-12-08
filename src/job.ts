@@ -30,12 +30,14 @@ export class Job implements IJob {
         let readStream: Readable | AsyncGenerator;
         let errorMessage: string | undefined;
         this.stop = (message?: string) => {
-            this.stopped = true;
-            if (readStream && (readStream instanceof Readable)) {
-                readStream.emit('end');
-                readStream.destroy();
+            if (!this.stopped) {
+                this.stopped = true;
+                if (readStream && (readStream instanceof Readable)) {
+                    readStream.emit('end');
+                    readStream.destroy();
+                }
+                errorMessage = message;
             }
-            errorMessage = message;
         };
         await this.emit('startProcessing', this.processor, this.destinations);
         if (!this.stopped) {
