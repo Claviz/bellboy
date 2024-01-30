@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import mysql from 'mysql2/promise';
+import mysql from 'mysql2-stream-fix/promise';
 import { Transform } from 'stream';
 
 import {

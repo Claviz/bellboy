@@ -1,6 +1,6 @@
 import { IMySqlDestinationConfig, IMySqlDbConnection } from '../types';
 import { DatabaseDestination } from './base/database-destination';
-import mysql from 'mysql2/promise';
+import mysql from 'mysql2-stream-fix/promise';
 
 export class MySqlDestination extends DatabaseDestination {
 
