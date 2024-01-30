@@ -1,6 +1,6 @@
 import { Job, DynamicProcessor, MySqlDestination } from '../src';
 import * as utils from '../src/utils';
-import mysql from 'mysql2/promise';
+import mysql from 'mysql2-stream-fix/promise';
 
 let db: mysql.Pool;
 const connection = {
