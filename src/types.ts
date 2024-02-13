@@ -148,6 +148,7 @@ export interface IDelimitedHttpProcessorConfig extends IHttpProcessorConfig {
     delimiter?: string;
     hasHeader?: boolean;
     qualifier?: string;
+    encoding?: string;
 }
 
 export interface IDatabaseProcessorConfig extends IProcessorConfig {
@@ -163,6 +164,7 @@ export interface IDelimitedProcessorConfig extends IDirectoryProcessorConfig {
     delimiter?: string;
     hasHeader?: boolean;
     qualifier?: string;
+    encoding?: string;
 }
 
 export interface IMssqlProcessorConfig extends IDatabaseProcessorConfig {

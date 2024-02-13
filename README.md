@@ -350,6 +350,7 @@ For delimited data produces rows described [here](#delimited-produced-row).
   If `true`, first row will be processed as a header.
 - **qualifier** `string` `only for delimited`\
   Symbol placed around a field to signify that it is the same field.
+- **encoding** `string` `only for delimited`
 - **jsonPath** `RegExp | string`\
   Path to the array to be streamed. This option is described in detail inside [JsonProcessor](#json-processor) section.
 - **saxOptions** `object` `only for xml`\
@@ -480,6 +481,7 @@ Processes files with delimited data in the directory.
   If `true`, first row will be processed as a header.
 - **qualifier** `string` \
   Symbol placed around a field to signify that it is the same field.
+- **encoding** `string` `only for delimited`
 
 #### Produced row <div id='delimited-produced-row'/>
 

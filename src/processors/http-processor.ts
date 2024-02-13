@@ -3,6 +3,7 @@ import { parse } from 'csv-parse';
 import { pick } from 'stream-json/filters/Pick';
 import { parser } from 'stream-json/Parser';
 import { streamValues } from 'stream-json/streamers/StreamValues';
+import iconv from 'iconv-lite';
 
 import { AuthorizationRequest, IDelimitedHttpProcessorConfig, IJsonHttpProcessorConfig, IXmlHttpProcessorConfig, processStream } from '../types';
 import { applyHttpAuthorization, getDelimitedGenerator, getValueFromJSONChunk, removeCircularReferencesFromChunk } from '../utils';
@@ -22,6 +23,7 @@ export class HttpProcessor extends Processor {
     protected qualifier?: string;
     protected authorizationRequest?: AuthorizationRequest;
     protected saxOptions?: any;
+    protected encoding?: string;
 
     constructor(config: IJsonHttpProcessorConfig | IDelimitedHttpProcessorConfig | IXmlHttpProcessorConfig) {
         super(config);
@@ -38,6 +40,7 @@ export class HttpProcessor extends Processor {
             this.hasHeader = !!config.hasHeader;
             this.delimiter = config.delimiter;
             this.qualifier = config.qualifier;
+            this.encoding = config.encoding;
         } else if (config.dataFormat === 'json' && config.jsonPath) {
             if (config.jsonPath instanceof RegExp) {
                 this.jsonPath = config.jsonPath;
@@ -54,14 +57,16 @@ export class HttpProcessor extends Processor {
     protected async processHttpData(processStream: processStream, options: AxiosRequestConfig) {
         if (this.dataFormat === 'delimited') {
             const requestStream = await axios({ ...options, responseType: 'stream' });
+            const decodedStream = this.encoding ? requestStream.data.pipe(iconv.decodeStream(this.encoding)) : requestStream.data;
             const parser = parse({
                 quote: this.qualifier,
                 delimiter: this.delimiter,
                 record_delimiter: this.rowSeparator,
                 raw: true,
                 relax_quotes: true,
+                relax_column_count: true,
             });
-            const delimitedStream = requestStream.data.pipe(parser);
+            const delimitedStream = decodedStream.pipe(parser);
             const generator = getDelimitedGenerator({
                 readStream: delimitedStream,
                 hasHeader: this.hasHeader,

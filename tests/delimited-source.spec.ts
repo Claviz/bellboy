@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import iconv from 'iconv-lite';
 
 import { DelimitedProcessor, Job } from '../src';
 import { CustomDestination } from './helpers';
@@ -129,5 +130,41 @@ it('reads data from file with qualifier', async () => {
     expect(destination.getData()).toEqual([
         { header: [], arr: ['Bob, the "HaCk3r"', 'Riga'], obj: undefined, row: '"Bob, the ""HaCk3r""",Riga\n' },
         { header: [], arr: ['Alice', '"Wonderland", Apt. 22'], obj: undefined, row: 'Alice,"""Wonderland"", Apt. 22"\n' },
+    ]);
+});
+
+it('reads data from file with windows-1257 encoding', async () => {
+    const sampleText = 'ĀāČč';
+    const encodedBuffer = iconv.encode(sampleText, 'windows-1257');
+    await fs.writeFile(filePath, encodedBuffer);
+    const destination = new CustomDestination();
+    const processor = new DelimitedProcessor({
+        path: './',
+        files: [filePath],
+        rowSeparator: '\n', 
+        encoding: 'windows-1257', 
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: [], arr: [sampleText], obj: undefined, row: `${sampleText}` },
+    ]);
+});
+
+it('produces incorrect output without specified encoding for windows-1257 encoded file', async () => {
+    const sampleText = 'ĀāČč'; 
+    const encodedBuffer = iconv.encode(sampleText, 'windows-1257');
+    await fs.writeFile(filePath, encodedBuffer);
+    const destination = new CustomDestination();
+    const processor = new DelimitedProcessor({
+        path: './',
+        files: [filePath],
+        rowSeparator: '\n',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    const processedData = destination.getData();
+    expect(processedData).not.toEqual([
+        { header: [], arr: [sampleText], obj: undefined, row: `${sampleText}` },
     ]);
 });

@@ -1,6 +1,7 @@
 import { AxiosRequestConfig } from 'axios';
 import { Job, HttpProcessor } from '../src';
 import { CustomDestination, CustomTimeoutDestination } from './helpers';
+const iconv = require('iconv-lite');
 
 const express = require('express');
 
@@ -91,6 +92,12 @@ app.get('/xml', function (req: any, res: any) {
             </sample>
         </six>
     `);
+});
+app.get('/windows-1257-encoded', function (req: any, res: any) {
+    res.setHeader('Content-Type', 'text/plain; charset=windows-1257');
+    const responseText = 'ĀāČč';
+    const encodedBuffer = iconv.encode(responseText, 'windows-1257');
+    res.send(encodedBuffer);
 });
 const server = app.listen(3000);
 
@@ -408,5 +415,25 @@ it('gets XML data from HTTP', async () => {
     expect(destination.getData()).toEqual([
         'abc',
         'def',
+    ]);
+});
+
+it('handles windows-1257 encoded data from HTTP', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n', 
+        connection: {
+            method: 'GET',
+            url: 'http://localhost:3000/windows-1257-encoded',
+        },
+        encoding: 'windows-1257', 
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([
+        { header: [], arr: ['ĀāČč'], obj: undefined, row: 'ĀāČč' },
     ]);
 });
