@@ -99,9 +99,15 @@ app.get('/windows-1257-encoded', function (req: any, res: any) {
     const encodedBuffer = iconv.encode(responseText, 'windows-1257');
     res.send(encodedBuffer);
 });
-const server = app.listen(3000);
+
+let server: any;;
+let url: string;
 
 beforeAll(async () => {
+    server = app.listen(0);
+    const address = server.address();
+    const port = (typeof address === 'string') ? address : address?.port;
+    url = `http://localhost:${port}`;
 });
 
 beforeEach(async () => {
@@ -121,7 +127,7 @@ it('gets big JSON data from HTTP', async () => {
         jsonPath: /arr.(\d+)/,
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/big-json`,
+            url: `${url}/big-json`,
         },
     });
     const job = new Job(processor, [destination]);
@@ -137,7 +143,7 @@ it('gets JSON data from HTTP', async () => {
         dataFormat: 'json',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/json`,
+            url: `${url}/json`,
         },
         jsonPath: /(\d+)/,
     });
@@ -157,7 +163,7 @@ it('gets delimited data from HTTP', async () => {
         rowSeparator: ';',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/delimited`,
+            url: `${url}/delimited`,
         },
     });
     const job = new Job(processor, [destination]);
@@ -179,7 +185,7 @@ it('gets delimited data with qualifier from HTTP', async () => {
         qualifier: '"',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/delimited-qualifier`,
+            url: `${url}/delimited-qualifier`,
         },
     });
     const job = new Job(processor, [destination]);
@@ -202,7 +208,7 @@ it('gets delimited data with qualifier, delimiter and header', async () => {
         hasHeader: true,
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/delimited-qualifier-delimiter-header`,
+            url: `${url}/delimited-qualifier-delimiter-header`,
         },
     });
     const job = new Job(processor, [destination]);
@@ -223,7 +229,7 @@ it('gets delimited data with header and without delimiter from HTTP', async () =
         hasHeader: true,
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/delimited-with-header-without-delimiter`,
+            url: `${url}/delimited-with-header-without-delimiter`,
         },
     });
     const job = new Job(processor, [destination]);
@@ -237,7 +243,7 @@ it('gets delimited data with header and without delimiter from HTTP', async () =
 it('gets paginated JSON data from HTTP', async () => {
     const connection: AxiosRequestConfig = {
         method: `GET`,
-        url: `http://localhost:3000/paginated-json`,
+        url: `${url}/paginated-json`,
     };
     const destination = new CustomDestination({
         batchSize: 1,
@@ -253,7 +259,7 @@ it('gets paginated JSON data from HTTP', async () => {
             if (currentPage < pageCount) {
                 return {
                     ...connection,
-                    url: `http://localhost:3000/paginated-json-${currentPage}`,
+                    url: `${url}/paginated-json-${currentPage}`,
                 };
             }
             return null;
@@ -275,7 +281,7 @@ it('respects rowLimit', async () => {
         jsonPath: /arr.(\d+)/,
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/big-json`,
+            url: `${url}/big-json`,
         },
         rowLimit: 3,
     });
@@ -324,13 +330,13 @@ it('applies authorization to header', async () => {
         dataFormat: 'json',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/secured-by-header`,
+            url: `${url}/secured-by-header`,
         },
         jsonPath: /(\d+)/,
         authorizationRequest: {
             connection: {
                 method: 'POST',
-                url: `http://localhost:3000/token`,
+                url: `${url}/token`,
             },
             applyTo: 'header',
             destinationField: 'Authorization',
@@ -353,13 +359,13 @@ it('applies authorization to query param', async () => {
         dataFormat: 'json',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/secured-by-param`,
+            url: `${url}/secured-by-param`,
         },
         jsonPath: /(\d+)/,
         authorizationRequest: {
             connection: {
                 method: 'POST',
-                url: `http://localhost:3000/token`,
+                url: `${url}/token`,
             },
             applyTo: 'query',
             destinationField: 'Authorization',
@@ -382,7 +388,7 @@ it('gets JSON data from HTTP by using jsonPath as string', async () => {
         dataFormat: 'json',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/json`,
+            url: `${url}/json`,
         },
         jsonPath: '(\\d+)',
     });
@@ -404,7 +410,7 @@ it('gets XML data from HTTP', async () => {
         dataFormat: 'xml',
         connection: {
             method: `GET`,
-            url: `http://localhost:3000/xml`,
+            url: `${url}/xml`,
         },
         saxOptions: {
             tag: ['A']
@@ -427,7 +433,7 @@ it('handles windows-1257 encoded data from HTTP', async () => {
         rowSeparator: '\n', 
         connection: {
             method: 'GET',
-            url: 'http://localhost:3000/windows-1257-encoded',
+            url: `${url}/windows-1257-encoded`,
         },
         encoding: 'windows-1257', 
     });

@@ -40,9 +40,14 @@ app.post('/text', bodyParser.text(), function (req: any, res: any) {
     res.send();
 });
 
-const server = app.listen(3000);
+let server: any;;
+let url: string;
 
 beforeAll(async () => {
+    server = app.listen(0);
+    const address = server.address();
+    const port = (typeof address === 'string') ? address : address?.port;
+    url = `http://localhost:${port}`;
 });
 
 beforeEach(async () => {
@@ -66,7 +71,7 @@ it('posts generated objects to http destination', async () => {
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            url: 'http://localhost:3000',
+            url,
         },
         batchSize: 2,
     });
@@ -94,7 +99,7 @@ it('posts transformed generated objects to http destination', async () => {
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            url: 'http://localhost:3000',
+            url,
         },
         batchSize: 2,
         batchTransformer: async (rows) => {
@@ -129,7 +134,7 @@ it('posts text data to http destination', async () => {
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            url: 'http://localhost:3000/text',
+            url: `${url}/text`,
             headers: {
                 'Content-Type': 'text/plain',
             },
@@ -157,12 +162,12 @@ it('posts generated objects to secured by header http destination', async () => 
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            url: `http://localhost:3000/secured-by-header`,
+            url: `${url}/secured-by-header`,
         },
         authorizationRequest: {
             connection: {
                 method: 'POST',
-                url: `http://localhost:3000/token`,
+                url: `${url}/token`,
             },
             applyTo: 'header',
             destinationField: 'Authorization',
@@ -194,12 +199,12 @@ it('posts generated objects to secured by query param http destination', async (
     const destination = new HttpDestination({
         request: {
             method: 'POST',
-            url: `http://localhost:3000/secured-by-param`,
+            url: `${url}/secured-by-param`,
         },
         authorizationRequest: {
             connection: {
                 method: 'POST',
-                url: `http://localhost:3000/token`,
+                url: `${url}/token`,
             },
             applyTo: 'query',
             destinationField: 'Authorization',
