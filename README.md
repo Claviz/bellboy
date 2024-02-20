@@ -121,6 +121,7 @@ const job = new bellboy.Job(
 
 Event listeners, which can be registered with `job.on` or `job.onAny` methods, allow you to listen to specific events in the job lifecycle and to interact with them.
 
+- When multiple listeners are registered for the same event, those added using `.on` will always be executed first, regardless of the order in which they were added compared to `.onAny`. This ensures that specific event listeners have priority over generic ones.
 - When multiple listeners are registered for a single event, those added by [reporters](#reporters) will be executed first, followed by the order of registration for the remaining listeners.
 - Job always waits for the code inside a listener to complete.
 - Any error thrown inside a listener will be ignored and warning message will be printed out.
