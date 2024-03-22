@@ -31,6 +31,15 @@ export class PostgresDestination extends DatabaseDestination {
             }
             dataToUpload.push(transformed);
         }
+        const columnKeys = Object.values(columnDict);
+        for (const item of dataToUpload) {
+            const itemDataKeys = Object.keys(item);
+            for (const key of columnKeys) {
+                if (!itemDataKeys.includes(key)) {
+                    item[key] = undefined;
+                }
+            }
+        }
         const columns = Object.keys(columnDict).map(x => ({ name: x, prop: columnDict[x] }));
         const cs = new pgp.helpers.ColumnSet(columns, { table: this.table });
         const db = await getDb(this.connection, 'postgres');

@@ -206,3 +206,59 @@ it('inserts generated data to postgres table with column name that does not adhe
     }]);
 
 });
+
+it('inserts generated data to postgres even if some columns are missing', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id integer PRIMARY KEY,
+        text text,
+        other_text text,
+        another_text text
+    )`);
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            const data = [
+                {
+                    id: 1,
+                    text: 'something',
+                },
+                {
+                    id: 2,
+                    other_text: 'other something',
+                },
+                {
+                    id: 3,
+                    another_text: 'another something',
+                }
+            ]
+            for (const item of data) {
+                yield item;
+            }
+        },
+    });
+    const destination = new PostgresDestination({
+        connection,
+        table: 'test',
+        batchSize: 1000,
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    const res = await db.query(`select * from test`);
+    expect(res).toEqual([{
+        id: 1,
+        text: 'something',
+        other_text: null,
+        another_text: null,
+    }, {
+        id: 2,
+        text: null,
+        other_text: 'other something',
+        another_text: null,
+    }, {
+        id: 3,
+        text: null,
+        other_text: null,
+        another_text: 'another something',
+    }]);
+
+});
