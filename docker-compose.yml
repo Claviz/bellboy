@@ -32,8 +32,6 @@ services:
 
   firebird:
     image: jacobalberty/firebird
-    ports:
-      - "3050:3050"
     environment:
       - EnableLegacyClientAuth=true
       - ISC_PASSWORD=password
