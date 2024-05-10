@@ -14,6 +14,7 @@ export { JsonProcessor } from './processors/json-processor';
 export { MqttProcessor } from './processors/mqtt-processor';
 export { TailProcessor } from './processors/tail-processor';
 export { DelimitedProcessor } from './processors/delimited-processor';
+export { FirebirdProcessor } from './processors/firebird-processor';
 
 export { Destination } from './destinations/base/destination';
 export { DatabaseDestination } from './destinations/base/database-destination';

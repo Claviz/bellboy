@@ -310,6 +310,7 @@ Each processor in `bellboy` is a class which has a single responsibility of proc
 - [PostgresProcessor](#postgres-processor) processes data received from a **PostgreSQL** SELECT.
 - [MySqlProcessor](#mysql-processor) processes data received from a **MySQL** SELECT.
 - [MssqlProcessor](#mssql-processor) processes data received from a **MSSQL** SELECT.
+- [FirebirdProcessor](#firebird-processor) processes data received from a **Firebird** SELECT.
 - [DynamicProcessor](#dynamic-processor) processes **dynamically generated** data.
 - [TailProcessor](#tail-processor) processes **new lines** added to the file.
 
@@ -544,6 +545,21 @@ Processes a MySQL `SELECT` query row by row.
   - **password**
   - **host**
   - **port**
+  - **database**
+
+### FirebirdProcessor <div id='firebird-processor'/>
+
+Processes a Firebird `SELECT` query row by row.
+
+#### Options
+
+- [Processor options](#processor-options)
+- **query** `string` `required`\
+  Query to execute.
+- **connection** `object` `required`
+  - **user**
+  - **password**
+  - **host**
   - **database**
 
 ### MssqlProcessor <div id='mssql-processor'/>

@@ -1,11 +1,13 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import mysql from 'mysql2-stream-fix/promise';
+import Firebird from 'node-firebird';
 import { Transform } from 'stream';
 
 import {
     AuthorizationRequest,
     DbTypes,
     IDbConnection,
+    IFirebirdDbConnection,
     IMssqlDbConnection,
     IMySqlDbConnection,
     IPostgresDbConnection,
@@ -47,6 +49,8 @@ export async function getDb(databaseConfig: IDbConnection, dbType: DbTypes) {
     switch (dbType) {
         case 'mssql':
             return await getMssqlDb(databaseConfig);
+        case 'firebird':
+            return await getFirebirdDb(databaseConfig);
         case 'mysql':
             return getMySqlDb(databaseConfig);
         case 'postgres':
@@ -79,6 +83,18 @@ function getPostgresDb(databaseConfig: IPostgresDbConnection) {
     const pgp = require('pg-promise')({ schema: databaseConfig.schema || 'public' });
     const db = pgp(databaseConfig);
     setCachedDbConnection(databaseConfig, db, pgp.end);
+    return db;
+}
+
+async function getFirebirdDb(databaseConfig: IFirebirdDbConnection): Promise<Firebird.Database> {
+    const Firebird = require('node-firebird');
+    const db = await new Promise<Firebird.Database>((resolve, reject) => {
+        Firebird.attach(databaseConfig, (err: any, db: Firebird.Database) => {
+            if (err) reject(err);
+            else resolve(db);
+        });
+    });
+    setCachedDbConnection(databaseConfig, db, db.detach.bind(db));
     return db;
 }
 

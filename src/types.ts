@@ -18,6 +18,14 @@ export interface IPostgresDbConnection {
     schema?: string;
 }
 
+export interface IFirebirdDbConnection {
+    port?: number;
+    user?: string;
+    password?: string;
+    host?: string;
+    database?: string;
+}
+
 export interface ITdsDriver {
     ConnectionPool: any;
     Transaction: any;
@@ -175,6 +183,10 @@ export interface IPostgresProcessorConfig extends IDatabaseProcessorConfig {
     connection: IPostgresDbConnection;
 }
 
+export interface IFirebirdProcessorConfig extends IDatabaseProcessorConfig {
+    connection: IFirebirdDbConnection;
+}
+
 export interface IMySqlProcessorConfig extends IDatabaseProcessorConfig {
     connection: IMySqlDbConnection;
 }
@@ -198,7 +210,7 @@ export interface IBellboyEvent {
     jobStopped: boolean;
 }
 
-export type DbTypes = 'postgres' | 'mssql' | 'mysql';
+export type DbTypes = 'postgres' | 'mssql' | 'mysql' | 'firebird';
 
 export type event = (...args: any) => Promise<any>;
 export type extendedEvent = (bellboyEvent: IBellboyEvent) => Promise<any>;

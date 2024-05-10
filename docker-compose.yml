@@ -7,7 +7,7 @@ services:
       - postgres
       - mssql
       - mysql
-    command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- ./wait-for-it.sh mysql:3306 -- npm test
+    command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- ./wait-for-it.sh mysql:3306 -- ./wait-for-it.sh firebird:3050 -- npm test
     environment:
       NODE_ENV: development
     volumes:
@@ -29,3 +29,14 @@ services:
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: Passw0rd*
+
+  firebird:
+    image: jacobalberty/firebird
+    ports:
+      - "3050:3050"
+    environment:
+      - EnableLegacyClientAuth=true
+      - ISC_PASSWORD=password
+      - FIREBIRD_DATABASE=db
+      - FIREBIRD_USER=firebird
+      - FIREBIRD_PASSWORD=password
