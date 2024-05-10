@@ -7,6 +7,7 @@ services:
       - postgres
       - mssql
       - mysql
+      - firebird
     command: ./wait-for-it.sh postgres:5432 -- ./wait-for-it.sh mssql:1433 -- ./wait-for-it.sh mysql:3306 -- ./wait-for-it.sh firebird:3050 -- npm test
     environment:
       NODE_ENV: development
