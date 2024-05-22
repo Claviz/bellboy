@@ -1,6 +1,6 @@
 {
   "name": "bellboy",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",
@@ -53,6 +53,7 @@
   "dependencies": {
     "async-mqtt": "^2.2.1",
     "axios": "^0.21.1",
+    "claviz-node-firebird": "^2.0.1",
     "csv": "^6.0.5",
     "iconv-lite": "^0.6.3",
     "mssql": "8.1.0",

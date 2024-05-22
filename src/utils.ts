@@ -1,6 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import mysql from 'mysql2-stream-fix/promise';
-import Firebird from 'node-firebird';
 import { Transform } from 'stream';
 
 import {
@@ -86,10 +85,10 @@ function getPostgresDb(databaseConfig: IPostgresDbConnection) {
     return db;
 }
 
-async function getFirebirdDb(databaseConfig: IFirebirdDbConnection): Promise<Firebird.Database> {
-    const Firebird = require('node-firebird');
-    const db = await new Promise<Firebird.Database>((resolve, reject) => {
-        Firebird.attach(databaseConfig, (err: any, db: Firebird.Database) => {
+async function getFirebirdDb(databaseConfig: IFirebirdDbConnection): Promise<any> {
+    const Firebird: any = databaseConfig.useClavizNodeFirebird ? require('claviz-node-firebird') : require('node-firebird');
+    const db: any = await new Promise((resolve, reject) => {
+        Firebird.attach(databaseConfig, (err: any, db: any) => {
             if (err) reject(err);
             else resolve(db);
         });

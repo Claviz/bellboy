@@ -24,6 +24,8 @@ export interface IFirebirdDbConnection {
     password?: string;
     host?: string;
     database?: string;
+    encoding?: string;
+    useClavizNodeFirebird?: boolean;
 }
 
 export interface ITdsDriver {

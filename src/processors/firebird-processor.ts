@@ -1,4 +1,3 @@
-import Firebird from 'node-firebird';
 import { Readable } from 'stream';
 
 import { IFirebirdDbConnection, IFirebirdProcessorConfig, processStream } from '../types';
@@ -13,8 +12,9 @@ export class FirebirdProcessor extends DatabaseProcessor {
     }
 
     async process(processStream: processStream) {
-        const db = await new Promise<Firebird.Database>((resolve, reject) => {
-            Firebird.attach(this.connection, (err, db) => {
+        const Firebird: any = this.connection.useClavizNodeFirebird ? require('claviz-node-firebird') : require('node-firebird');
+        const db: any = await new Promise((resolve, reject) => {
+            Firebird.attach(this.connection, (err: any, db: any) => {
                 if (err) reject(err);
                 else resolve(db);
             });
@@ -23,9 +23,9 @@ export class FirebirdProcessor extends DatabaseProcessor {
             objectMode: true,
             read() { }
         });
-        db.sequentially(this.query, [], (row) => {
+        db.sequentially(this.query, [], (row: any) => {
             if (!stream.push(row)) { }
-        }, (err) => {
+        }, (err: any) => {
             if (err) {
                 stream.emit('error', err);
             }
