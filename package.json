@@ -1,6 +1,6 @@
 {
   "name": "bellboy",
-  "version": "8.4.0",
+  "version": "8.4.1",
   "description": "Highly performant JavaScript data stream ETL engine.",
   "main": "lib/index",
   "types": "lib/index",
@@ -56,7 +56,7 @@
     "claviz-node-firebird": "^2.0.1",
     "csv": "^6.0.5",
     "iconv-lite": "^0.6.3",
-    "mssql": "8.1.0",
+    "mssql": "10.0.2",
     "mysql2-stream-fix": "^3.9.1",
     "node-firebird": "1.1.8",
     "pg": "8.0.3",
@@ -67,6 +67,6 @@
     "split2": "^3.1.1",
     "stream-json": "^1.7.1",
     "tail": "^2.0.2",
-    "xlstream": "^2.5.3"
+    "xlstream": "2.5.4"
   }
 }
