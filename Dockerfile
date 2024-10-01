@@ -1,4 +1,4 @@
-FROM node:14.16.1-alpine3.12
+FROM node:18-alpine
 
 RUN apk --no-cache add curl unixodbc-dev bash coreutils
 RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.7.2.1-1_amd64.apk
