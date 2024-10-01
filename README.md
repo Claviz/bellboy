@@ -817,7 +817,7 @@ class CustomReporter extends bellboy.Reporter {
 
 ## Testing
 
-Tests can be run by using `docker-compose up --abort-on-container-exit --exit-code-from test --build test` command.
+Tests can be run by using `docker compose up --abort-on-container-exit --exit-code-from test --build test` command.
 
 [mssql-url]: https://github.com/tediousjs/node-mssql
 [tedious-url]: https://www.npmjs.com/package/tedious

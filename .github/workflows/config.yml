@@ -23,7 +23,7 @@ jobs:
         chmod +x wait-for-it.sh
 
     - name: Run Docker Compose
-      run: docker-compose up --abort-on-container-exit --exit-code-from test --build test
+      run: docker compose up --abort-on-container-exit --exit-code-from test --build test
 
     - name: Upload coverage to Codecov
       if: ${{ success() }}
