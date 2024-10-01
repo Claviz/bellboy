@@ -1,4 +1,4 @@
-import { performance } from 'perf_hooks';
+import { performance } from 'node:perf_hooks';
 import shortid from 'shortid';
 
 import { DynamicProcessor, Job } from '../src';
@@ -130,8 +130,15 @@ it(`destination should load if destination load isn't disabled`, async () => {
 
 it(`reporter should report`, async () => {
     let time = 0;
-    (performance as any).timeOrigin = 0;
-    performance.now = () => time++;
+    Object.defineProperty(performance, 'timeOrigin', {
+        get: () => 0, 
+        configurable: true, 
+    });
+    Object.defineProperty(performance, 'now', {
+        value: () => time++, 
+        writable: false, 
+        configurable: true, 
+    });
     shortid.generate = () => `generated-id-${time}`;
     const destination = new CustomDestination();
     const processor = new DynamicProcessor({

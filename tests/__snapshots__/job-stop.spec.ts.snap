@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should stop correctly on loadingBatchError event with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -22,7 +22,7 @@ Array [
 `;
 
 exports[`should stop correctly on loadingBatchError event with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -43,7 +43,7 @@ Array [
 `;
 
 exports[`should stop correctly on processingError event with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "processingError",
   "endProcessing",
@@ -51,7 +51,7 @@ Array [
 `;
 
 exports[`should stop correctly on processingError event with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "processingError",
   "endProcessing",
@@ -59,7 +59,7 @@ Array [
 `;
 
 exports[`should stop correctly on rowGenerationError event with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -71,7 +71,7 @@ Array [
 `;
 
 exports[`should stop correctly on rowGenerationError event with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -83,7 +83,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endLoadingBatch with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -104,7 +104,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endLoadingBatch with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -125,7 +125,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endProcessing with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -155,7 +155,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endProcessing with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -185,7 +185,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endProcessingRow with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -197,7 +197,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endProcessingRow with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -209,7 +209,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endProcessingStream with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -239,7 +239,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endProcessingStream with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -269,7 +269,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endTransformingBatch with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -287,7 +287,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events endTransformingBatch with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -305,7 +305,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events loadedBatch with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -326,7 +326,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events loadedBatch with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -347,7 +347,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events loadingBatch with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -367,7 +367,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events loadingBatch with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -387,7 +387,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events rowGenerated with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -399,7 +399,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events rowGenerated with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -411,21 +411,21 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events startProcessing with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "endProcessing",
 ]
 `;
 
 exports[`should stop correctly on successfull events startProcessing with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "endProcessing",
 ]
 `;
 
 exports[`should stop correctly on successfull events startProcessingRow with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -436,7 +436,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events startProcessingRow with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -447,7 +447,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events startProcessingStream with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "endProcessingStream",
@@ -456,7 +456,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events startProcessingStream with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "endProcessingStream",
@@ -465,7 +465,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events transformedBatch with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -483,7 +483,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events transformedBatch with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -501,7 +501,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events transformingBatch with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -518,7 +518,7 @@ Array [
 `;
 
 exports[`should stop correctly on successfull events transformingBatch with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -535,7 +535,7 @@ Array [
 `;
 
 exports[`should stop correctly on transformingBatchError event with error - false 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",
@@ -553,7 +553,7 @@ Array [
 `;
 
 exports[`should stop correctly on transformingBatchError event with error - true 1`] = `
-Array [
+[
   "startProcessing",
   "startProcessingStream",
   "startProcessingRow",

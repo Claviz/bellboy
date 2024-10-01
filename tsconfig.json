@@ -18,7 +18,8 @@
     "importHelpers": true, /* Reduce duplication of helper functions */
     "incremental": true, /* Enable incremental compilation */
     "moduleResolution": "node" /* Use node module resolution */,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   },
   "include": [
     "./src/**/*"
