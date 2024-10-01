@@ -1,21 +1,19 @@
-FROM node:18-alpine
+FROM node:18-alpine3.14
 
 RUN apk --no-cache add curl unixodbc-dev bash coreutils
-RUN curl -O https://download.microsoft.com/download/e/1/f/e1fd45c0-94c7-4c8f-b095-5577c420f7d7/msodbcsql18_18.2.2.1-1_amd64.apk
-RUN curl -O https://download.microsoft.com/download/e/1/f/e1fd45c0-94c7-4c8f-b095-5577c420f7d7/mssql-tools18_18.2.1.1-1_amd64.apk
+RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/msodbcsql17_17.7.2.1-1_amd64.apk
+RUN curl -O https://download.microsoft.com/download/e/4/e/e4e67866-dffd-428c-aac7-8d28ddafb39b/mssql-tools_17.7.1.1-1_amd64.apk
 
-RUN apk --no-cache --allow-untrusted add \
-    g++ \
-    make \
-    python3 \
-    msodbcsql18_18.2.2.1-1_amd64.apk \
-    mssql-tools18_18.2.1.1-1_amd64.apk
+RUN apk --no-cache --allow-untrusted add g++ make python3 msodbcsql17_17.7.2.1-1_amd64.apk mssql-tools_17.7.1.1-1_amd64.apk
+RUN ln -s /opt/microsoft/msodbcsql17/lib64/libmsodbcsql-17.7.so.2.1 /usr/lib/libmsodbcsql-17.so
 
 WORKDIR /app
 
 COPY package.json ./
 COPY package-lock.json ./
+
 RUN npm install
+# install optional native TDS driver
 RUN npm install msnodesqlv8
 
 COPY . .
