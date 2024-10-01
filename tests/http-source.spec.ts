@@ -6,6 +6,13 @@ const iconv = require('iconv-lite');
 const express = require('express');
 
 const app = express();
+app.post('/token-nested', function (req: any, res: any) {
+    res.send({
+        nested: {
+            auth_token: 'secret',
+        }
+    });
+});
 app.post('/token', function (req: any, res: any) {
     res.send({
         auth_token: 'secret',
@@ -351,6 +358,35 @@ it('applies authorization to header', async () => {
     }]);
 });
 
+it('applies authorization to header from nested sourceField', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `${url}/secured-by-header`,
+        },
+        jsonPath: /(\d+)/,
+        authorizationRequest: {
+            connection: {
+                method: 'POST',
+                url: `${url}/token-nested`,
+            },
+            applyTo: 'header',
+            destinationField: 'Authorization',
+            sourceField: 'nested.auth_token',
+            prefix: 'Bearer ',
+        }
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
+        text: 'hello!',
+    }]);
+});
+
 it('applies authorization to query param', async () => {
     const destination = new CustomDestination({
         batchSize: 1,
@@ -430,12 +466,12 @@ it('handles windows-1257 encoded data from HTTP', async () => {
     });
     const processor = new HttpProcessor({
         dataFormat: 'delimited',
-        rowSeparator: '\n', 
+        rowSeparator: '\n',
         connection: {
             method: 'GET',
             url: `${url}/windows-1257-encoded`,
         },
-        encoding: 'windows-1257', 
+        encoding: 'windows-1257',
     });
     const job = new Job(processor, [destination]);
     await job.run();

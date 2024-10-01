@@ -171,8 +171,8 @@ export function getDelimitedGenerator({
 export async function applyHttpAuthorization(connection: AxiosRequestConfig, authorizationRequest?: AuthorizationRequest) {
     if (authorizationRequest) {
         const authorizationResponse = await axios(authorizationRequest.connection);
-        const authorizationToken = authorizationResponse.data[authorizationRequest.sourceField];
-
+        let sourceField = authorizationRequest.sourceField.split('.');
+        const authorizationToken = sourceField.reduce((acc, key) => acc[key], authorizationResponse.data);
         const applyTo = authorizationRequest.applyTo === 'header' ? 'headers' : 'params';
         connection[applyTo] = {
             ...connection[applyTo],
