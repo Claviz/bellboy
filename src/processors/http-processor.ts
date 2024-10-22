@@ -55,8 +55,29 @@ export class HttpProcessor extends Processor {
     }
 
     protected async processHttpData(processStream: processStream, options: AxiosRequestConfig) {
+        const errorHandler = async (err: any) => {
+            const stream = err.response?.data;
+            if (stream) {
+                let streamString = '';
+                await new Promise((resolve, reject) => {
+                    stream.setEncoding('utf8');
+                    stream.on('data', (utf8Chunk: any) => {
+                        streamString += utf8Chunk;
+                    });
+                    stream.on('end', () => {
+                        err.message = `${err.message}. Response: ${streamString}`;
+                        reject(err);
+                    });
+                    stream.on('error', () => {
+                        reject(err);
+                    });
+                });
+            }
+            throw err;
+        };
+
         if (this.dataFormat === 'delimited') {
-            const requestStream = await axios({ ...options, responseType: 'stream' });
+            const requestStream = await axios({ ...options, responseType: 'stream' }).catch(errorHandler);
             const decodedStream = this.encoding ? requestStream.data.pipe(iconv.decodeStream(this.encoding)) : requestStream.data;
             const parser = parse({
                 quote: this.qualifier,
@@ -73,7 +94,7 @@ export class HttpProcessor extends Processor {
             });
             await processStream(generator());
         } else if (this.dataFormat === 'json') {
-            const requestStream = await axios({ ...options, responseType: 'stream' });
+            const requestStream = await axios({ ...options, responseType: 'stream', }).catch(errorHandler);
             const jsonStream = requestStream.data
                 .pipe(parser())
                 .pipe(pick({ filter: this.jsonPath || '' }))
@@ -81,7 +102,7 @@ export class HttpProcessor extends Processor {
                 .pipe(getValueFromJSONChunk());
             await processStream(jsonStream);
         } else if (this.dataFormat === 'xml') {
-            const requestStream = await axios({ ...options, responseType: 'stream' });
+            const requestStream = await axios({ ...options, responseType: 'stream' }).catch(errorHandler);
             const xmlStream = requestStream.data
                 .pipe(saxStream(this.saxOptions))
                 .pipe(removeCircularReferencesFromChunk());
