@@ -714,6 +714,8 @@ Inserts data to MySQL.
   - **password**
   - **host**
   - **database**
+- **useSourceColumns** `boolean` \
+      If `true`, only the columns in the source data will be used for data load. Default is `false`, using all destination table columns.
 
 ### MssqlDestination <div id='mssql-destination'/>
 

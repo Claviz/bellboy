@@ -125,6 +125,7 @@ export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig {
 
 export interface IMySqlDestinationConfig extends IDatabaseDestinationConfig {
     connection: IMssqlDbConnection;
+    useSourceColumns?: boolean;
 }
 
 export interface IHttpDestinationConfig extends IDestinationConfig {

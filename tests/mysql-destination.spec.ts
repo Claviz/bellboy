@@ -103,3 +103,38 @@ it('inserts generated data to mysql table with column name that does not adhere 
     }]);
 
 });
+
+it('inserts data for columns avaiable in source data', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id INTEGER PRIMARY KEY,
+        text TEXT,
+        lucky_number INTEGER NOT NULL DEFAULT 777
+    )`);
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            yield {
+                id: 1,
+                text: 'something',
+            }
+        },
+    });
+    const destination = new MySqlDestination({
+        connection,
+        table: 'test',
+        batchSize: 1,
+        useSourceColumns: true,
+    });
+    const job = new Job(processor, [destination]);
+    job.onAny(async (...args) => {
+        console.log(args);
+    });
+    await job.run();
+    const [res] = await db.query(`select * from test`);
+    expect(res).toEqual([{
+        id: 1,
+        text: 'something',
+        lucky_number: 777,
+    }]);
+
+});
