@@ -126,9 +126,6 @@ it('inserts data for columns avaiable in source data', async () => {
         useSourceColumns: true,
     });
     const job = new Job(processor, [destination]);
-    job.onAny(async (...args) => {
-        console.log(args);
-    });
     await job.run();
     const [res] = await db.query(`select * from test`);
     expect(res).toEqual([{

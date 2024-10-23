@@ -30,7 +30,7 @@ export class MySqlDestination extends DatabaseDestination {
         const insertQuery = `INSERT INTO ${this.table} (${columnNames.join(', ')}) VALUES ?`;
         await dbConnection.beginTransaction();
         try {
-            const insertData = data.map(row => columnNames.map(column => row[column.replace(/`/g, '')] || null));
+            const insertData = data.map(row => columnNames.map(column => row[column.replace(/`/g, '')]));
             await dbConnection.query(insertQuery, [insertData]);
             await dbConnection.commit();
         } catch (err) {
