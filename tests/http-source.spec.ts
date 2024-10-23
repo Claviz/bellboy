@@ -483,7 +483,7 @@ it('handles windows-1257 encoded data from HTTP', async () => {
     ]);
 });
 
-it.only('HTTP error response should be present in error message', async () => {
+it('HTTP error response should be present in error message', async () => {
     const destination = new CustomDestination({
         batchSize: 1,
     });
