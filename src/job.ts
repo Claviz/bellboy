@@ -110,7 +110,7 @@ export class Job implements IJob {
     }
 
     on(eventName: 'endProcessing', event?: (() => Promise<any>), extendedEvent?: extendedEvent): any
-    on(eventName: 'loadedBatch', event?: ((destinationIndex: number, data: any[]) => Promise<any>), extendedEvent?: extendedEvent): any
+    on(eventName: 'loadedBatch', event?: ((destinationIndex: number, data: any[], result?: any) => Promise<any>), extendedEvent?: extendedEvent): any
     on(eventName: 'processingError', event?: ((error: any) => Promise<any>), extendedEvent?: extendedEvent): any
     on(eventName: 'loadingBatchError', event?: ((destinationIndex: number, data: any[], error: any) => Promise<any>), extendedEvent?: extendedEvent): any
     on(eventName: 'loadingBatch', event?: ((destinationIndex: number, data: any[]) => Promise<any>), extendedEvent?: extendedEvent): any
@@ -170,8 +170,8 @@ export class Job implements IJob {
                 await this.emit('loadingBatch', destinationIndex, data);
                 if (!this.stopped) {
                     try {
-                        await destination.loadBatch(data);
-                        await this.emit('loadedBatch', destinationIndex, data);
+                        const result = await destination.loadBatch(data);
+                        result ? await this.emit('loadedBatch', destinationIndex, data, result) : await this.emit('loadedBatch', destinationIndex, data);
                     } catch (err) {
                         await this.emit('loadingBatchError', destinationIndex, data, err);
                     }

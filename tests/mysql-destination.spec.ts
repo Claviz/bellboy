@@ -135,3 +135,33 @@ it('inserts data for columns avaiable in source data', async () => {
     }]);
 
 });
+
+it('loadedBatch event should include postLoadQuery result', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        text text
+    )`);
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            for (let i = 0; i < 10; i++) {
+                yield {
+                    text: `something-${i}`,
+                }
+            }
+        },
+    });
+    const destination = new MySqlDestination({
+        connection,
+        table: 'test',
+        batchSize: 1,
+        postLoadQuery: `SELECT LAST_INSERT_ID()`,
+    });
+    const job = new Job(processor, [destination]);
+    let lastInsertId;
+    job.on('loadedBatch', async (destinationIndex, data, result) => {
+        lastInsertId = result[0][0]['LAST_INSERT_ID()'];
+    });
+    await job.run();
+    expect(lastInsertId).toEqual(10);
+});

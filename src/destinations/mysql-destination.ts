@@ -6,14 +6,16 @@ export class MySqlDestination extends DatabaseDestination {
 
     protected connection: IMySqlDbConnection;
     protected useSourceColumns: boolean;
+    protected postLoadQuery?: string;
 
     constructor(config: IMySqlDestinationConfig) {
         super(config);
         this.connection = config.connection;
         this.useSourceColumns = config.useSourceColumns || false;
+        this.postLoadQuery = config.postLoadQuery;
     }
 
-    async loadBatch(data: any[]) {
+    async loadBatch(data: any[]): Promise<any> {
         const pool = mysql.createPool(this.connection);
         const dbConnection = await pool.getConnection();
         let columnNames: string[];
@@ -37,7 +39,17 @@ export class MySqlDestination extends DatabaseDestination {
             await dbConnection.rollback();
             throw err;
         } finally {
-            await pool.end();
+            let result;
+            try {
+                if (this.postLoadQuery) {
+                    result = await dbConnection.query(this.postLoadQuery);
+                }
+            } catch (postLoadError) {
+                throw postLoadError;
+            } finally {
+                await pool.end();
+            }
+            return result;
         }
     }
 }

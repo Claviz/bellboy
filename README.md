@@ -207,9 +207,12 @@ job.on("loadingBatch", async (destinationIndex: number, data: any[]) => {
 ```
 
 ```ts
-job.on("loadedBatch", async (destinationIndex: number, data: any[]) => {
-  // Batch has been loaded into destination.
-});
+job.on(
+  "loadedBatch",
+  async (destinationIndex: number, data: any[], result: any) => {
+    // Batch has been loaded into destination.
+  }
+);
 ```
 
 ```ts
@@ -715,7 +718,9 @@ Inserts data to MySQL.
   - **host**
   - **database**
 - **useSourceColumns** `boolean` \
-      If `true`, only the columns in the source data will be used for data load. Default is `false`, using all destination table columns.
+   If `true`, only the columns in the source data will be used for data load. Default is `false`, using all destination table columns.
+- **postLoadQuery** `string` \
+   A query which will be executed after the data load and before connection is closed. Result will be available in the `result` object of the `loadedBatch` event.
 
 ### MssqlDestination <div id='mssql-destination'/>
 

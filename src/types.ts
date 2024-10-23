@@ -95,7 +95,7 @@ export interface IProcessor {
 }
 
 export interface IDestination {
-    loadBatch: (data: any[]) => Promise<void>;
+    loadBatch: (data: any[]) => Promise<any>;
     batchSize: number;
     recordGenerator: ((row: any) => AsyncIterableIterator<{}>) | undefined;
     batchTransformer: ((rows: any[]) => Promise<any[]>) | undefined;
@@ -126,6 +126,7 @@ export interface IMssqlDestinationConfig extends IDatabaseDestinationConfig {
 export interface IMySqlDestinationConfig extends IDatabaseDestinationConfig {
     connection: IMssqlDbConnection;
     useSourceColumns?: boolean;
+    postLoadQuery?: string;
 }
 
 export interface IHttpDestinationConfig extends IDestinationConfig {
