@@ -44,6 +44,9 @@ app.get('/json', function (req: any, res: any) {
 app.get('/delimited', function (req: any, res: any) {
     res.send('{"text": "hello"};{"text": "world"}');
 });
+app.get('/error', function (req: any, res: any) {
+    res.status(500).send({ success: false });
+});
 app.get('/delimited-qualifier', function (req: any, res: any) {
     res.send('"Bob, the ""HaCk3r""",Riga\nAlice,"""Wonderland"", Apt. 22"\n');
 });
@@ -478,4 +481,27 @@ it('handles windows-1257 encoded data from HTTP', async () => {
     expect(destination.getData()).toEqual([
         { header: [], arr: ['ĀāČč'], obj: undefined, row: 'ĀāČč' },
     ]);
+});
+
+it.only('HTTP error response should be present in error message', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `${url}/error`,
+        },
+        jsonPath: /(\d+)/,
+    });
+    const job = new Job(processor, [destination]);
+    let error;
+    job.onAny(async (x, a) => {
+        if (x === 'processingError') {
+            error = a.message;
+        }
+    });
+    await job.run();
+    expect(error).toEqual('Request failed with status code 500. Response: {"success":false}');
 });
