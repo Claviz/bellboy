@@ -31,25 +31,24 @@ export class MySqlDestination extends DatabaseDestination {
         }
         const insertQuery = `INSERT INTO ${this.table} (${columnNames.join(', ')}) VALUES ?`;
         await dbConnection.beginTransaction();
+        let result;
         try {
             const insertData = data.map(row => columnNames.map(column => row[column.replace(/`/g, '')]));
             await dbConnection.query(insertQuery, [insertData]);
             await dbConnection.commit();
+            if (this.postLoadQuery) {
+                result = await dbConnection.query(this.postLoadQuery);
+            }
         } catch (err) {
             await dbConnection.rollback();
             throw err;
         } finally {
-            let result;
             try {
-                if (this.postLoadQuery) {
-                    result = await dbConnection.query(this.postLoadQuery);
-                }
-            } catch (postLoadError) {
-                throw postLoadError;
-            } finally {
                 await pool.end();
+            } catch (poolCloseError) {
+                throw poolCloseError;
             }
-            return result;
         }
+        return result;
     }
 }

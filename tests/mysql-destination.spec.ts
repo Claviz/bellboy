@@ -165,3 +165,56 @@ it('loadedBatch event should include postLoadQuery result', async () => {
     await job.run();
     expect(lastInsertId).toEqual(10);
 });
+
+it('handles loadingBatchError event', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id integer PRIMARY KEY,
+        text text NOT NULL
+    )`);
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            yield {
+                id: 1,
+                text2: 'something',
+            }
+        },
+    });
+    const destination = new MySqlDestination({
+        connection,
+        table: 'test',
+        batchSize: 1,
+    });
+    const job = new Job(processor, [destination]);
+    job.on('loadingBatchError', async (destinationIndex, rows, error) => {
+        expect(error.message).toEqual(`Column 'text' cannot be null`);
+    });
+    await job.run();
+});
+
+it('handles loadingBatchError event when postLoadQuery fails', async () => {
+    await db.query(`CREATE TABLE test
+    (
+        id integer PRIMARY KEY,
+        text text
+    )`);
+    const processor = new DynamicProcessor({
+        generator: async function* () {
+            yield {
+                id: 1,
+                text: 'something',
+            }
+        },
+    });
+    const destination = new MySqlDestination({
+        connection,
+        table: 'test',
+        batchSize: 1,
+        postLoadQuery: `SELECT * FROM non_existent_table`,
+    });
+    const job = new Job(processor, [destination]);
+    job.on('loadingBatchError', async (destinationIndex, rows, error) => {
+        expect(error.message).toEqual(`Table 'test.non_existent_table' doesn't exist`);
+    });
+    await job.run();
+});
