@@ -6,6 +6,7 @@ const iconv = require('iconv-lite');
 const express = require('express');
 
 const app = express();
+app.use(express.urlencoded({ extended: true }));
 app.post('/token-nested', function (req: any, res: any) {
     res.send({
         nested: {
@@ -18,6 +19,16 @@ app.post('/token', function (req: any, res: any) {
         auth_token: 'secret',
     });
 });
+
+app.post('/x-www-form-urlencoded-token', function (req: any, res: any) {
+    const { grant_type, username, password } = req.body;
+    if (grant_type === 'password' && username === 'user' && password === 'pass') {
+        res.send({
+            auth_token: 'secret',
+        });
+    }
+});
+
 app.get('/secured-by-param', function (req: any, res: any) {
     if (req.query.Authorization === 'Bearer secret') {
         res.send([{
@@ -504,4 +515,37 @@ it('HTTP error response should be present in error message', async () => {
     });
     await job.run();
     expect(error).toEqual('Request failed with status code 500. Response: {"success":false}');
+});
+
+it('handles authorization request if it is x-www-form-urlencoded', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        connection: {
+            method: `GET`,
+            url: `${url}/secured-by-header`,
+        },
+        jsonPath: /(\d+)/,
+        authorizationRequest: {
+            connection: {
+                method: 'POST',
+                url: `${url}/x-www-form-urlencoded-token`,
+                data: 'grant_type=password&username=user&password=pass',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            },
+            applyTo: 'header',
+            destinationField: 'Authorization',
+            sourceField: 'auth_token',
+            prefix: 'Bearer ',
+        }
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual([{
+        text: 'hello!',
+    }]);
 });
