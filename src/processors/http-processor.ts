@@ -92,7 +92,10 @@ export class HttpProcessor extends Processor {
                 readStream: delimitedStream,
                 hasHeader: this.hasHeader,
             });
-            await processStream(generator());
+            await new Promise((resolve, reject) => {
+                requestStream.data.on('error', reject);
+                processStream(generator()).then(resolve).catch(reject);
+            });
         } else if (this.dataFormat === 'json') {
             const requestStream = await axios({ ...options, responseType: 'stream', }).catch(errorHandler);
             const jsonStream = requestStream.data
@@ -100,13 +103,19 @@ export class HttpProcessor extends Processor {
                 .pipe(pick({ filter: this.jsonPath || '' }))
                 .pipe(streamValues())
                 .pipe(getValueFromJSONChunk());
-            await processStream(jsonStream);
+            await new Promise((resolve, reject) => {
+                requestStream.data.on('error', reject);
+                processStream(jsonStream).then(resolve).catch(reject);
+            });
         } else if (this.dataFormat === 'xml') {
             const requestStream = await axios({ ...options, responseType: 'stream' }).catch(errorHandler);
             const xmlStream = requestStream.data
                 .pipe(saxStream(this.saxOptions))
                 .pipe(removeCircularReferencesFromChunk());
-            await processStream(xmlStream);
+            await new Promise((resolve, reject) => {
+                requestStream.data.on('error', reject);
+                processStream(xmlStream).then(resolve).catch(reject);
+            });
         }
         if (this.nextRequest) {
             const nextOptions = await this.nextRequest();

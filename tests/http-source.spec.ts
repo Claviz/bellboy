@@ -120,8 +120,50 @@ app.get('/windows-1257-encoded', function (req: any, res: any) {
     const encodedBuffer = iconv.encode(responseText, 'windows-1257');
     res.send(encodedBuffer);
 });
+app.get('/streaming-delimited', async (req: any, res: any) => {
+    res.setHeader('Content-Type', 'application/json');
+    for (let i = 0; i < 10; i++) {
+        res.write(JSON.stringify({ text: `chunk-${i}` }) + '\n');
+        await new Promise(r => setTimeout(r, 10));
+    }
+    res.end();
+});
+app.get('/interrupted-delimited', function (req: any, res: any) {
+    res.setHeader('Content-Type', 'application/json');
+    const interval = setInterval(() => {
+        res.write(JSON.stringify({ text: 'chunk' }) + '\n');
+    }, 10);
+    setTimeout(() => {
+        clearInterval(interval);
+        res.destroy();
+    }, 100);
+});
+app.get('/streaming-json', async (req: any, res: any) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.write('[');
+    for (let i = 0; i < 10; i++) {
+        res.write(JSON.stringify({ text: `chunk-${i}` }));
+        if (i < 9) res.write(',');
+        await new Promise(r => setTimeout(r, 10));
+    }
+    res.end(']');
+});
+app.get('/interrupted-json', async (req: any, res: any) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.write('[');
+    let count = 0;
+    const interval = setInterval(() => {
+        res.write(JSON.stringify({ text: `chunk-${count}` }));
+        if (count < 4) res.write(',');
+        count++;
+    }, 10);
+    setTimeout(() => {
+        clearInterval(interval);
+        res.destroy();
+    }, 60);
+});
 
-let server: any;;
+let server: any;
 let url: string;
 
 beforeAll(async () => {
@@ -136,7 +178,92 @@ beforeEach(async () => {
 
 afterAll(async () => {
     server.close();
-})
+});
+
+it('streams valid JSON array from HTTP over time', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        jsonPath: /(\d+)/,
+        connection: {
+            method: 'GET',
+            url: `${url}/streaming-json`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual(
+        Array.from({ length: 10 }, (_, i) => ({
+            text: `chunk-${i}`,
+        }))
+    );
+});
+
+it('handles interrupted valid JSON stream during HTTP request', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'json',
+        jsonPath: /(\d+)/,
+        connection: {
+            method: 'GET',
+            url: `${url}/interrupted-json`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    const events: string[] = [];
+    job.onAny(async (event, payload) => events.push(event));
+    await job.run();
+    expect(events).toContain('processingError');
+    expect(destination.getData().length).toBeGreaterThan(0);
+});
+
+it('streams delimited data from HTTP without interruption', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n',
+        connection: {
+            method: 'GET',
+            url: `${url}/streaming-delimited`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    expect(destination.getData()).toEqual(
+        Array.from({ length: 10 }, (_, i) => ({
+            header: [],
+            arr: [JSON.stringify({ text: `chunk-${i}` })],
+            obj: undefined,
+            row: JSON.stringify({ text: `chunk-${i}` }) + '\n'
+        }))
+    );
+});
+
+it('handles broken delimited stream during HTTP request', async () => {
+    const destination = new CustomDestination({
+        batchSize: 1,
+    });
+    const processor = new HttpProcessor({
+        dataFormat: 'delimited',
+        rowSeparator: '\n',
+        connection: {
+            method: `GET`,
+            url: `${url}/interrupted-delimited`,
+        },
+    });
+    const job = new Job(processor, [destination]);
+    const events: string[] = [];
+    job.onAny(async (x, a) => events.push(x));
+    await job.run();
+    expect(events).toContain('processingError');
+    expect(destination.getData().length).toBeGreaterThan(0);
+});
 
 it('gets big JSON data from HTTP', async () => {
     const destination = new CustomTimeoutDestination({
