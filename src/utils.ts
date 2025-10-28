@@ -143,22 +143,40 @@ export function removeCircularReferencesFromChunk() {
 export function getDelimitedGenerator({
     readStream,
     hasHeader,
-}: { readStream: any; hasHeader: boolean; }) {
+}: { readStream: AsyncIterable<{ raw: string; record: string[] }>; hasHeader: boolean; }) {
     let header: string[] = [];
-    const processRow = ({ raw, record }: { raw: string; record: string[] }) => {
-        if (hasHeader && !header.length) {
-            header = record.map((x: string) => x.trim());
-        } else {
-            let obj;
-            if (header.length) {
-                obj = Object.fromEntries(header.map((x: any, i: any) => [x, record[i]]));
-            }
-            return { header, arr: record, obj, row: raw };
+    const makeUniqueHeader = (names: string[]): string[] => {
+        const counts = new Map<string, number>();
+        const seen = new Map<string, number>();
+        for (const n of names) {
+            const base = n.trim();
+            counts.set(base, (counts.get(base) ?? 0) + 1);
         }
+        return names.map((n) => {
+            const base = n.trim();
+            const total = counts.get(base) ?? 0;
+            if (total <= 1) {
+                return base;
+            }
+            const idx = (seen.get(base) ?? 0) + 1;
+            seen.set(base, idx);
+            return `${base} (${idx})`;
+        });
+    };
+    const processRow = ({ raw, record }: { raw: string; record: string[] }) => {
+        if (hasHeader && header.length === 0) {
+            header = makeUniqueHeader(record);
+            return undefined;
+        }
+        let obj: Record<string, string> | undefined;
+        if (header.length) {
+            obj = Object.fromEntries(header.map((key, i) => [key, record[i]]));
+        }
+        return { header, arr: record, obj, row: raw };
     };
     const generator = async function* () {
         for await (const row of readStream) {
-            const result = processRow(row);
+            const result = processRow(row as any);
             if (result) {
                 yield result;
             }

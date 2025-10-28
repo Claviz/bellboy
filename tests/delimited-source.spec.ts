@@ -141,8 +141,8 @@ it('reads data from file with windows-1257 encoding', async () => {
     const processor = new DelimitedProcessor({
         path: './',
         files: [filePath],
-        rowSeparator: '\n', 
-        encoding: 'windows-1257', 
+        rowSeparator: '\n',
+        encoding: 'windows-1257',
     });
     const job = new Job(processor, [destination]);
     await job.run();
@@ -152,7 +152,7 @@ it('reads data from file with windows-1257 encoding', async () => {
 });
 
 it('produces incorrect output without specified encoding for windows-1257 encoded file', async () => {
-    const sampleText = 'ĀāČč'; 
+    const sampleText = 'ĀāČč';
     const encodedBuffer = iconv.encode(sampleText, 'windows-1257');
     await fs.writeFile(filePath, encodedBuffer);
     const destination = new CustomDestination();
@@ -167,4 +167,51 @@ it('produces incorrect output without specified encoding for windows-1257 encode
     expect(processedData).not.toEqual([
         { header: [], arr: [sampleText], obj: undefined, row: `${sampleText}` },
     ]);
+});
+
+it('renames duplicate header columns by appending index and maps obj accordingly', async () => {
+    await fs.appendFile(filePath, 'Jan\tFeb\tMar\tQuarter\tApril\tMay\tJune\tQuarter\r\n');
+    await fs.appendFile(filePath, '100\t200\t300\t600\t300\t400\t700\t1400\r\n');
+    const destination = new CustomDestination();
+    const processor = new DelimitedProcessor({
+        path: './',
+        files: [filePath],
+        hasHeader: true,
+        delimiter: '\t',
+        rowSeparator: '\r\n',
+    });
+    const job = new Job(processor, [destination]);
+    await job.run();
+    const expectedHeader = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Quarter (1)',
+        'April',
+        'May',
+        'June',
+        'Quarter (2)',
+    ];
+    const expectedArr = ['100', '200', '300', '600', '300', '400', '700', '1400'];
+    expect(destination.getData()).toEqual([
+        {
+            header: expectedHeader,
+            arr: expectedArr,
+            obj: {
+                Jan: '100',
+                Feb: '200',
+                Mar: '300',
+                'Quarter (1)': '600',
+                April: '300',
+                May: '400',
+                June: '700',
+                'Quarter (2)': '1400',
+            },
+            row: '100\t200\t300\t600\t300\t400\t700\t1400\r',
+        },
+    ]);
+    const keys = Object.keys(destination.getData()[0].obj ?? {});
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toContain('Quarter (1)');
+    expect(keys).toContain('Quarter (2)');
 });
