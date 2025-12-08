@@ -12,26 +12,54 @@ export class FirebirdProcessor extends DatabaseProcessor {
     }
 
     async process(processStream: processStream) {
-        const Firebird: any = this.connection.useClavizNodeFirebird ? require('claviz-node-firebird') : require('node-firebird');
+        const Firebird: any = this.connection.useClavizNodeFirebird
+            ? require('claviz-node-firebird')
+            : require('node-firebird');
+
         const db: any = await new Promise((resolve, reject) => {
             Firebird.attach(this.connection, (err: any, db: any) => {
-                if (err) reject(err);
-                else resolve(db);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(db);
+                }
             });
         });
+
+        let resume: (() => void) | null = null;
+
         const stream = new Readable({
             objectMode: true,
-            read() { }
-        });
-        db.sequentially(this.query, [], (row: any) => {
-            if (!stream.push(row)) { }
-        }, (err: any) => {
-            if (err) {
-                stream.emit('error', err);
+            read(this: Readable) {
+                if (resume) {
+                    const r = resume;
+                    resume = null;
+                    r();
+                }
             }
-            stream.push(null);
-            db.detach();
         });
+
+        db.sequentially(
+            this.query,
+            [],
+            (row: any) => {
+                const ok = stream.push(row);
+                if (ok) {
+                    return;
+                }
+                return new Promise<void>((resolve) => {
+                    resume = resolve;
+                });
+            },
+            (err: any) => {
+                if (err) {
+                    stream.emit('error', err);
+                }
+                stream.push(null);
+                db.detach();
+            }
+        );
+
         await processStream(stream);
     }
 }
