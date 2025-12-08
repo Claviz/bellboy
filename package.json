@@ -60,7 +60,7 @@
     "mysql2-stream-fix": "3.9.1",
     "node-firebird": "1.1.8",
     "pg": "8.0.3",
-    "pg-promise": "10.15.4",
+    "pg-promise": "11.5.5",
     "pg-query-stream": "3.0.7",
     "sax-stream": "1.3.0",
     "shortid": "2.2.15",
