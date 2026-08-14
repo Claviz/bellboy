@@ -16,9 +16,20 @@ export class PostgresProcessor extends DatabaseProcessor {
     async process(processStream: processStream) {
         const query = new QueryStream(this.query);
         const db = await getDb(this.connection, 'postgres');
-        const dbConnection = await db.connect();
-        const stream = dbConnection.client.query(query);
-        await processStream(stream);
-        dbConnection.done();
+        let dbConnection: any;
+        let stream: any;
+
+        try {
+            dbConnection = await db.connect();
+            stream = dbConnection.client.query(query);
+            await processStream(stream);
+        } catch (err) {
+            try {
+                stream?.destroy();
+            } catch (_) { }
+            throw err;
+        } finally {
+            dbConnection?.done();
+        }
     }
 }
