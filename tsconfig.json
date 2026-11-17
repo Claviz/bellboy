@@ -16,7 +16,6 @@
     "resolveJsonModule": true, /* Include modules imported with '.json' extension */
     "stripInternal": true,
     "importHelpers": true, /* Reduce duplication of helper functions */
-    "incremental": true, /* Enable incremental compilation */
     "moduleResolution": "node" /* Use node module resolution */,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
