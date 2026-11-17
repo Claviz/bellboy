@@ -1,7 +1,6 @@
 import { Readable } from 'stream';
 
 import { IMssqlProcessorConfig, IMssqlDbConnection, processStream } from '../types';
-import { closeDbConnection, getDb } from '../utils';
 import { DatabaseProcessor } from './base/database-processor';
 
 export class MssqlProcessor extends DatabaseProcessor {
@@ -34,7 +33,10 @@ export class MssqlProcessor extends DatabaseProcessor {
             },
         });
         const data: any[] = [];
-        const db = await getDb(this.connection, 'mssql');
+        // Each run owns its pool: a pool shared between jobs would be closed by the first one to finish.
+        const sql = this.connection.driver ?? await import('mssql');
+        const pool = new sql.ConnectionPool({ ...this.connection } as any);
+        const db = await pool.connect();
         const dbRequest = db.request();
         dbRequest.on('error', (err: any) => {
             if (err.code !== 'ECANCEL') {
@@ -77,7 +79,10 @@ export class MssqlProcessor extends DatabaseProcessor {
             });
         };
         dbRequest.pause();
-        await processStream(readStream);
-        await closeDbConnection(this.connection);
+        try {
+            await processStream(readStream);
+        } finally {
+            await pool.close();
+        }
     }
 }

@@ -67,4 +67,24 @@ describe.each(['tedious', 'msnodesqlv8'])('different drivers', (driverName) => {
             id: 3,
         }]);
     });
+
+    it(`lets jobs that share a connection run at the same time using ${driverName} driver`, async () => {
+        const start = (query: string) => {
+            const destination = new CustomDestination();
+            const job = new Job(new MssqlProcessor({ connection, query }), [destination]);
+            const event = (eventName: string) => new Promise<void>(resolve => job.on(eventName as any, async () => resolve()));
+            const queryStarted = event('startProcessingStream');
+            const rowsRead = event('endProcessingStream');
+            const data = job.run().then(() => destination.getData());
+            return { queryStarted, rowsRead, data };
+        };
+        // A slow job is still running when a fast one finishes; a third job starts right after that.
+        const slow = start(`WAITFOR DELAY '00:00:02'; select 1 id`);
+        await slow.queryStarted;
+        const fast = start(`select 2 id`);
+        await fast.rowsRead;
+        await new Promise(resolve => setImmediate(resolve));
+        const late = start(`select 3 id`);
+        expect(await Promise.all([slow.data, fast.data, late.data])).toEqual([[{ id: 1 }], [{ id: 2 }], [{ id: 3 }]]);
+    });
 });
